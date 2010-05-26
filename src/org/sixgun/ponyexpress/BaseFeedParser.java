@@ -23,17 +23,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-
+/*
+ * BaseFeedParser is an abstract class that takes a url and its getInputStream() 
+ * method returns an InputStream object from that url.
+ */
 
 public abstract class BaseFeedParser {
-	// names of the XML tags
-    static final String PUB_DATE = "pubDate";
-    static final String CONTENT = "media:content";
-    static final String TITLE = "title";
-    static final String ITEM = "item";
     
     final URL feedUrl;
-
+    /**
+     * Constructor - takes the URL of the RSS feed to be parsed.
+     * @param feedUrl
+     */
     protected BaseFeedParser(String feedUrl){
         try {
             this.feedUrl = new URL(feedUrl);
@@ -41,9 +42,13 @@ public abstract class BaseFeedParser {
             throw new RuntimeException(e);
         }
     }
-
+    /**
+     * Opens a connection to feedUrl.
+     * 
+     * @return an InputStream from the feedUrl
+     */
     protected InputStream getInputStream() {
-        try {
+    	try {
             return feedUrl.openConnection().getInputStream();
         } catch (IOException e) {
             throw new RuntimeException(e);

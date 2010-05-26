@@ -24,7 +24,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-
+/*
+ * POJO representing an Episode of a podcast.  Holds the pubDate,
+ * title and url of each episode.
+ */
 
 public class Episode implements Comparable<Episode> {
 
@@ -34,6 +37,9 @@ public class Episode implements Comparable<Episode> {
     private URL link;
     private Date date;
 	
+    /*
+     * Getters and Setters for each field.
+     */
     public void setLink(String link) {
         try {
             this.link = new URL(link);
