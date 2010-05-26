@@ -31,7 +31,7 @@ import android.sax.StartElementListener;
 import android.util.Xml;
 
 /*
- * SaxFeedPArser implements a basic Android SAX parser.  It finds the XMl tags in the RSS
+ * SaxFeedPArser implements a basic Android SAX parser.  It finds the XML tags in the RSS
  * feed that is returned by this.getInputStream() and extracts the text elements
  * or attributes from them using ElementListeners.
  */
@@ -44,7 +44,7 @@ public class SaxFeedParser extends BaseFeedParser{
     static final String ITEM = "item";
     
     /**
-     * Constructor - Takes a feedUrl and passes it to the Super class.
+     * Constructor - Takes a feedUrl and passes it to the SuperClass.
      * @param feedUrl
      */
 	public SaxFeedParser(String feedUrl) {
@@ -60,16 +60,23 @@ public class SaxFeedParser extends BaseFeedParser{
 		final Episode new_episode = new Episode();
 		final List<Episode> episodes = new ArrayList<Episode>();
 		
+		//Set up the required elements.
 		RootElement root = new RootElement("rss");
 		Element channel = root.requireChild("channel");
 		Element item = channel.requireChild(ITEM);
 		
+		/*Set up the ElementListeners.
+		 * The first listens for the end if the item element, which marks the end
+		 * of each episodes description in the RSS.  At this point the Episode is added
+		 * the list as it should have had all its details recorded by the other 
+		 * listeners.
+		 */
 		item.setEndElementListener(new EndElementListener(){
             public void end() {
-            	//FIXME This creates multiple identical records.
-                episodes.add(new_episode);
+                episodes.add(new Episode(new_episode));
             }
 		});
+		//This listener catches the title.
 		item.getChild(TITLE).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
@@ -77,6 +84,7 @@ public class SaxFeedParser extends BaseFeedParser{
 				new_episode.setTitle(body);
 			}
 		});
+		//This listener catches the pubDate.
 		item.getChild(PUB_DATE).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
@@ -84,6 +92,7 @@ public class SaxFeedParser extends BaseFeedParser{
 				new_episode.setDate(body);
 			}
 		});
+		//This Listener catches the url of the podcast.
 		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
 			
 			@Override
@@ -92,7 +101,7 @@ public class SaxFeedParser extends BaseFeedParser{
 				new_episode.setLink(url);
 			}
 		});
-		
+		//Finally, now the listeners are set up we can parse the XML file.
 		try {
             Xml.parse(this.getInputStream(), Xml.Encoding.UTF_8, 
 root.getContentHandler());

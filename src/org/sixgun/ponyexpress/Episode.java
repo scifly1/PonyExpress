@@ -37,7 +37,35 @@ public class Episode implements Comparable<Episode> {
     private URL link;
     private Date date;
 	
-    /*
+    /**
+     * Constructor.  Creates 'empty' episode.
+     */
+    public Episode() {
+    	//Nothing is assigned here.
+	}
+    
+    /**
+     * Copy constructor.  
+     * @param episode to copy.
+     */
+    public Episode(Episode episode){
+    	this(episode.getDate(),episode.getLink(),episode.getTitle());
+    }
+    /**
+     * Alternative private constructor used by the copy constructor to create copies.
+     * @param date2
+     * @param link2
+     * @param title2
+     */
+    private Episode(Date _date, URL _link, String _title) {
+		this.date = _date;
+		this.link = _link;
+		this.title = _title;
+	}
+
+	
+
+	/*
      * Getters and Setters for each field.
      */
     public void setLink(String link) {
