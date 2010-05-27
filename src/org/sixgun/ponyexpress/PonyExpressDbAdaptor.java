@@ -12,7 +12,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 2;
+	private static final int DATABASE_VERSION = 4;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TABLE_CREATE =
@@ -21,7 +21,9 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.TITLE + " TEXT," +
                 EpisodeKeys.DATE + " TEXT," +
                 EpisodeKeys.URL + " TEXT," +
-                EpisodeKeys.FILENAME + " TEXT);";
+                EpisodeKeys.FILENAME + " TEXT," +
+                EpisodeKeys.DOWNLOADED + " INTEGER," +
+                EpisodeKeys.LISTENED + " INTEGER);";
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
@@ -94,8 +96,36 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.URL, episode.getLink().toString());
         String filename = episode.getLink().getFile(); 
         episodeValues.put(EpisodeKeys.FILENAME, filename);
+        episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
+        episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
 
         return mDb.insert(TABLE_NAME, null, episodeValues);
     }
-    //TODO need to add a method to remove old episodes from the database.
+    //TODO These are basic method stubs to remind me to write them, the signatures
+    // are not necessarily correct.
+//	public int delete(Uri uri, String selection, String[] selectionArgs) {
+//		// TODO Auto-generated method stub
+//		return 0;
+//	}
+//
+//
+//	public Uri insert(Uri uri, ContentValues values) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	
+//	public Cursor query(Uri uri, String[] projection, String selection,
+//			String[] selectionArgs, String sortOrder) {
+//		// TODO Auto-generated method stub
+//		return null;
+//	}
+//
+//	public int update(Uri uri, ContentValues values, String selection,
+//			String[] selectionArgs) {
+//		// TODO Auto-generated method stub
+//		return 0;
+//	}
+    
+    
 }

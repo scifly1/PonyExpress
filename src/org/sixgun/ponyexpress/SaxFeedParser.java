@@ -73,7 +73,9 @@ public class SaxFeedParser extends BaseFeedParser{
 		 */
 		item.setEndElementListener(new EndElementListener(){
             public void end() {
-                episodes.add(new Episode(new_episode));
+                new_episode.setDownloaded(false);
+                new_episode.setListened(false);
+            	episodes.add(new Episode(new_episode));
             }
 		});
 		//This listener catches the title.
@@ -106,6 +108,7 @@ public class SaxFeedParser extends BaseFeedParser{
             Xml.parse(this.getInputStream(), Xml.Encoding.UTF_8, 
 root.getContentHandler());
         } catch (Exception e) {
+        	//TODO Change this to cause a popup informing user that cannot connect.
             throw new RuntimeException(e);
         }
 		

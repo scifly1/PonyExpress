@@ -33,9 +33,11 @@ public class Episode implements Comparable<Episode> {
 
 	static SimpleDateFormat FORMATTER = 
         new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-    private String title;
-    private URL link;
-    private Date date;
+    private String mTitle;
+    private URL mLink;
+    private Date mDate;
+	private Boolean mDownlaoded;
+	private Boolean mListened;
 	
     /**
      * Constructor.  Creates 'empty' episode.
@@ -49,18 +51,22 @@ public class Episode implements Comparable<Episode> {
      * @param episode to copy.
      */
     public Episode(Episode episode){
-    	this(episode.getDate(),episode.getLink(),episode.getTitle());
+    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDownlaoded,episode.mListened);
     }
     /**
      * Alternative private constructor used by the copy constructor to create copies.
-     * @param date2
-     * @param link2
-     * @param title2
+     * @param _date
+     * @param _link
+     * @param _title
+     * @param _downloaded 
+     * @param _listened 
      */
-    private Episode(Date _date, URL _link, String _title) {
-		this.date = _date;
-		this.link = _link;
-		this.title = _title;
+    private Episode(Date _date, URL _link, String _title, Boolean _downloaded, Boolean _listened) {
+		this.mDate = _date;
+		this.mLink = _link;
+		this.mTitle = _title;
+		this.mDownlaoded = _downloaded;
+		this.mListened = _listened;
 	}
 
 	
@@ -70,14 +76,14 @@ public class Episode implements Comparable<Episode> {
      */
     public void setLink(String link) {
         try {
-            this.link = new URL(link);
+            this.mLink = new URL(link);
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
     }
     
     public URL getLink() {
-    	return link;
+    	return mLink;
     }
     
     public void setDate(String date) {
@@ -86,34 +92,61 @@ public class Episode implements Comparable<Episode> {
             date += "0";
         }
         try {
-            this.date = FORMATTER.parse(date.trim());
+            this.mDate = FORMATTER.parse(date.trim());
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
     
     public Date getDate() {
-    	return date;
+    	return mDate;
     }
     
     public String getDateString() {
-    	return FORMATTER.format(date);
+    	return FORMATTER.format(mDate);
     }
     
 
 	public void setTitle(String title) {
-		this.title = title;
+		this.mTitle = title;
 	}
 
 	public String getTitle() {
-		return title;
+		return mTitle;
 	}
 	
+	/**
+	 * @param downloaded True if downloaded, false if not.
+	 */
+	public void setDownloaded(Boolean downloaded) {
+		this.mDownlaoded = downloaded;
+	}
+
+	/**
+	 * @return downloaded
+	 */
+	public Boolean beenDownloaded() {
+		return mDownlaoded;
+	}
+
+	/**
+	 * @param listened True if listened to, false if not.
+	 */
+	public void setListened(Boolean listened) {
+		this.mListened = listened;
+	}
+
+	/**
+	 * @return listened
+	 */
+	public Boolean beenListened() {
+		return mListened;
+	}
+
 	@Override
 	public int compareTo(Episode another) {
 		if (another == null) return 1;
         // sort descending, most recent first
-        return another.date.compareTo(date);
+        return another.mDate.compareTo(mDate);
 	}
-
 }
