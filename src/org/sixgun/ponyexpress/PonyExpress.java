@@ -37,12 +37,13 @@ public class PonyExpress extends ListActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
+		
 		
 		mDbHelper = new PonyExpressDbAdaptor(this);
 		mDbHelper.open();
-		updateEpisodes();
 		listEpisodes();
+		setContentView(R.layout.main);
+		updateEpisodes();
 		
 				
 	}
