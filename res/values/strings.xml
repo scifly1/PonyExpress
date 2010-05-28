@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello World, PonyExpressDbHelper!</string>
-    <string name="app_name">Pony Express</string>
+    
+    <string name="app_name">Pony Express</string><string name="Episodes_title">Episodes</string>
 </resources>

@@ -1,8 +1,13 @@
 package org.sixgun.ponyexpress;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -12,7 +17,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 4;
+	private static final int DATABASE_VERSION = 6;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TABLE_CREATE =
@@ -27,6 +32,10 @@ public class PonyExpressDbAdaptor {
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
+    
+    private static SimpleDateFormat FORMATTER = 
+        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+
     
     private final Context mCtx;
     /*
@@ -65,7 +74,7 @@ public class PonyExpressDbAdaptor {
     }
 
     /**
-     * Open the notes database. If it cannot be opened, try to create a new
+     * Open the PonyExpress database. If it cannot be opened, try to create a new
      * instance of the database. If it cannot be created, throw an exception to
      * signal the failure
      * 
@@ -88,7 +97,7 @@ public class PonyExpressDbAdaptor {
      * @param episode
      * @return The row ID of the inserted row or -1 if an error occurred.
      */
-    public long addEpisode(Episode episode) {
+    public long insertEpisode(Episode episode) {
     	//TODO Check if episode is already in the database first.
         ContentValues episodeValues = new ContentValues();
         episodeValues.put(EpisodeKeys.TITLE, episode.getTitle());
@@ -101,31 +110,67 @@ public class PonyExpressDbAdaptor {
 
         return mDb.insert(TABLE_NAME, null, episodeValues);
     }
-    //TODO These are basic method stubs to remind me to write them, the signatures
-    // are not necessarily correct.
-//	public int delete(Uri uri, String selection, String[] selectionArgs) {
-//		// TODO Auto-generated method stub
-//		return 0;
-//	}
-//
-//
-//	public Uri insert(Uri uri, ContentValues values) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	
-//	public Cursor query(Uri uri, String[] projection, String selection,
-//			String[] selectionArgs, String sortOrder) {
-//		// TODO Auto-generated method stub
-//		return null;
-//	}
-//
-//	public int update(Uri uri, ContentValues values, String selection,
-//			String[] selectionArgs) {
-//		// TODO Auto-generated method stub
-//		return 0;
-//	}
+    /**
+     * Deletes the episode with rowID index.
+     * @param rowID
+     * @return True if successful.
+     * 
+     * TODO Implement somewhere, not used anywhere at present
+     */
+	public boolean deleteEpisode(Long rowID) {
+		
+		return mDb.delete(TABLE_NAME, EpisodeKeys._ID + "=" + rowID, null) > 0;
+	}
+	/**
+	 * Gets all unique Episode names from the database.
+	 * @return A Cursor object, which is positioned before the first entry
+	 */
+	public Cursor getAllEpisodeNames(){
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE};
+		return mDb.query(true,TABLE_NAME,columns,null,null,null,null,null,null);
+	}
+	/**
+	 * Method to determine the date of the latest episode in the database.
+	 * @return The Latest episodes date as a string.
+	 */
+	public Date getLatestEpisodeDate(){
+		final Cursor cursor = mDb.rawQuery("select " + EpisodeKeys.DATE + " from Episodes limit 1", null);
+		boolean result = cursor.moveToFirst();
+		//Check the cursor is at a row.
+		if (result == true){
+			Date date;
+			String latest_date = cursor.getString(0);
+			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date);
+			try {
+				date = FORMATTER.parse(latest_date.trim());
+			} catch (ParseException e) {
+				throw new RuntimeException(e);
+			}
+			long time = date.getTime();
+			time += 3600000; //HACK The times are an hour behind so add an hour.
+			date = new Date(time);
+			return date;
+		}else{
+			//return date 0 milliseconds
+			return new Date(0);
+		}
+	}
+	
+	//TODO This method is not complete.
+	public boolean update(long rowID, String key, String newRecord) {
+		// run Query to get present values.
+		ContentValues values = null;
+		
+		//Change ContentValues as required
+		if (key == EpisodeKeys.DOWNLOADED){
+			if (newRecord == "true"){
+				values.put(EpisodeKeys.DOWNLOADED, true);
+			}else {
+					values.put(EpisodeKeys.DOWNLOADED,false);
+				}
+		}
+		return mDb.update(TABLE_NAME, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
+	}
     
     
 }

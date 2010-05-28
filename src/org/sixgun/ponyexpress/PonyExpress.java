@@ -18,37 +18,76 @@
 */
 package org.sixgun.ponyexpress;
 
+import java.util.Date;
 import java.util.List;
 
-import android.app.Activity;
+import android.app.ListActivity;
+import android.database.Cursor;
 import android.os.Bundle;
+import android.widget.SimpleCursorAdapter;
 
 /*
  * Launch Activity for PonyExpress.  In a VERY DEBUG state at present.
  */
-public class PonyExpress extends Activity {
+public class PonyExpress extends ListActivity {
 
-
-
+	
 	private PonyExpressDbAdaptor mDbHelper;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		//no views created yet.
+		setContentView(R.layout.main);
+		
 		mDbHelper = new PonyExpressDbAdaptor(this);
 		mDbHelper.open();
+		updateEpisodes();
+		listEpisodes();
 		
+				
+	}
+
+	/**
+	 *  Close the database.
+	 */
+	@Override
+	protected void onStop() {
+		super.onStop();
+		mDbHelper.close();
+	}
+
+	/**
+	 * Parse the RSS feed and update the database with new episodes.
+	 */
+	private void updateEpisodes(){
 		//TODO Get a service to do this, so it doesn't hold us up to much.
 		String feed = "http://feeds.feedburner.com/linuxoutlaws-ogg";
 		
 		SaxFeedParser parser = new SaxFeedParser(feed);
 		List<Episode> Episodes = parser.parse();
 		
+		Date date = mDbHelper.getLatestEpisodeDate();
+				
 		for (Episode episode: Episodes){
-			mDbHelper.addEpisode(episode);
+			if (episode.getDate().compareTo(date) > 0) {
+				mDbHelper.insertEpisode(episode);
+			}	
 		}
-		mDbHelper.close();	
+	}
+	
+	/**
+	 * Query the database for all Episode titles to populate the ListView.
+	 */
+	private void listEpisodes(){
+		Cursor c = mDbHelper.getAllEpisodeNames();
+		startManagingCursor(c);
+		//Set up columns to map from, and layout to map to
+		String[] from = new String[] { EpisodeKeys.TITLE };
+		int[] to = new int[] { R.id.episode_text };
+		
+		SimpleCursorAdapter episodes = new SimpleCursorAdapter(this, R.layout.episode_row, c, from, to);
+		setListAdapter(episodes);
+		
 	}
 	
 }

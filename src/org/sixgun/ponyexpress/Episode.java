@@ -36,7 +36,7 @@ public class Episode implements Comparable<Episode> {
     private String mTitle;
     private URL mLink;
     private Date mDate;
-	private Boolean mDownlaoded;
+	private Boolean mDownloaded;
 	private Boolean mListened;
 	
     /**
@@ -51,7 +51,7 @@ public class Episode implements Comparable<Episode> {
      * @param episode to copy.
      */
     public Episode(Episode episode){
-    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDownlaoded,episode.mListened);
+    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDownloaded,episode.mListened);
     }
     /**
      * Alternative private constructor used by the copy constructor to create copies.
@@ -65,7 +65,7 @@ public class Episode implements Comparable<Episode> {
 		this.mDate = _date;
 		this.mLink = _link;
 		this.mTitle = _title;
-		this.mDownlaoded = _downloaded;
+		this.mDownloaded = _downloaded;
 		this.mListened = _listened;
 	}
 
@@ -119,14 +119,14 @@ public class Episode implements Comparable<Episode> {
 	 * @param downloaded True if downloaded, false if not.
 	 */
 	public void setDownloaded(Boolean downloaded) {
-		this.mDownlaoded = downloaded;
+		this.mDownloaded = downloaded;
 	}
 
 	/**
 	 * @return downloaded
 	 */
 	public Boolean beenDownloaded() {
-		return mDownlaoded;
+		return mDownloaded;
 	}
 
 	/**
