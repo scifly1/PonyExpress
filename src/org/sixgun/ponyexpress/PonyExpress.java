@@ -37,23 +37,31 @@ public class PonyExpress extends ListActivity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
+		setContentView(R.layout.main);
 		
 		mDbHelper = new PonyExpressDbAdaptor(this);
 		mDbHelper.open();
-		listEpisodes();
-		setContentView(R.layout.main);
+		
 		updateEpisodes();
 		
 				
 	}
 
-	/**
-	 *  Close the database.
+	/** 
+	 * (Re-)list the episodes.
 	 */
 	@Override
-	protected void onStop() {
-		super.onStop();
+	protected void onResume() {
+		super.onResume();
+		listEpisodes();
+	}
+
+	/**
+	 *  Close the database when activity destroyed.
+	 */
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
 		mDbHelper.close();
 	}
 
@@ -86,7 +94,8 @@ public class PonyExpress extends ListActivity {
 		String[] from = new String[] { EpisodeKeys.TITLE };
 		int[] to = new int[] { R.id.episode_text };
 		
-		SimpleCursorAdapter episodes = new SimpleCursorAdapter(this, R.layout.episode_row, c, from, to);
+		SimpleCursorAdapter episodes = new SimpleCursorAdapter(
+				this, R.layout.episode_row, c, from, to);
 		setListAdapter(episodes);
 		
 	}
