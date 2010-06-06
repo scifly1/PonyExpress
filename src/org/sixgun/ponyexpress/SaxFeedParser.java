@@ -18,17 +18,20 @@
 */
 package org.sixgun.ponyexpress;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.xml.sax.Attributes;
 
+import android.content.Context;
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Xml;
+import android.widget.Toast;
 
 /*
  * SaxFeedPArser implements a basic Android SAX parser.  It finds the XML tags in the RSS
@@ -37,6 +40,7 @@ import android.util.Xml;
  */
 public class SaxFeedParser extends BaseFeedParser{
 	
+	private Context mCtx;
 	// names of the XML tags
     static final String PUB_DATE = "pubDate";
     static final String CONTENT = "enclosure";
@@ -47,8 +51,11 @@ public class SaxFeedParser extends BaseFeedParser{
      * Constructor - Takes a feedUrl and passes it to the SuperClass.
      * @param feedUrl
      */
-	public SaxFeedParser(String feedUrl) {
+	public SaxFeedParser(Context ctx, String feedUrl) {
 		super(feedUrl);
+		//The context is required to access the R.raw.testfeed resource for
+		//debugging and the 'no internet connection' Toast.
+		mCtx = ctx;
 		
 	}
 	/**
@@ -104,14 +111,20 @@ public class SaxFeedParser extends BaseFeedParser{
 			}
 		});
 		//Finally, now the listeners are set up we can parse the XML file.
-		try {
-            Xml.parse(this.getInputStream(), Xml.Encoding.UTF_8, 
-root.getContentHandler());
-        } catch (Exception e) {
-        	//TODO Change this to cause a popup informing user that cannot connect.
-            throw new RuntimeException(e);
-        }
 		
+		InputStream istream = this.getInputStream();
+		//To debug with test feeds comment out the above line and uncomment the next line.
+	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed2);
+		if (istream != null){
+			try {
+				Xml.parse(istream, Xml.Encoding.UTF_8, 
+						root.getContentHandler());
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}else {
+			Toast.makeText(mCtx, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+		}
 		return episodes;
 		
 	}

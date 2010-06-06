@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+
 /*
  * BaseFeedParser is an abstract class that takes a url and its getInputStream() 
  * method returns an InputStream object from that url.
@@ -49,10 +50,11 @@ public abstract class BaseFeedParser {
      */
     protected InputStream getInputStream() {
     	try {
-            return feedUrl.openConnection().getInputStream();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    			return feedUrl.openConnection().getInputStream();
+    	} catch (IOException e) {
+    		return null; 
+    	}
+
     }
 
 }

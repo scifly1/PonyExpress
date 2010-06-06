@@ -1,8 +1,6 @@
 package org.sixgun.ponyexpress;
 
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import android.content.ContentValues;
@@ -17,14 +15,14 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 6;
+	private static final int DATABASE_VERSION = 7;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TABLE_CREATE =
                 "CREATE TABLE " + TABLE_NAME + " (" +
                 EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
                 EpisodeKeys.TITLE + " TEXT," +
-                EpisodeKeys.DATE + " TEXT," +
+                EpisodeKeys.DATE + " INTEGER," +
                 EpisodeKeys.URL + " TEXT," +
                 EpisodeKeys.FILENAME + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
@@ -32,10 +30,6 @@ public class PonyExpressDbAdaptor {
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
-    
-    private static SimpleDateFormat FORMATTER = 
-        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
-
     
     private final Context mCtx;
     /*
@@ -101,7 +95,7 @@ public class PonyExpressDbAdaptor {
     	//TODO Check if episode is already in the database first.
         ContentValues episodeValues = new ContentValues();
         episodeValues.put(EpisodeKeys.TITLE, episode.getTitle());
-        episodeValues.put(EpisodeKeys.DATE, episode.getDateString());
+        episodeValues.put(EpisodeKeys.DATE, episode.getDate().getTime());
         episodeValues.put(EpisodeKeys.URL, episode.getLink().toString());
         String filename = episode.getLink().getFile(); 
         episodeValues.put(EpisodeKeys.FILENAME, filename);
@@ -126,31 +120,27 @@ public class PonyExpressDbAdaptor {
 	 * @return A Cursor object, which is positioned before the first entry
 	 */
 	public Cursor getAllEpisodeNames(){
-		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE};
-		return mDb.query(true,TABLE_NAME,columns,null,null,null,null,null,null);
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.DATE};
+		return mDb.query(
+				true,TABLE_NAME,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
 	}
 	/**
 	 * Method to determine the date of the latest episode in the database.
 	 * @return The Latest episodes date as a string.
 	 */
 	public Date getLatestEpisodeDate(){
-		final Cursor cursor = mDb.rawQuery("select " + EpisodeKeys.DATE + " from Episodes limit 1", null);
+		String[] columns = {EpisodeKeys.DATE};
+		Cursor cursor = mDb.query(TABLE_NAME, 
+				columns, null, null, null, null, EpisodeKeys.DATE +" DESC", "1");
 		boolean result = cursor.moveToFirst();
 		//Check the cursor is at a row.
 		if (result == true){
-			Date date;
-			String latest_date = cursor.getString(0);
-			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date);
-			try {
-				date = FORMATTER.parse(latest_date.trim());
-			} catch (ParseException e) {
-				throw new RuntimeException(e);
-			}
-			long time = date.getTime();
-			time += 3600000; //HACK The times are an hour behind so add an hour.
-			date = new Date(time);
-			return date;
+			Long latest_date = cursor.getLong(0);
+			cursor.close();
+			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date.toString());
+			return new Date(latest_date);
 		}else{
+			cursor.close();
 			//return date 0 milliseconds
 			return new Date(0);
 		}

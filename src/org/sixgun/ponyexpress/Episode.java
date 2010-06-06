@@ -101,11 +101,6 @@ public class Episode implements Comparable<Episode> {
     public Date getDate() {
     	return mDate;
     }
-    
-    public String getDateString() {
-    	return FORMATTER.format(mDate);
-    }
-    
 
 	public void setTitle(String title) {
 		this.mTitle = title;
@@ -145,8 +140,8 @@ public class Episode implements Comparable<Episode> {
 
 	@Override
 	public int compareTo(Episode another) {
-		if (another == null) return 1;
-        // sort descending, most recent first
-        return another.mDate.compareTo(mDate);
+		if (this.mDate.equals(another.mDate)) return 0;
+		else if (this.mDate.getTime() < another.mDate.getTime()) return -1;
+		else return 1;
 	}
 }
