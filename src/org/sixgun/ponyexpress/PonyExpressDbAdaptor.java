@@ -129,13 +129,13 @@ public class PonyExpressDbAdaptor {
 	 * @return The Latest episodes date as a string.
 	 */
 	public Date getLatestEpisodeDate(){
-		String[] columns = {EpisodeKeys.DATE};
-		Cursor cursor = mDb.query(TABLE_NAME, 
+		final String[] columns = {EpisodeKeys.DATE};
+		final Cursor cursor = mDb.query(TABLE_NAME, 
 				columns, null, null, null, null, EpisodeKeys.DATE +" DESC", "1");
-		boolean result = cursor.moveToFirst();
+		final boolean result = cursor.moveToFirst();
 		//Check the cursor is at a row.
 		if (result == true){
-			Long latest_date = cursor.getLong(0);
+			final Long latest_date = cursor.getLong(0);
 			cursor.close();
 			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date.toString());
 			return new Date(latest_date);

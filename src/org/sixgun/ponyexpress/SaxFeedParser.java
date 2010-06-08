@@ -31,7 +31,6 @@ import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
 import android.util.Xml;
-import android.widget.Toast;
 
 /*
  * SaxFeedPArser implements a basic Android SAX parser.  It finds the XML tags in the RSS
@@ -39,7 +38,8 @@ import android.widget.Toast;
  * or attributes from them using ElementListeners.
  */
 public class SaxFeedParser extends BaseFeedParser{
-	
+	//The context is only needed for using the debug testfeeds.
+	@SuppressWarnings("unused")
 	private Context mCtx;
 	// names of the XML tags
     static final String PUB_DATE = "pubDate";
@@ -53,10 +53,7 @@ public class SaxFeedParser extends BaseFeedParser{
      */
 	public SaxFeedParser(Context ctx, String feedUrl) {
 		super(feedUrl);
-		//The context is required to access the R.raw.testfeed resource for
-		//debugging and the 'no internet connection' Toast.
 		mCtx = ctx;
-		
 	}
 	/**
 	 * Parses the RSS feed from the InputStream and extracts text elements and 
@@ -114,7 +111,7 @@ public class SaxFeedParser extends BaseFeedParser{
 		
 		InputStream istream = this.getInputStream();
 		//To debug with test feeds comment out the above line and uncomment the next line.
-	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed2);
+	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
 		if (istream != null){
 			try {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
@@ -122,8 +119,6 @@ public class SaxFeedParser extends BaseFeedParser{
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
-		}else {
-			Toast.makeText(mCtx, R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
 		}
 		return episodes;
 		
