@@ -27,6 +27,7 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.FILENAME + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
                 EpisodeKeys.LISTENED + " INTEGER);";
+	private static final String TAG = "PonyExpressDbAdaptor";
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
@@ -144,6 +145,20 @@ public class PonyExpressDbAdaptor {
 			//return date 0 milliseconds
 			return new Date(0);
 		}
+	}
+	
+	public String getEpisodeUrl(long row_ID){
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.URL};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+		String url = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			url = cursor.getString(1);
+			Log.d(TAG, "Url of Episode is: "+ url);
+		}
+		cursor.close();
+		return url;	
 	}
 	
 	//TODO This method is not complete.

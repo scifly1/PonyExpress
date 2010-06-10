@@ -23,29 +23,33 @@ import java.util.List;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.AsyncTask.Status;
+import android.view.ContextMenu;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
-/*
- * Launch Activity for PonyExpress.  In a VERY DEBUG state at present.
+/**
+ * Launch Activity for PonyExpress.
  */
 public class PonyExpressActivity extends ListActivity {
 
-	
 	private static final String UPDATE_IN_PROGRESS = "ponyexpress.update.inprogress";
+	private static final int DOWNLOAD_ID = Menu.FIRST;
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
 	private Bundle mSavedState;
-	ProgressDialog mProgDialog; 
+	private ProgressDialog mProgDialog; 
 
 
 	@Override
@@ -66,6 +70,7 @@ public class PonyExpressActivity extends ListActivity {
 				mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
 			}
 		});
+		registerForContextMenu(getListView());
 	}
 
 	/** 
@@ -135,6 +140,36 @@ public class PonyExpressActivity extends ListActivity {
 			mUpdateTask = null;
 		}
 	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		switch (item.getItemId()) {
+		case DOWNLOAD_ID:
+			String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(info.id);
+			Intent i = new Intent(this,Downloader.class);
+			i.putExtra(EpisodeKeys.URL, url);
+			startService(i);
+			return true;
+
+		default:
+			return super.onContextItemSelected(item);
+		}
+	}
+
+	/**
+	 * Creates the Context menu (shown on a long click of a menu item).
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		menu.add(0,DOWNLOAD_ID,0,R.string.download);
+	}
 
 	/**
 	 * Parse the RSS feed and update the database with new episodes in a background thread.
@@ -148,7 +183,7 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			if (checkConnectivity()){
+			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 				mProgDialog.setMessage("Checking for new Episodes. Please wait...");
 				mProgDialog.show();
 			} else {
@@ -192,21 +227,6 @@ public class PonyExpressActivity extends ListActivity {
 			mProgDialog.dismiss();
 			listEpisodes();			
 		}
-		
-		
-		/**
-		 * Detect whether the phone has an internet connection.
-		 * @return True if the phone can connect to the internet, false if not.
-		 */
-		 private boolean checkConnectivity(){
-			 ConnectivityManager mConnectivity = 
-				 (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-			 NetworkInfo info = mConnectivity.getActiveNetworkInfo();
-			 if (info == null){
-				 return false;
-			 }
-			return true;
-		 }
 		
 	};
 

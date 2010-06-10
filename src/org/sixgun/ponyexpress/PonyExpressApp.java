@@ -22,11 +22,12 @@ import android.app.Application;
 
 /**
  * Application class to provide an application context for the DbAdaptor
- * instance and other objects that require a context and may live longer than 
- * there calling object:  ie: progress bars.
+ * instance and InternetHelper that require a context and may live longer than 
+ * their calling Activity/Service.
  */
 public class PonyExpressApp extends Application {
 	private PonyExpressDbAdaptor DbHelper;
+	private InternetHelper mInternetHelper;
 
 	
 
@@ -40,6 +41,8 @@ public class PonyExpressApp extends Application {
 		//Create/open database
 		DbHelper = new PonyExpressDbAdaptor(this);
 		DbHelper.open();
+		//Set up InternetHelper
+		mInternetHelper = new InternetHelper(this);
 	}
 
 	/* (non-Javadoc)
@@ -55,6 +58,13 @@ public class PonyExpressApp extends Application {
 	 */
 	public PonyExpressDbAdaptor getDbHelper() {
 		return DbHelper;
+	}
+
+	/**
+	 * @return the mInternetHelper
+	 */
+	public InternetHelper getInternetHelper() {
+		return mInternetHelper;
 	}
 
 	

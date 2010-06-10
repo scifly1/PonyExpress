@@ -3,4 +3,5 @@
     
     <string name="app_name">Pony Express</string><string name="Episodes_title"><b>Episodes</b></string>
     <string name="no_internet_connection">Cannot connect to the Internet.  Check your connectivity.</string>
+<string name="download">Download</string>
 </resources>
