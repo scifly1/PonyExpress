@@ -77,9 +77,7 @@ public class SaxFeedParser extends BaseFeedParser{
 		 */
 		item.setEndElementListener(new EndElementListener(){
             public void end() {
-                new_episode.setDownloaded(false);
-                new_episode.setListened(false);
-            	episodes.add(new Episode(new_episode));
+                episodes.add(new Episode(new_episode));
             }
 		});
 		//This listener catches the title.

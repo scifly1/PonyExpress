@@ -153,6 +153,7 @@ public class PonyExpressActivity extends ListActivity {
 			String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(info.id);
 			Intent i = new Intent(this,Downloader.class);
 			i.putExtra(EpisodeKeys.URL, url);
+			i.putExtra(EpisodeKeys._ID, info.id);
 			startService(i);
 			return true;
 

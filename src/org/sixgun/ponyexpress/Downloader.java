@@ -28,6 +28,7 @@ import java.net.URL;
 
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 
@@ -42,6 +43,8 @@ public class Downloader extends IntentService {
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
 	private PonyExpressApp mPonyExpressApp;
+	private PonyExpressDbAdaptor mDbHelper;
+	private long mRow_ID;
 	private URL mUrl;
 	private File mRoot;
 	private FileOutputStream mOutFile;
@@ -60,13 +63,15 @@ public class Downloader extends IntentService {
 		super.onCreate();
 		//Get the application context.  This must be done here and not in the constructor.
 		mPonyExpressApp = (PonyExpressApp) this.getApplication();
+		mDbHelper = mPonyExpressApp.getDbHelper();
 		Log.d(TAG,"Downloader started");
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		mUrl = getURL((String) intent.getExtras().get(EpisodeKeys.URL));
-		
+		Bundle data = intent.getExtras();
+		mUrl = getURL(data.getString(EpisodeKeys.URL));
+		mRow_ID= data.getLong(EpisodeKeys._ID);
 		if (mUrl != null && isSDCardWritable()){
 			prepareForDownload();
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
@@ -153,6 +158,7 @@ public class Downloader extends IntentService {
 			     mOutFile.write(buffer,0, size);
 			}//TODO NM
 			Log.d(TAG,"Podcast written to SD card.");
+			mDbHelper.update(mRow_ID, EpisodeKeys.DOWNLOADED,"true");
 		} catch (IOException e) {
 			Log.e(TAG, "Error reading/writing to file.", e);
 			//TODO NM

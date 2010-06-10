@@ -15,7 +15,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 7;
+	private static final int DATABASE_VERSION = 8;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TABLE_CREATE =
@@ -98,7 +98,7 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.TITLE, episode.getTitle());
         episodeValues.put(EpisodeKeys.DATE, episode.getDate().getTime());
         episodeValues.put(EpisodeKeys.URL, episode.getLink().toString());
-        String filename = episode.getLink().getFile(); 
+        final String filename = episode.getLink().getFile(); 
         episodeValues.put(EpisodeKeys.FILENAME, filename);
         episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
         episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
@@ -161,18 +161,22 @@ public class PonyExpressDbAdaptor {
 		return url;	
 	}
 	
-	//TODO This method is not complete.
+	/**
+	 * Updates the database when a podcast has been downloaded.
+	 * @param rowID 
+	 * @param key
+	 * @param newRecord
+	 * @return true if update successful.
+	 */
 	public boolean update(long rowID, String key, String newRecord) {
-		// run Query to get present values.
-		ContentValues values = null;
-		
+		ContentValues values = new ContentValues();
 		//Change ContentValues as required
 		if (key == EpisodeKeys.DOWNLOADED){
 			if (newRecord == "true"){
 				values.put(EpisodeKeys.DOWNLOADED, true);
 			}else {
-					values.put(EpisodeKeys.DOWNLOADED,false);
-				}
+				values.put(EpisodeKeys.DOWNLOADED,false);
+			}
 		}
 		return mDb.update(TABLE_NAME, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}

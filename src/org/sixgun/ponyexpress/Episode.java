@@ -43,7 +43,8 @@ public class Episode implements Comparable<Episode> {
      * Constructor.  Creates 'empty' episode.
      */
     public Episode() {
-    	//Nothing is assigned here.
+    	mDownloaded = false;
+    	mListened = false;
 	}
     
     /**
@@ -110,25 +111,12 @@ public class Episode implements Comparable<Episode> {
 		return mTitle;
 	}
 	
-	/**
-	 * @param downloaded True if downloaded, false if not.
-	 */
-	public void setDownloaded(Boolean downloaded) {
-		this.mDownloaded = downloaded;
-	}
 
 	/**
 	 * @return downloaded
 	 */
 	public Boolean beenDownloaded() {
 		return mDownloaded;
-	}
-
-	/**
-	 * @param listened True if listened to, false if not.
-	 */
-	public void setListened(Boolean listened) {
-		this.mListened = listened;
 	}
 
 	/**
