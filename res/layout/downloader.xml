@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@+id/RelativeLayout01"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<TextView android:id="@+id/TitleText" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:textSize="20sp"
+		android:layout_centerHorizontal="true" />
+	<Button android:layout_below="@+id/TitleText" android:text="@string/download"
+		android:layout_height="wrap_content" android:id="@+id/DownloadButton"
+		android:layout_width="wrap_content" android:layout_centerHorizontal="true" />
+	<WebView android:id="@+id/Description" android:layout_width="fill_parent"
+		android:layout_height="fill_parent" android:layout_below="@id/DownloadButton" />
+</RelativeLayout>

@@ -44,8 +44,11 @@ public class SaxFeedParser extends BaseFeedParser{
 	// names of the XML tags
     static final String PUB_DATE = "pubDate";
     static final String CONTENT = "enclosure";
+    static final String DESCRIPTION = "description";
     static final String TITLE = "title";
     static final String ITEM = "item";
+    
+    static final String ITUNES_NAMESPACE = "http://www.itunes.com/dtds/podcast-1.0.dtd";
     
     /**
      * Constructor - Takes a feedUrl and passes it to the SuperClass.
@@ -103,6 +106,15 @@ public class SaxFeedParser extends BaseFeedParser{
 			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "url");
 				new_episode.setLink(url);
+			}
+		});
+		//This Listener catches the Description of the podcast.
+		item.getChild(DESCRIPTION).setEndTextElementListener(
+				new EndTextElementListener() {
+			
+			@Override
+			public void end(String body) {
+				new_episode.setDescription(body);
 			}
 		});
 		//Finally, now the listeners are set up we can parse the XML file.

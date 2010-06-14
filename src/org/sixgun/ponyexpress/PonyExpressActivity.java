@@ -28,16 +28,13 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.AsyncTask.Status;
-import android.view.ContextMenu;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 /**
  * Launch Activity for PonyExpress.
@@ -45,7 +42,6 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 public class PonyExpressActivity extends ListActivity {
 
 	private static final String UPDATE_IN_PROGRESS = "ponyexpress.update.inprogress";
-	private static final int DOWNLOAD_ID = Menu.FIRST;
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
 	private Bundle mSavedState;
@@ -60,7 +56,7 @@ public class PonyExpressActivity extends ListActivity {
 		mPonyExpressApp = (PonyExpressApp) this.getApplication();
 		
 		//Hook up reload button with updateEpisodes()
-		ImageView reload_button =  (ImageView)findViewById(R.id.view_refresh);
+		ImageView reload_button =  (ImageButton)findViewById(R.id.view_refresh);
 		//Create Progress Dialog for use later.
 		mProgDialog = new ProgressDialog(this);
 		reload_button.setOnClickListener(new OnClickListener() {
@@ -70,7 +66,6 @@ public class PonyExpressActivity extends ListActivity {
 				mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
 			}
 		});
-		registerForContextMenu(getListView());
 	}
 
 	/** 
@@ -140,36 +135,36 @@ public class PonyExpressActivity extends ListActivity {
 			mUpdateTask = null;
 		}
 	}
-	
+
+
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
 	 */
 	@Override
-	public boolean onContextItemSelected(MenuItem item) {
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
 		
-		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		switch (item.getItemId()) {
-		case DOWNLOAD_ID:
-			String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(info.id);
-			Intent i = new Intent(this,Downloader.class);
-			i.putExtra(EpisodeKeys.URL, url);
-			i.putExtra(EpisodeKeys._ID, info.id);
-			startService(i);
-			return true;
-
-		default:
-			return super.onContextItemSelected(item);
+		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id);
+		final String description = mPonyExpressApp.getDbHelper().getDescription(id);
+		//Determine if Episode has been downloaded.
+		final boolean downloaded = mPonyExpressApp.getDbHelper().getEpisodeDownloaded(id);
+		if (downloaded){
+			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
+			Intent listenIntent = new Intent(this,PlayerActivity.class);
+			listenIntent.putExtra(EpisodeKeys.FILENAME, filename);
+			listenIntent.putExtra(EpisodeKeys.TITLE, title);
+			listenIntent.putExtra(EpisodeKeys.DESCRIPTION, description);
+			startActivity(listenIntent);
+		} else {
+			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
+			Intent downloadIntent = new Intent(this,DownloadActivity.class);
+			downloadIntent.putExtra(EpisodeKeys.TITLE, title);
+			downloadIntent.putExtra(EpisodeKeys.DESCRIPTION, description);
+			downloadIntent.putExtra(EpisodeKeys.URL, url);
+			downloadIntent.putExtra(EpisodeKeys._ID, id);
+			startActivity(downloadIntent);
 		}
-	}
-
-	/**
-	 * Creates the Context menu (shown on a long click of a menu item).
-	 */
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v,
-			ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-		menu.add(0,DOWNLOAD_ID,0,R.string.download);
+		
 	}
 
 	/**

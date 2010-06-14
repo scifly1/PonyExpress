@@ -36,6 +36,7 @@ public class Episode implements Comparable<Episode> {
     private String mTitle;
     private URL mLink;
     private Date mDate;
+    private String mDescription;
 	private Boolean mDownloaded;
 	private Boolean mListened;
 	
@@ -52,7 +53,7 @@ public class Episode implements Comparable<Episode> {
      * @param episode to copy.
      */
     public Episode(Episode episode){
-    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDownloaded,episode.mListened);
+    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDescription,episode.mDownloaded,episode.mListened);
     }
     /**
      * Alternative private constructor used by the copy constructor to create copies.
@@ -61,11 +62,13 @@ public class Episode implements Comparable<Episode> {
      * @param _title
      * @param _downloaded 
      * @param _listened 
+     * @param _description 
      */
-    private Episode(Date _date, URL _link, String _title, Boolean _downloaded, Boolean _listened) {
+    private Episode(Date _date, URL _link, String _title, String _description, Boolean _downloaded, Boolean _listened) {
 		this.mDate = _date;
 		this.mLink = _link;
 		this.mTitle = _title;
+		this.mDescription = _description;
 		this.mDownloaded = _downloaded;
 		this.mListened = _listened;
 	}
@@ -131,5 +134,13 @@ public class Episode implements Comparable<Episode> {
 		if (this.mDate.equals(another.mDate)) return 0;
 		else if (this.mDate.getTime() < another.mDate.getTime()) return -1;
 		else return 1;
+	}
+
+	public void setDescription(String description) {
+		this.mDescription = description;
+	}
+	
+	public String getDescription(){
+		return mDescription;
 	}
 }

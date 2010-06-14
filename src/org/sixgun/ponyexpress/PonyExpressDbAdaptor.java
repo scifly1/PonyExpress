@@ -15,7 +15,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 8;
+	private static final int DATABASE_VERSION = 10;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TABLE_CREATE =
@@ -25,6 +25,7 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.DATE + " INTEGER," +
                 EpisodeKeys.URL + " TEXT," +
                 EpisodeKeys.FILENAME + " TEXT," +
+                EpisodeKeys.DESCRIPTION + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
                 EpisodeKeys.LISTENED + " INTEGER);";
 	private static final String TAG = "PonyExpressDbAdaptor";
@@ -100,6 +101,7 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.URL, episode.getLink().toString());
         final String filename = episode.getLink().getFile(); 
         episodeValues.put(EpisodeKeys.FILENAME, filename);
+        episodeValues.put(EpisodeKeys.DESCRIPTION, episode.getDescription());
         episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
         episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
 
@@ -179,6 +181,70 @@ public class PonyExpressDbAdaptor {
 			}
 		}
 		return mDb.update(TABLE_NAME, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
+	}
+
+
+	public String getEpisodeFilename(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.FILENAME};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+		String filename = "";
+		String short_filename = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			filename = cursor.getString(1);
+			//get everything after last '/' (separator) 
+			short_filename = filename.substring(filename.lastIndexOf('/'));
+			Log.d(TAG, "Title of Episode is: "+ short_filename);
+		}
+		cursor.close();
+		return short_filename;	
+	}
+	
+	public String getEpisodeTitle(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+		String title = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			title = cursor.getString(1);
+			Log.d(TAG, "Title of Episode is: "+ title);
+		}
+		cursor.close();
+		return title;
+	}
+
+	public boolean getEpisodeDownloaded(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DOWNLOADED};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+		int downloaded = 0;
+		if (cursor != null){
+			cursor.moveToFirst();
+			downloaded = cursor.getInt(1);
+			Log.d(TAG, "Episode downloaded: "+ downloaded);
+		}
+		cursor.close();
+		if (downloaded == 0){
+			return false;
+		}else {
+			return true;
+		}
+			
+	}
+
+	public String getDescription(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DESCRIPTION};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+		String description = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			description = cursor.getString(1);
+		}
+		cursor.close();
+		return description;
 	}
     
     

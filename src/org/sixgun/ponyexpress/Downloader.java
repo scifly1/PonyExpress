@@ -44,7 +44,7 @@ public class Downloader extends IntentService {
 	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
 	private PonyExpressApp mPonyExpressApp;
 	private PonyExpressDbAdaptor mDbHelper;
-	private long mRow_ID;
+	private long mRow_ID; //Needed in order to update db.
 	private URL mUrl;
 	private File mRoot;
 	private FileOutputStream mOutFile;
