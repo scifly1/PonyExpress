@@ -6,4 +6,5 @@
 <string name="download">Download</string>
 <string name="listen">Listen</string>
 <string name="dent">Dent about this episode..</string>
+<string name="downloading_episode">Downloading Episode.</string>
 </resources>

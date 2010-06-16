@@ -27,6 +27,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
@@ -42,6 +45,8 @@ public class Downloader extends IntentService {
 
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
+	private NotificationManager mNM;
+	private static final int NOTIFY_ID = 1;
 	private PonyExpressApp mPonyExpressApp;
 	private PonyExpressDbAdaptor mDbHelper;
 	private long mRow_ID; //Needed in order to update db.
@@ -64,6 +69,8 @@ public class Downloader extends IntentService {
 		//Get the application context.  This must be done here and not in the constructor.
 		mPonyExpressApp = (PonyExpressApp) this.getApplication();
 		mDbHelper = mPonyExpressApp.getDbHelper();
+		//Set up notification system.
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		Log.d(TAG,"Downloader started");
 	}
 
@@ -75,14 +82,23 @@ public class Downloader extends IntentService {
 		if (mUrl != null && isSDCardWritable()){
 			prepareForDownload();
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
+				showNotification();
 				downloadFile();
 			} else {
 				Log.d(TAG, "No Internet Connection.");
-				//TODO NM
 			}
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.app.IntentService#onDestroy()
+	 */
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		mNM.cancel(NOTIFY_ID);
+	}
+
 	/**
 	 * Parse the url string to a URL type.
 	 * @param url string from the Intent.
@@ -94,7 +110,6 @@ public class Downloader extends IntentService {
 			url = new URL(_url);
 		} catch (MalformedURLException e) {
 			Log.e(TAG, "Episode URL badly formed.", e);
-			//TODO NM
 			return null;
 		}
 		return url;
@@ -151,12 +166,12 @@ public class Downloader extends IntentService {
 		}
 		byte[] buffer = new byte[1024];
 		int size = 0;
-		
+
 		Log.d(TAG,"Writing " + mFilename);
 		try {
 			while ((size = mInFile.read(buffer)) > 0 ) {
-			     mOutFile.write(buffer,0, size);
-			}//TODO NM
+				mOutFile.write(buffer,0, size);
+			}
 			Log.d(TAG,"Podcast written to SD card.");
 			mDbHelper.update(mRow_ID, EpisodeKeys.DOWNLOADED,"true");
 		} catch (IOException e) {
@@ -164,5 +179,19 @@ public class Downloader extends IntentService {
 			//TODO NM
 		}
 	}
+	/**
+	 * Shows a notification in the status bar when downloading an episode.
+	 */
+	private void showNotification() {
+		CharSequence text = getText(R.string.downloading_episode);
+		Notification notification = new Notification(
+				android.R.drawable.stat_notify_sync, null, System.currentTimeMillis());
+		//This uses an empty intent because there is no new activity to start.
+		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 0, new Intent(), 0);
+		notification.setLatestEventInfo(mPonyExpressApp, 
+				getText(R.string.app_name), text, intent);
+		mNM.notify(NOTIFY_ID, notification);
 	}
+
+}
 	

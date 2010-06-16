@@ -55,6 +55,7 @@ public class DownloadActivity extends EpisodeActivity {
 				Intent i = new Intent(DownloadActivity.this,Downloader.class);
 				i.putExtras(getIntent()); //pass though the Extras with the URL etc...
 				startService(i);
+				mDownloadButton.setEnabled(false);
 				
 			}
 		};
