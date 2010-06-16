@@ -68,6 +68,10 @@ public class PonyExpressActivity extends ListActivity {
 			@Override
 			public void onClick(View v) {
 				mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
+				if (mUpdateTask.isCancelled()){
+					Log.d(TAG, "Cancelled Update, No Connectivity");
+					mUpdateTask = null;
+				}
 			}
 		});
 	}
@@ -125,9 +129,11 @@ public class PonyExpressActivity extends ListActivity {
 		if (task != null && task.getStatus() != Status.FINISHED){
 			task.cancel(true);
 			outState.putBoolean(UPDATE_IN_PROGRESS, true);
-		
-			mUpdateTask = null;
+		} else {
+			outState.putBoolean(UPDATE_IN_PROGRESS, false);
 		}
+		mUpdateTask = null;
+		
 	}
 
 	/**

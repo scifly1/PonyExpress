@@ -37,7 +37,6 @@ public class InternetHelper {
 		mCtx = ctx;;
 		mConnectivity =  (ConnectivityManager) mCtx.getSystemService(
 				Context.CONNECTIVITY_SERVICE);
-		mInfo = mConnectivity.getActiveNetworkInfo();
 	}
 	
 	/**
@@ -45,6 +44,7 @@ public class InternetHelper {
 	 * @return True if the phone can connect to the internet, false if not.
 	 */
 	public final boolean checkConnectivity(){
+		mInfo = mConnectivity.getActiveNetworkInfo();
 		if (mInfo == null){
 			 return false;
 		} else return true;	
