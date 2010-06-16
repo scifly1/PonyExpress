@@ -18,7 +18,6 @@
 */
 package org.sixgun.ponyexpress;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -30,7 +29,7 @@ import android.widget.TextView;
 /**
  *
  */
-public class DownloadActivity extends Activity {
+public class DownloadActivity extends EpisodeActivity {
 
 	private CharSequence mTitleText;
 	private Button mDownloadButton;
@@ -54,13 +53,14 @@ public class DownloadActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Intent i = new Intent(DownloadActivity.this,Downloader.class);
-				i.putExtras(getIntent());
+				i.putExtras(getIntent()); //pass though the Extras with the URL etc...
 				startService(i);
 				
 			}
 		};
 		mDownloadButton = (Button)findViewById(R.id.DownloadButton);
 		mDownloadButton.setOnClickListener(mDownloadButtonListener);
+		
 		
 		
 	}

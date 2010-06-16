@@ -18,7 +18,6 @@
 */
 package org.sixgun.ponyexpress;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -29,9 +28,10 @@ import android.widget.TextView;
 /**
  *
  */
-public class PlayerActivity extends Activity {
+public class PlayerActivity extends EpisodeActivity {
 
 	private CharSequence mTitleText;
+	
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -55,7 +55,6 @@ public class PlayerActivity extends Activity {
 		};
 		Button download_button = (Button)findViewById(R.id.PlayButton);
 		download_button.setOnClickListener(mPlayButtonListener);
-		
 		
 	}
 	

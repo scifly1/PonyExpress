@@ -12,6 +12,7 @@
 		</activity>
 
 		<service android:name="Downloader" />
+		<service android:name="IdenticaHandler" />
 		<activity android:name="PlayerActivity" />
 		<activity android:name="DownloadActivity" />
 	</application>

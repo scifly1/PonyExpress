@@ -19,12 +19,11 @@
 
 package org.sixgun.ponyexpress;
 
-import org.sixgun.ponyexpress.R.string;
-
 import android.provider.BaseColumns;
 
 public final class EpisodeKeys implements BaseColumns {
 	// This class cannot be instantiated
+	//These are all keys in the database
 	public static final String TITLE = "title";
 	public static final String DATE = "date";
 	public static final String URL = "url";
@@ -32,6 +31,9 @@ public final class EpisodeKeys implements BaseColumns {
 	public static final String DESCRIPTION = "description";
 	public static final String DOWNLOADED = "downloaded";
 	public static final String LISTENED = "listened";
+	
+	//This is not a key in the Db, only a useful constant.
+	public static final String EP_NUMBER = "episode_number";
 	
 
 }

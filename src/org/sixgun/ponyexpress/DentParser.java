@@ -22,101 +22,74 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.xml.sax.Attributes;
-
-import android.content.Context;
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
-import android.sax.StartElementListener;
 import android.util.Xml;
 
-/*
- * SaxFeedPArser implements a basic Android SAX parser.  It finds the XML tags in the RSS
+/**
+ * DentParser implements a basic Android SAX parser.  It finds the XML tags in the RSS
  * feed that is returned by this.getInputStream() and extracts the text elements
  * or attributes from them using ElementListeners.
  */
-public class SaxFeedParser extends BaseFeedParser{
-	//The context is only needed for using the debug testfeeds.
-	@SuppressWarnings("unused")
-	private Context mCtx;
+public class DentParser extends BaseFeedParser {
+
 	// names of the XML tags
-    static final String PUB_DATE = "pubDate";
-    static final String CONTENT = "enclosure";
-    static final String DESCRIPTION = "description";
-    static final String TITLE = "title";
-    static final String ITEM = "item";
-    
-    static final String ITUNES_NAMESPACE = "http://www.itunes.com/dtds/podcast-1.0.dtd";
-    
-    /**
-     * Constructor - Takes a feedUrl and passes it to the SuperClass.
-     * @param feedUrl
-     */
-	public SaxFeedParser(Context ctx, String feedUrl) {
+	static final String ENTRY = "entry";
+	static final String TITLE = "title";
+	static final String AUTHOR = "author";
+	static final String NAME = "name";
+	
+	
+	protected DentParser(String feedUrl) {
 		super(feedUrl);
-		mCtx = ctx;
 	}
+	
 	/**
 	 * Parses the RSS feed from the InputStream and extracts text elements and 
 	 * url attributes from them.
 	 * @return a List of Episodes.
 	 */
-	public List<Episode> parse() {
-		final Episode new_episode = new Episode();
-		final List<Episode> episodes = new ArrayList<Episode>();
+	public List<Dent> parse() {
+		final Dent new_dent = new Dent();
+		final List<Dent> dents = new ArrayList<Dent>();
 		
 		//Set up the required elements.
-		RootElement root = new RootElement("rss");
-		Element channel = root.requireChild("channel");
-		Element item = channel.requireChild(ITEM);
+		RootElement root = new RootElement("http://www.w3.org/2005/Atom","feed");
+		Element entry;
+		entry = root.getChild(ENTRY);  
+		if (entry == null) return dents;  //return empty if no dents.
 		
 		/*Set up the ElementListeners.
-		 * The first listens for the end if the item element, which marks the end
-		 * of each episodes description in the RSS.  At this point the Episode is added
+		 * The first listens for the end of the entry element, which marks the end
+		 * of each dent in the feed.  At this point the Dent is added
 		 * the list as it should have had all its details recorded by the other 
 		 * listeners.
 		 */
-		item.setEndElementListener(new EndElementListener(){
+		entry.setEndElementListener(new EndElementListener(){
             public void end() {
-                episodes.add(new Episode(new_episode));
+                dents.add(new Dent(new_dent));
             }
 		});
 		//This listener catches the title.
-		item.getChild(TITLE).setEndTextElementListener(new EndTextElementListener() {
+		entry.getChild(TITLE).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
-				new_episode.setTitle(body);
+				new_dent.setTitle(body);
 			}
 		});
-		//This listener catches the pubDate.
-		item.getChild(PUB_DATE).setEndTextElementListener(new EndTextElementListener() {
-			
-			@Override
-			public void end(String body) {
-				new_episode.setDate(body);
-			}
-		});
-		//This Listener catches the url of the podcast.
-		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
-			
-			@Override
-			public void start(Attributes attributes) {
-				String url = attributes.getValue("", "url");
-				new_episode.setLink(url);
-			}
-		});
-		//This Listener catches the Description of the podcast.
-		item.getChild(DESCRIPTION).setEndTextElementListener(
+		//This listener catches the Author.
+		entry.getChild(AUTHOR).getChild(NAME).setEndTextElementListener(
 				new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
-				new_episode.setDescription(body);
+				new_dent.setAuthor(body);
 			}
 		});
+		
 		//Finally, now the listeners are set up we can parse the XML file.
 		
 		InputStream istream = this.getInputStream();
@@ -130,7 +103,7 @@ public class SaxFeedParser extends BaseFeedParser{
 				throw new RuntimeException(e);
 			}
 		}
-		return episodes;
+		return dents;
 		
 	}
 

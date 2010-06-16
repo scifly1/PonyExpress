@@ -20,6 +20,8 @@ package org.sixgun.ponyexpress;
 
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -28,6 +30,7 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.AsyncTask.Status;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageButton;
@@ -42,6 +45,7 @@ import android.widget.Toast;
 public class PonyExpressActivity extends ListActivity {
 
 	private static final String UPDATE_IN_PROGRESS = "ponyexpress.update.inprogress";
+	private static final String TAG = "PonyExpressActivity";
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
 	private Bundle mSavedState;
@@ -121,7 +125,7 @@ public class PonyExpressActivity extends ListActivity {
 		if (task != null && task.getStatus() != Status.FINISHED){
 			task.cancel(true);
 			outState.putBoolean(UPDATE_IN_PROGRESS, true);
-			
+		
 			mUpdateTask = null;
 		}
 	}
@@ -146,7 +150,14 @@ public class PonyExpressActivity extends ListActivity {
 		
 		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id);
 		final String description = mPonyExpressApp.getDbHelper().getDescription(id);
-		//Determine if Episode has been downloaded.
+		//Seperate episode number from filename for hashtag.
+		Pattern digits = Pattern.compile("[0-9]+");
+		Matcher m = digits.matcher(title);
+		m.find();
+		String epNumber = m.group(); 
+		Log.d(TAG, "Episode number: " + epNumber);
+
+		//Determine if Episode has been downloaded and create required intents.
 		final boolean downloaded = mPonyExpressApp.getDbHelper().getEpisodeDownloaded(id);
 		if (downloaded){
 			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
@@ -154,6 +165,7 @@ public class PonyExpressActivity extends ListActivity {
 			listenIntent.putExtra(EpisodeKeys.FILENAME, filename);
 			listenIntent.putExtra(EpisodeKeys.TITLE, title);
 			listenIntent.putExtra(EpisodeKeys.DESCRIPTION, description);
+			listenIntent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
 			startActivity(listenIntent);
 		} else {
 			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
@@ -162,6 +174,7 @@ public class PonyExpressActivity extends ListActivity {
 			downloadIntent.putExtra(EpisodeKeys.DESCRIPTION, description);
 			downloadIntent.putExtra(EpisodeKeys.URL, url);
 			downloadIntent.putExtra(EpisodeKeys._ID, id);
+			downloadIntent.putExtra(EpisodeKeys.EP_NUMBER,epNumber);
 			startActivity(downloadIntent);
 		}
 		
@@ -196,13 +209,13 @@ public class PonyExpressActivity extends ListActivity {
 			
 			final String feed = "http://feeds.feedburner.com/linuxoutlaws-ogg";
 
-			SaxFeedParser parser = new SaxFeedParser(mPonyExpressApp,feed);
+			EpisodeFeedParser parser = new EpisodeFeedParser(mPonyExpressApp,feed);
 
-			List<Episode> Episodes = parser.parse();
+			List<Episode> episodes = parser.parse();
 
 			final Date date = mPonyExpressApp.getDbHelper().getLatestEpisodeDate();
 
-			for (Episode episode: Episodes){
+			for (Episode episode: episodes){
 				if (episode.getDate().compareTo(date) > 0) {
 					mPonyExpressApp.getDbHelper().insertEpisode(episode);
 				}	
