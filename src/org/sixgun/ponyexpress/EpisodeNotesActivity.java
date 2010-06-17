@@ -18,32 +18,25 @@
 */
 package org.sixgun.ponyexpress;
 
+import android.app.Activity;
 import android.os.Bundle;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.webkit.WebView;
 
 /**
+ * 
  *
  */
-public class PlayerActivity extends EpisodeActivity {
-	
-	
+public class EpisodeNotesActivity extends Activity {
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.player);
+		Bundle data = getIntent().getExtras();
+		setContentView(R.layout.notes);
 
 		
-		OnClickListener mPlayButtonListener = new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				//TODO Play episdode
-			}
-		};
-		Button download_button = (Button)findViewById(R.id.PlayButton);
-		download_button.setOnClickListener(mPlayButtonListener);
-		
+		WebView description = (WebView) findViewById(R.id.Description);
+		String descriptionText = data.getString(EpisodeKeys.DESCRIPTION);
+		description.loadData(descriptionText, "text/html", "UTF-8");
 	}
-	
 }

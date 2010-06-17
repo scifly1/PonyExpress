@@ -163,27 +163,21 @@ public class PonyExpressActivity extends ListActivity {
 		String epNumber = m.group(); 
 		Log.d(TAG, "Episode number: " + epNumber);
 
-		//Determine if Episode has been downloaded and create required intents.
+		Intent intent = new Intent(this,EpisodeTabs.class);
+		intent.putExtra(EpisodeKeys.TITLE, title);
+		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
+		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
+		//Determine if Episode has been downloaded and add required extras.
 		final boolean downloaded = mPonyExpressApp.getDbHelper().getEpisodeDownloaded(id);
 		if (downloaded){
 			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
-			Intent listenIntent = new Intent(this,PlayerActivity.class);
-			listenIntent.putExtra(EpisodeKeys.FILENAME, filename);
-			listenIntent.putExtra(EpisodeKeys.TITLE, title);
-			listenIntent.putExtra(EpisodeKeys.DESCRIPTION, description);
-			listenIntent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
-			startActivity(listenIntent);
+			intent.putExtra(EpisodeKeys.FILENAME, filename);
 		} else {
 			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
-			Intent downloadIntent = new Intent(this,DownloadActivity.class);
-			downloadIntent.putExtra(EpisodeKeys.TITLE, title);
-			downloadIntent.putExtra(EpisodeKeys.DESCRIPTION, description);
-			downloadIntent.putExtra(EpisodeKeys.URL, url);
-			downloadIntent.putExtra(EpisodeKeys._ID, id);
-			downloadIntent.putExtra(EpisodeKeys.EP_NUMBER,epNumber);
-			startActivity(downloadIntent);
+			intent.putExtra(EpisodeKeys.URL, url);
+			intent.putExtra(EpisodeKeys._ID, id);
 		}
-		
+		startActivity(intent);
 	}
 
 	/**

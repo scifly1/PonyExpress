@@ -2,9 +2,6 @@
 <RelativeLayout android:id="@+id/RelativeLayout01"
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	xmlns:android="http://schemas.android.com/apk/res/android">
-	<TextView android:id="@+id/TitleText" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:textSize="20sp"
-		android:layout_centerHorizontal="true" />
 	<Button android:layout_below="@+id/TitleText" android:text="Play"
 		android:layout_height="wrap_content" android:id="@+id/PlayButton"
 		android:layout_width="wrap_content" android:layout_centerHorizontal="true" />
@@ -15,6 +12,5 @@
 	<Button android:layout_below="@+id/TitleText" android:text="Forward"
 		android:layout_toRightOf="@+id/PlayButton" android:layout_height="wrap_content"
 		android:id="@+id/Button02" android:layout_width="wrap_content" />
-	<WebView android:id="@+id/Description" android:layout_width="fill_parent"
-		android:layout_height="fill_parent" android:layout_below="@id/PlayButton" />
+	
 </RelativeLayout>

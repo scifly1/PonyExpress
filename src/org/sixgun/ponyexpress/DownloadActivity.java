@@ -22,32 +22,21 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.webkit.WebView;
 import android.widget.Button;
-import android.widget.TextView;
 
 /**
  *
  */
 public class DownloadActivity extends EpisodeActivity {
 
-	private CharSequence mTitleText;
 	private Button mDownloadButton;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle data = getIntent().getExtras();
-		
+				
 		setContentView(R.layout.downloader);
 		
-		TextView title = (TextView) findViewById(R.id.TitleText);
-		mTitleText = data.getString(EpisodeKeys.TITLE);
-		title.setText(mTitleText);
-		
-		WebView description = (WebView) findViewById(R.id.Description);
-		String descriptionText = data.getString(EpisodeKeys.DESCRIPTION);
-		description.loadData(descriptionText, "text/html", "UTF-8");
 		
 		OnClickListener mDownloadButtonListener = new OnClickListener() {
 			@Override
