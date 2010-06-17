@@ -33,7 +33,7 @@ import android.os.IBinder;
  * Handles starting IdenticaHandler and other tasks both activities have in common.
  *
  */
-public class EpisodeActivity extends Activity {
+public class IdenticaActivity extends Activity {
 	
 	protected PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
@@ -69,7 +69,7 @@ public class EpisodeActivity extends Activity {
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
-	    bindService(new Intent(EpisodeActivity.this, 
+	    bindService(new Intent(IdenticaActivity.this, 
 	            IdenticaHandler.class), mConnection, Context.BIND_AUTO_CREATE);
 	    mIdenticaHandlerBound = true;
 	}

@@ -26,7 +26,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 /**
- * Tabbed Activity to hold the applicable EpisodeActivity (PlayerActivity or DownloadActivity),
+ * Tabbed Activity to hold the applicable IdenticaActivity (PlayerActivity or DownloadActivity),
  * the Identi.ca stream and commenter.
  *
  */
@@ -58,6 +58,7 @@ public class EpisodeTabs extends TabActivity {
 	    spec = tabHost.newTabSpec("notes").setIndicator("Show Notes").setContent(intent);
 	    tabHost.addTab(spec);
 	    
+	    //TODO The tabs need icons...
 	    String tabTitle = "";
 	    if (data.getExtras().containsKey(EpisodeKeys.URL)){
 	    	//File needs downloading so create intent for DownloadActivity

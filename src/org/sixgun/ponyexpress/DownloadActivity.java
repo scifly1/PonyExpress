@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -27,9 +28,10 @@ import android.widget.Button;
 /**
  *
  */
-public class DownloadActivity extends EpisodeActivity {
+public class DownloadActivity extends Activity {
 
 	private Button mDownloadButton;
+	private PonyExpressApp mPonyExpressApp;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,7 @@ public class DownloadActivity extends EpisodeActivity {
 				
 		setContentView(R.layout.downloader);
 		
+		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
 		OnClickListener mDownloadButtonListener = new OnClickListener() {
 			@Override
