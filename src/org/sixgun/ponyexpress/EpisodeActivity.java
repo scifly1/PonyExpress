@@ -35,7 +35,7 @@ import android.os.IBinder;
  */
 public class EpisodeActivity extends Activity {
 	
-	private PonyExpressApp mPonyExpressApp; 
+	protected PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
 	private boolean mIdenticaHandlerBound;
 	

@@ -60,7 +60,12 @@ public class DownloadActivity extends EpisodeActivity {
 			}
 		};
 		mDownloadButton = (Button)findViewById(R.id.DownloadButton);
-		mDownloadButton.setOnClickListener(mDownloadButtonListener);
+		//Only make Download button available if we have internet connectivity.
+		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
+			mDownloadButton.setOnClickListener(mDownloadButtonListener);
+		}else{
+			mDownloadButton.setEnabled(false);
+		}
 		
 		
 		
