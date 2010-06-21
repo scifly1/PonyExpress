@@ -20,12 +20,13 @@ package org.sixgun.ponyexpress;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.List;
 
+import android.content.Context;
 import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
+import android.util.Log;
 import android.util.Xml;
 
 /**
@@ -35,15 +36,21 @@ import android.util.Xml;
  */
 public class DentParser extends BaseFeedParser {
 
+	//The context is only needed for using the debug testfeeds.
+	@SuppressWarnings("unused")
+	private Context mCtx;
 	// names of the XML tags
 	static final String ENTRY = "entry";
 	static final String TITLE = "title";
 	static final String AUTHOR = "author";
 	static final String NAME = "name";
+	protected static final String TAG = "DentParser";
+	private static final String ATOM_NS = "http://www.w3.org/2005/Atom";
 	
 	
-	protected DentParser(String feedUrl) {
+	protected DentParser(Context ctx, String feedUrl) {
 		super(feedUrl);
+		mCtx = ctx;
 	}
 	
 	/**
@@ -51,16 +58,14 @@ public class DentParser extends BaseFeedParser {
 	 * url attributes from them.
 	 * @return a List of Episodes.
 	 */
-	public List<Dent> parse() {
+	public ArrayList<Dent> parse() {
 		final Dent new_dent = new Dent();
-		final List<Dent> dents = new ArrayList<Dent>();
+		final ArrayList<Dent> dents = new ArrayList<Dent>();
 		
 		//Set up the required elements.
-		RootElement root = new RootElement("http://www.w3.org/2005/Atom","feed");
-		Element entry;
-		entry = root.getChild(ENTRY);  
-		if (entry == null) return dents;  //return empty if no dents.
-		
+		RootElement root = new RootElement(ATOM_NS,"feed");
+		Element entry = root.getChild(ATOM_NS,ENTRY);  
+				
 		/*Set up the ElementListeners.
 		 * The first listens for the end of the entry element, which marks the end
 		 * of each dent in the feed.  At this point the Dent is added
@@ -73,19 +78,21 @@ public class DentParser extends BaseFeedParser {
             }
 		});
 		//This listener catches the title.
-		entry.getChild(TITLE).setEndTextElementListener(new EndTextElementListener() {
+		entry.getChild(ATOM_NS,TITLE).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
+				Log.d(TAG,"Found title: " + body);
 				new_dent.setTitle(body);
 			}
 		});
 		//This listener catches the Author.
-		entry.getChild(AUTHOR).getChild(NAME).setEndTextElementListener(
+		entry.getChild(ATOM_NS,AUTHOR).getChild(ATOM_NS,NAME).setEndTextElementListener(
 				new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
+				Log.d(TAG,"Found author: " + body);
 				new_dent.setAuthor(body);
 			}
 		});
@@ -94,7 +101,7 @@ public class DentParser extends BaseFeedParser {
 		
 		InputStream istream = this.getInputStream();
 		//To debug with test feeds comment out the above line and uncomment the next line.
-	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
+	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.dentfeed);
 		if (istream != null){
 			try {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
@@ -106,5 +113,4 @@ public class DentParser extends BaseFeedParser {
 		return dents;
 		
 	}
-
 }

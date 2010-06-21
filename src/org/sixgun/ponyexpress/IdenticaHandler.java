@@ -20,7 +20,7 @@ package org.sixgun.ponyexpress;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.List;
+import java.util.ArrayList;
 
 import android.app.Service;
 import android.content.Intent;
@@ -74,7 +74,7 @@ public class IdenticaHandler extends Service {
 		Log.d(TAG, "PonyExpress IdenticaHandler stopped");
 	}
 	
-	public List<Dent> queryIdentica(String query){
+	public ArrayList<Dent> queryIdentica(String query){
 		//TODO Start a new thread for the query.
 		String q = query;
 		String encoded_q = null;
@@ -86,8 +86,8 @@ public class IdenticaHandler extends Service {
 		}
 		String url = new String(API + "search.atom?q=" + encoded_q);
 		Log.d(TAG,"Identica query: "+ url);
-		DentParser parser = new DentParser(url);
-		List<Dent> dents = parser.parse();
+		DentParser parser = new DentParser(getApplicationContext(),url);
+		ArrayList<Dent> dents = parser.parse();
 		return dents;
 	}
 }

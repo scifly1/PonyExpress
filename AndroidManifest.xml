@@ -17,6 +17,7 @@
 		<activity android:name="DownloadActivity" />
 		<activity android:name="EpisodeTabs" android:theme="@android:style/Theme.NoTitleBar"/>
 		<activity android:name="EpisodeNotesActivity" />
+		<activity android:name="IdenticaActivity" />
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
 

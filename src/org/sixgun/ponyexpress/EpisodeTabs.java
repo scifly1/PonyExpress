@@ -73,7 +73,10 @@ public class EpisodeTabs extends TabActivity {
 	    tabHost.addTab(spec);
 	    
 	    //Add Identi.ca feed Activity
-	    //TODO
+	    intent = new Intent(this,IdenticaActivity.class);
+	    intent.putExtras(data);
+	    spec = tabHost.newTabSpec("identica").setIndicator("Identi.ca").setContent(intent);
+	    tabHost.addTab(spec);
 	    
 	    tabHost.setCurrentTab(0);
 	    

@@ -18,23 +18,29 @@
 */
 package org.sixgun.ponyexpress;
 
-import java.util.List;
+import java.util.ArrayList;
 
-import android.app.Activity;
+import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 /**
- * Base class for the PlayerActivity and DownloadActivity.
- * Handles starting IdenticaHandler and other tasks both activities have in common.
+ * Handles starting IdenticaHandler.
  *
  */
-public class IdenticaActivity extends Activity {
+public class IdenticaActivity extends ListActivity {
 	
+	private static final String TAG = "PonyExpress IdenticaActivity";
 	protected PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
 	private boolean mIdenticaHandlerBound;
@@ -69,7 +75,11 @@ public class IdenticaActivity extends Activity {
 	    // class name because we want a specific service implementation that
 	    // we know will be running in our own process (and thus won't be
 	    // supporting component replacement by other applications).
-	    bindService(new Intent(IdenticaActivity.this, 
+		
+		//getApplicationContext().bindService() called instead of bindService(), as
+		//bindService() does not work when called from the child Activity of an ActivityGroup
+		//ie:TabActivity
+	    getApplicationContext().bindService(new Intent(this, 
 	            IdenticaHandler.class), mConnection, Context.BIND_AUTO_CREATE);
 	    mIdenticaHandlerBound = true;
 	}
@@ -78,7 +88,9 @@ public class IdenticaActivity extends Activity {
 	protected void doUnbindIdenticaHandler() {
 	    if (mIdenticaHandlerBound) {
 	        // Detach our existing connection.
-	        unbindService(mConnection);
+	    	//Must use getApplicationContext.unbindService() as 
+	    	//getApplicationContext().bindService was used to bind initially.
+	        getApplicationContext().unbindService(mConnection);
 	        mIdenticaHandlerBound = false;
 	    }
 	}
@@ -91,6 +103,8 @@ public class IdenticaActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		doBindIdenticaHandler();
+		Log.d(TAG, "IdenticaActivity Started.");
+		setContentView(R.layout.identica);
 	}
 
 	@Override
@@ -99,12 +113,45 @@ public class IdenticaActivity extends Activity {
 	    doUnbindIdenticaHandler();
 	}
 	
+	private class DentAdapter extends ArrayAdapter<Dent> {
+		private ArrayList<Dent> items;
+
+        public DentAdapter(Context context, int textViewResourceId, ArrayList<Dent> items) {
+                super(context, textViewResourceId, items);
+                this.items = items;
+        }
+        
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+                View v = convertView;
+                if (v == null) {
+                    LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    v = vi.inflate(R.layout.dent, null);
+                }
+                Dent dent = items.get(position);
+                if (dent != null) {
+                        TextView content = (TextView) v.findViewById(R.id.dent_content);
+                        TextView author = (TextView) v.findViewById(R.id.dent_author);
+                        if (content != null) {
+                              content.setText(dent.getTitle());                            }
+                        if(author != null){
+                              author.setText(dent.getAuthor());
+                        }
+                }
+                return v;
+        }
+	}
+	
 	protected void getLatestDents() {
 		//Check for connectivity first.
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 			Bundle data = getIntent().getExtras();
 			final String ep_number = data.getString(EpisodeKeys.EP_NUMBER);
-			List<Dent> dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
+			ArrayList<Dent> dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
+			
+			//Create a ListAdaptor to map dents to the ListView.
+			DentAdapter adapter = new DentAdapter(this, R.layout.dent, dents);
+			setListAdapter(adapter);
 		}
 	}
 }

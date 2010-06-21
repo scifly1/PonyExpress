@@ -7,4 +7,5 @@
 <string name="listen">Listen</string>
 <string name="dent">Dent about this episode..</string>
 <string name="downloading_episode">Downloading Episode.</string>
+<string name="no_dents">No Dents for this Episode yet!  Go on be the first!</string>
 </resources>
