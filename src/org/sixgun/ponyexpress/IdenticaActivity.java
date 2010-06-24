@@ -20,6 +20,8 @@ package org.sixgun.ponyexpress;
 
 import java.util.ArrayList;
 
+import org.sixgun.ponyexpress.Dent.DentKeys;
+
 import android.app.ListActivity;
 import android.content.ComponentName;
 import android.content.Context;
@@ -31,8 +33,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Handles starting IdenticaHandler.
@@ -44,6 +50,9 @@ public class IdenticaActivity extends ListActivity {
 	protected PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
 	private boolean mIdenticaHandlerBound;
+	private Bundle mData;
+	
+	EditText mDentText;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -104,15 +113,72 @@ public class IdenticaActivity extends ListActivity {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		doBindIdenticaHandler();
 		Log.d(TAG, "IdenticaActivity Started.");
+		mData = getIntent().getExtras();
 		setContentView(R.layout.identica);
+		
+		OnClickListener DentButtonListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				boolean dentSent = false;
+				if (mDentText.getText().length() != 0) {
+					dentSent = mIdenticaHandler.postDent(mDentText.getText().toString());
+					mDentText.setText("");
+					//Refresh the dents list
+					getLatestDents();
+				}
+				if (!dentSent) {
+					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
+							Toast.LENGTH_SHORT).show();
+					//TODO Fire off AccountSetup screen
+					
+					//TODO Use verify_credentials
+					//HttpGet post = new HttpGet(API + "account/verify_credentials.xml");
+				}
+				
+			}
+		};
+		//Check connectivity first and inactivate button if no connection
+		Button dentButton = (Button) findViewById(R.id.dent_ok);
+		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
+			dentButton.setOnClickListener(DentButtonListener);
+			dentButton.setEnabled(false);
+		}
+		mDentText = (EditText) findViewById(R.id.dent_entry);
+		String text;
+		if (savedInstanceState != null){
+			text = savedInstanceState.getString(DentKeys.PARTIALDENT);
+		} else {
+			text = mData.getString(EpisodeKeys.EP_NUMBER);
+		}
+		mDentText.setText("#lo"+text);
+		
 	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
+	 */
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		String text = mDentText.getText().toString();
+		outState.putString(DentKeys.PARTIALDENT, text);
+	}
+
 
 	@Override
 	protected void onDestroy() {
 	    super.onDestroy();
 	    doUnbindIdenticaHandler();
 	}
-	
+	/**
+	 * We subclass ArrayAdapter to handle our specific Dent ListArray.  The override of
+	 * getView() provides a mapping between the fields of a Dent we want to view and the 
+	 * TextView instances in which we want them to appear.
+	 *
+	 */
 	private class DentAdapter extends ArrayAdapter<Dent> {
 		private ArrayList<Dent> items;
 
@@ -143,16 +209,21 @@ public class IdenticaActivity extends ListActivity {
 	}
 	
 	protected void getLatestDents() {
+		ArrayList<Dent> dents;
 		//Check for connectivity first.
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-			Bundle data = getIntent().getExtras();
-			final String ep_number = data.getString(EpisodeKeys.EP_NUMBER);
-			ArrayList<Dent> dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
-			
-			//Create a ListAdaptor to map dents to the ListView.
-			DentAdapter adapter = new DentAdapter(this, R.layout.dent, dents);
-			setListAdapter(adapter);
+			final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
+			dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
+		} else {
+			Dent no_dents = new Dent();
+			no_dents.setTitle(getString(R.string.conn_err_query_failed));
+			dents = new ArrayList<Dent>(1);
+			dents.add(no_dents);
 		}
+		//Create a ListAdaptor to map dents to the ListView.
+		DentAdapter adapter = new DentAdapter(this, R.layout.dent, dents);
+		setListAdapter(adapter);
+		
 	}
 }
 

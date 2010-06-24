@@ -26,6 +26,12 @@ public class Dent {
 	private String mTitle;
 	private String mAuthor;
 	
+	//This is a key for saving partially written dents should another activity interupt 
+	// the IdenticaActivity.
+	public final class DentKeys {
+		public static final String PARTIALDENT = "partial_dent";
+	};
+	
 	/**
 	 * Constructor. Creates and empty Dent.
 	 */

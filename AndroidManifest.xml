@@ -18,6 +18,7 @@
 		<activity android:name="EpisodeTabs" android:theme="@android:style/Theme.NoTitleBar"/>
 		<activity android:name="EpisodeNotesActivity" />
 		<activity android:name="IdenticaActivity" />
+		<activity android:name="IdenticaAccountSetupActivity" />
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
 

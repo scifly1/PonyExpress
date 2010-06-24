@@ -8,4 +8,8 @@
 <string name="dent">Dent about this episode..</string>
 <string name="downloading_episode">Downloading Episode.</string>
 <string name="no_dents">No Dents for this Episode yet!  Go on be the first!</string>
+<string name="dent_here">Type new Dent here:</string>
+<string name="dent_ok">Dent!</string>
+<string name="conn_err_query_failed">Connection error! Cannot get Dents.</string>
+<string name="login_failed">Identi.ca login failed! Have set up your account?</string>
 </resources>

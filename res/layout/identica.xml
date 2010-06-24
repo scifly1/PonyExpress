@@ -5,12 +5,31 @@
 	<ListView android:id="@id/android:list"
                android:layout_width="fill_parent"
                android:layout_height="wrap_content"
-               android:layout_weight="1"
                android:drawSelectorOnTop="false"/>
 
      <TextView android:id="@id/android:empty"
                android:layout_width="fill_parent"
                android:layout_height="wrap_content"
                android:text="@string/no_dents"/>
+	<TextView
+        android:id="@+id/dent_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/dent_here"
+        android:layout_centerVertical="true"/>
+    <EditText
+        android:id="@+id/dent_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:layout_below="@id/dent_label"/>
+    <Button
+        android:id="@+id/dent_ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/dent_entry"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="10dip"
+        android:text="@string/dent_ok" />
 
 </RelativeLayout>

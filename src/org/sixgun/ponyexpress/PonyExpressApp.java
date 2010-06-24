@@ -26,6 +26,8 @@ import android.app.Application;
  * their calling Activity/Service.
  */
 public class PonyExpressApp extends Application {
+	public static final String APPLICATION_NAME = "Pony Express";
+	
 	private PonyExpressDbAdaptor DbHelper;
 	private InternetHelper mInternetHelper;
 
