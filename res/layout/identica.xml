@@ -4,7 +4,8 @@
 	xmlns:android="http://schemas.android.com/apk/res/android">
 	<ListView android:id="@id/android:list"
                android:layout_width="fill_parent"
-               android:layout_height="wrap_content"
+               android:layout_height="fill_parent"
+               android:layout_above="@+id/dent_label"
                android:drawSelectorOnTop="false"/>
 
      <TextView android:id="@id/android:empty"
@@ -16,18 +17,18 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/dent_here"
-        android:layout_centerVertical="true"/>
+        android:layout_above="@+id/dent_entry"/>
     <EditText
         android:id="@+id/dent_entry"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/editbox_background"
-        android:layout_below="@id/dent_label"/>
+        android:layout_above="@+id/dent_ok"/>
     <Button
         android:id="@+id/dent_ok"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/dent_entry"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_marginLeft="10dip"
         android:text="@string/dent_ok" />
