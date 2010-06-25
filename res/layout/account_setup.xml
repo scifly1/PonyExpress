@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout android:id="@+id/AccountSetupLayout" 
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<TextView
+        android:id="@+id/account_setup_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/account_setup"
+        android:layout_marginBottom="10dip" />
+	<TextView
+        android:id="@+id/username_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/account_setup_text"
+        android:text="@string/enter_username" />
+    <EditText
+        android:id="@+id/username_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:layout_below="@id/username_label"/>
+    <TextView
+        android:id="@+id/password_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/enter_password"
+        android:layout_below="@id/username_entry"/>
+    <EditText
+        android:id="@+id/password_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:layout_below="@id/password_label"/>
+    <Button
+        android:id="@+id/ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/password_entry"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="5dip"
+        android:text="@string/ok" />
+    <Button
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/password_entry"
+        android:layout_toLeftOf="@id/ok"
+        android:text="@string/cancel" />
+
+</RelativeLayout>

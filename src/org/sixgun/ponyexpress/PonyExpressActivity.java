@@ -57,7 +57,7 @@ public class PonyExpressActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		//Get the application context.
-		mPonyExpressApp = (PonyExpressApp) this.getApplication();
+		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
 		//Hook up reload button with updateEpisodes()
 		ImageView reload_button =  (ImageButton)findViewById(R.id.view_refresh);

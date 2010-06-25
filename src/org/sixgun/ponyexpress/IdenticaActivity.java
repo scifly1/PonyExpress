@@ -27,6 +27,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -47,7 +48,8 @@ import android.widget.Toast;
 public class IdenticaActivity extends ListActivity {
 	
 	private static final String TAG = "PonyExpress IdenticaActivity";
-	protected PonyExpressApp mPonyExpressApp; 
+	private static final int SETUP_ACCOUNT = 0;
+	private PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
 	private boolean mIdenticaHandlerBound;
 	private Bundle mData;
@@ -75,7 +77,7 @@ public class IdenticaActivity extends ListActivity {
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
 			mIdenticaHandler = ((IdenticaHandler.IdenticaHandlerBinder)service).getService();
-			getLatestDents();
+			new GetLatestDents().execute();
 		}
 	};
 	
@@ -123,17 +125,16 @@ public class IdenticaActivity extends ListActivity {
 				boolean dentSent = false;
 				if (mDentText.getText().length() != 0) {
 					dentSent = mIdenticaHandler.postDent(mDentText.getText().toString());
-					mDentText.setText("");
-					//Refresh the dents list
-					getLatestDents();
 				}
 				if (!dentSent) {
 					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
-							Toast.LENGTH_SHORT).show();
-					//TODO Fire off AccountSetup screen
-					
-					//TODO Use verify_credentials
-					//HttpGet post = new HttpGet(API + "account/verify_credentials.xml");
+							Toast.LENGTH_LONG).show();
+					//Fire off AccountSetup screen
+					startActivityForResult(new Intent(
+							IdenticaActivity.this,IdenticaAccountSetupActivity.class),
+							SETUP_ACCOUNT);
+				} else {
+					mDentText.setText("");
 				}
 				
 			}
@@ -142,6 +143,8 @@ public class IdenticaActivity extends ListActivity {
 		Button dentButton = (Button) findViewById(R.id.dent_ok);
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 			dentButton.setOnClickListener(DentButtonListener);
+			dentButton.setEnabled(true);
+		}else{
 			dentButton.setEnabled(false);
 		}
 		mDentText = (EditText) findViewById(R.id.dent_entry);
@@ -151,11 +154,33 @@ public class IdenticaActivity extends ListActivity {
 		} else {
 			text = mData.getString(EpisodeKeys.EP_NUMBER);
 		}
-		mDentText.setText("#lo"+text);
+		mDentText.setText("#lo"+text + " ");
 		
 	}
-	
-	
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		if (requestCode == SETUP_ACCOUNT){
+			if (resultCode == RESULT_OK){
+				//Store and verify_credentials
+				final String username = data.getExtras().getString(IdenticaHandler.USERNAME);
+				final String password = data.getExtras().getString(IdenticaHandler.PASSWORD);
+				mIdenticaHandler.setCredentials(username, password);
+				Log.d(TAG,"Credentials " + username + " " + password +" set.");
+				
+				if (!mIdenticaHandler.verifyCredentials()){
+					Log.d(TAG, "Cannot verify credentials!");
+					Toast.makeText(this, R.string.credentials_not_verified, Toast.LENGTH_SHORT).show();
+					mIdenticaHandler.setCredentials("", "");
+				}
+			}
+		}
+	}
+
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
@@ -208,22 +233,31 @@ public class IdenticaActivity extends ListActivity {
         }
 	}
 	
-	protected void getLatestDents() {
-		ArrayList<Dent> dents;
-		//Check for connectivity first.
-		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-			final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
-			dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
-		} else {
-			Dent no_dents = new Dent();
-			no_dents.setTitle(getString(R.string.conn_err_query_failed));
-			dents = new ArrayList<Dent>(1);
-			dents.add(no_dents);
+	private class GetLatestDents extends AsyncTask<Void,Void,ArrayList<Dent> > {
+		@Override
+		protected ArrayList<Dent> doInBackground(Void... params) {
+			ArrayList<Dent> dents;
+			//Check for connectivity first.
+			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
+				final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
+				dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
+			} else {
+				Dent no_dents = new Dent();
+				no_dents.setTitle(getString(R.string.conn_err_query_failed));
+				dents = new ArrayList<Dent>(1);
+				dents.add(no_dents);
+			}
+			return dents;
 		}
-		//Create a ListAdaptor to map dents to the ListView.
-		DentAdapter adapter = new DentAdapter(this, R.layout.dent, dents);
-		setListAdapter(adapter);
-		
-	}
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(ArrayList<Dent> dents) {
+			//Create a ListAdaptor to map dents to the ListView.
+			DentAdapter adapter = new DentAdapter(mPonyExpressApp, R.layout.dent, dents);
+			setListAdapter(adapter);
+		}
+	};
 }
 
