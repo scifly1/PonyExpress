@@ -55,6 +55,7 @@ import org.apache.http.util.EntityUtils;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -167,46 +168,52 @@ public class IdenticaHandler extends Service {
 		ArrayList<Dent> dents = parser.parse();
 		return dents;
 	}
+	
 	/**
-	 * Posts the String dent on Identica.
-	 * @param dent
-	 * @return true if successfull, false if no account set up yet.
+	 * AsyncTask that posts the String dent on Identica.
+	 * Takes a string[] of dents (only index 0 read) and returns via its get() method 
+	 * true if successful and false if there was an error (account not setup).
 	 */
-	public boolean postDent(String dent) {
-		//TODO Do this in a new thread
-		//Check credentials are set up
-		if (mUserName.equals("")){
-			Log.d(TAG,"No user details found!");			
-			return false;
+	public class PostDent extends AsyncTask<String, Void, Boolean>{
+
+		@Override
+		protected Boolean doInBackground(String... dent) {
+			//Check credentials are set up
+			if (mUserName.equals("")){
+				Log.d(TAG,"No user details found!");			
+				return false;
+			}
+			//Send dent 
+			DefaultHttpClient httpClient = setUpClient();
+			HttpPost post = setUpPOST(dent);
+			
+			//TODO Catch errors using the response
+			HttpResponse response = null;
+			try {
+				response = httpClient.execute(post);
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			String responseBody = null;
+			try {
+				responseBody = EntityUtils.toString(response.getEntity());
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			Log.d(TAG, responseBody);
+			return true;
 		}
-		//Send dent 
-		DefaultHttpClient httpClient = setUpClient();
-		HttpPost post = setUpPOST(dent);
 		
-		//TODO Catch errors using the response
-		HttpResponse response = null;
-		try {
-			response = httpClient.execute(post);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		String responseBody = null;
-		try {
-			responseBody = EntityUtils.toString(response.getEntity());
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		Log.d(TAG, responseBody);
-		return true;		
 	}
+
 	
 	/**
 	 * Sets up a new HttpClient with the correct username and password.
@@ -227,14 +234,14 @@ public class IdenticaHandler extends Service {
 
 	/**
 	 * Creates a new HTTP POST method with the dent to be sent.
-	 * @param dent to be sent
+	 * @param dent[] to be sent. (dent is an array because the AsyncTask that calls this requires it's params as an array.)
 	 * @return post method
 	 */
-	private HttpPost setUpPOST(String dent) {
+	private HttpPost setUpPOST(String[] dent) {
 		HttpPost post = new HttpPost(UPDATE_API);
 		//Set up the parameters
 		List<NameValuePair> params = new ArrayList<NameValuePair>();
-		params.add(new BasicNameValuePair("status", dent));
+		params.add(new BasicNameValuePair("status", dent[0]));
 		params.add(new BasicNameValuePair("source", PonyExpressApp.APPLICATION_NAME));
 		//Encode params and set as the POST Entity
 		HttpEntity data = null;

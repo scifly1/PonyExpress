@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import org.sixgun.ponyexpress.Dent.DentKeys;
 
@@ -124,7 +125,18 @@ public class IdenticaActivity extends ListActivity {
 			public void onClick(View v) {
 				boolean dentSent = false;
 				if (mDentText.getText().length() != 0) {
-					dentSent = mIdenticaHandler.postDent(mDentText.getText().toString());
+					 AsyncTask<String, Void, Boolean> sendDent = mIdenticaHandler.new PostDent().execute(mDentText.getText().toString());
+					 
+					 try {
+						dentSent = sendDent.get();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ExecutionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
 				}
 				if (!dentSent) {
 					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
