@@ -17,7 +17,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.util;
 
 import java.io.IOException;
 import java.io.InputStream;

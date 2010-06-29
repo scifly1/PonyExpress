@@ -4,21 +4,21 @@
 	android:versionName="1.0">
 	<application android:icon="@drawable/icon" android:label="@string/app_name"
 		android:debuggable="true" android:name="PonyExpressApp">
-		<activity android:name=".PonyExpressActivity" android:label="@string/app_name">
+		<activity android:name=".activity.PonyExpressActivity" android:label="@string/app_name">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
 			</intent-filter>
 		</activity>
 
-		<service android:name="Downloader" />
-		<service android:name="IdenticaHandler" />
-		<activity android:name="PlayerActivity" />
-		<activity android:name="DownloadActivity" />
-		<activity android:name="EpisodeTabs" android:theme="@android:style/Theme.NoTitleBar"/>
-		<activity android:name="EpisodeNotesActivity" />
-		<activity android:name="IdenticaActivity" />
-		<activity android:name="IdenticaAccountSetupActivity" />
+		<service android:name=".service.Downloader" />
+		<service android:name=".service.IdenticaHandler" />
+		<activity android:name=".activity.PlayerActivity" />
+		<activity android:name=".activity.DownloadActivity" />
+		<activity android:name=".activity.EpisodeTabs" android:theme="@android:style/Theme.NoTitleBar"/>
+		<activity android:name=".activity.EpisodeNotesActivity" />
+		<activity android:name=".activity.IdenticaActivity" />
+		<activity android:name=".activity.IdenticaAccountSetupActivity" />
 	</application>
 	<uses-sdk android:minSdkVersion="3" />
 

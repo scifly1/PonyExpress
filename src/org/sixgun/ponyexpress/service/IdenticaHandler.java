@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -51,6 +51,9 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
+import org.sixgun.ponyexpress.Dent;
+import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.util.DentParser;
 
 import android.app.Service;
 import android.content.Intent;
@@ -85,7 +88,7 @@ public class IdenticaHandler extends Service {
      * IPC.
      */
     public class IdenticaHandlerBinder extends Binder {
-        IdenticaHandler getService() {
+        public IdenticaHandler getService() {
             return IdenticaHandler.this;
         }
     }

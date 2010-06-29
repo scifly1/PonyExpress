@@ -18,10 +18,7 @@
 */
 package org.sixgun.ponyexpress;
 
-/**
- * @author scifly
- *
- */
+
 public class Dent {
 	private String mTitle;
 	private String mAuthor;

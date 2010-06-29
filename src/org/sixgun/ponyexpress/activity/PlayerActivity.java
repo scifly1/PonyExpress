@@ -16,27 +16,37 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.activity;
+
+import org.sixgun.ponyexpress.R;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.webkit.WebView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 
 /**
- * 
  *
  */
-public class EpisodeNotesActivity extends Activity {
-
+public class PlayerActivity extends Activity {
+	
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Bundle data = getIntent().getExtras();
-		setContentView(R.layout.notes);
+		setContentView(R.layout.player);
 
 		
-		WebView description = (WebView) findViewById(R.id.Description);
-		String descriptionText = data.getString(EpisodeKeys.DESCRIPTION);
-		description.loadData(descriptionText, "text/html", "UTF-8");
+		OnClickListener mPlayButtonListener = new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				//TODO Play episdode
+			}
+		};
+		Button download_button = (Button)findViewById(R.id.PlayButton);
+		download_button.setOnClickListener(mPlayButtonListener);
+		
 	}
+	
 }

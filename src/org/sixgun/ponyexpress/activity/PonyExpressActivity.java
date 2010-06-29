@@ -16,12 +16,18 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.activity;
 
 import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.sixgun.ponyexpress.Episode;
+import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;

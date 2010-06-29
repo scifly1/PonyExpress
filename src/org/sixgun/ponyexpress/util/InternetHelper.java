@@ -17,7 +17,7 @@
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.util;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

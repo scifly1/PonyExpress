@@ -16,12 +16,17 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.activity;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 
+import org.sixgun.ponyexpress.Dent;
+import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
+import org.sixgun.ponyexpress.service.IdenticaHandler;
 
 import android.app.ListActivity;
 import android.content.ComponentName;

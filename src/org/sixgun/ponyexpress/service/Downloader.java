@@ -16,7 +16,7 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.service;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -25,6 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
 
 import android.app.IntentService;
 import android.app.Notification;

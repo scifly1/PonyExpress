@@ -1,7 +1,10 @@
-package org.sixgun.ponyexpress;
+package org.sixgun.ponyexpress.util;
 
 
 import java.util.Date;
+
+import org.sixgun.ponyexpress.Episode;
+import org.sixgun.ponyexpress.EpisodeKeys;
 
 import android.content.ContentValues;
 import android.content.Context;
