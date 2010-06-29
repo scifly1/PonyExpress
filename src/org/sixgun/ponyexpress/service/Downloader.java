@@ -50,6 +50,7 @@ public class Downloader extends IntentService {
 
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
+	private static final String NO_MEDIA_FILE = ".nomedia";
 	private NotificationManager mNM;
 	private static final int NOTIFY_ID = 1;
 	private PonyExpressApp mPonyExpressApp;
@@ -86,6 +87,7 @@ public class Downloader extends IntentService {
 		mRow_ID= data.getLong(EpisodeKeys._ID);
 		if (mUrl != null && isSDCardWritable()){
 			prepareForDownload();
+			createNoMediaFile();
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 				showNotification();
 				downloadFile();
@@ -95,6 +97,7 @@ public class Downloader extends IntentService {
 		}
 	}
 	
+
 	/* (non-Javadoc)
 	 * @see android.app.IntentService#onDestroy()
 	 */
@@ -157,6 +160,28 @@ public class Downloader extends IntentService {
 			// TODO Improve Error handling.
 			Log.e(TAG, "Cannot open FileOutputStream for writing.",e);
 		}
+	}
+	/**
+	 * Creates a nomedia file if it doesn't exist. This file causes 
+	 * the media scanner to ignore the podcast files. 
+	 */
+	private void createNoMediaFile() {
+		final String path = mRoot + PODCAST_PATH + "/";
+		File noMedia = new File(path,NO_MEDIA_FILE);
+		if (!noMedia.exists()){
+			FileOutputStream writeFile = null;
+			try {
+				writeFile = new FileOutputStream(noMedia);
+			} catch (FileNotFoundException e) {
+				Log.e(TAG, "Cannot create .nomedia file", e);
+			}
+			try {
+				writeFile.write(new byte[1]);
+			} catch (IOException e) {
+				Log.e(TAG, "Cannot create .nomedia file", e);
+			}
+		}
+		
 	}
 	
 	/**
