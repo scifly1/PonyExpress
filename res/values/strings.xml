@@ -19,4 +19,6 @@
 <string name="enter_username">Username:</string>
 <string name="enter_password">Password:</string>
 <string name="account_setup">Enter your Identi.ca account details.</string>
+<string name="pause">Pause</string>
+<string name="play">Play</string>
 </resources>

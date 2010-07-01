@@ -198,7 +198,7 @@ public class PonyExpressDbAdaptor {
 			filename = cursor.getString(1);
 			//get everything after last '/' (separator) 
 			short_filename = filename.substring(filename.lastIndexOf('/'));
-			Log.d(TAG, "Title of Episode is: "+ short_filename);
+			Log.d(TAG, "Filename of Episode is: "+ short_filename);
 		}
 		cursor.close();
 		return short_filename;	
