@@ -27,6 +27,8 @@ import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 
 /**
@@ -41,7 +43,8 @@ public class PodcastPlayer extends Service {
 	private final IBinder mBinder = new PodcastPlayerBinder();
 	
 	private MediaPlayer mPlayer;
-	private String mTitlePlaying; 
+	private String mTitlePlaying;
+	private boolean mResumeAfterCall = false; 
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -62,6 +65,9 @@ public class PodcastPlayer extends Service {
 	public void onCreate() {
 		super.onCreate();
 		mPlayer = new MediaPlayer();
+		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
+		
 		Log.d(TAG, "PodcastPlayer started");
 	}
 	
@@ -72,8 +78,11 @@ public class PodcastPlayer extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		//TODO Stop any running threads /Tidy up
+		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
 		
 		mPlayer.release();
+		mPlayer = null;
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
 	
@@ -122,4 +131,32 @@ public class PodcastPlayer extends Service {
 		//TODO
 	}
 	
+	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
+
+		/**
+		 * Pauses playback if a call is recieved or if a call is to be made.
+		 */
+		@Override
+		public void onCallStateChanged(int state, String incomingNumber) {
+			switch (state)
+			{
+			case TelephonyManager.CALL_STATE_RINGING:
+				//Fall through
+			case TelephonyManager.CALL_STATE_OFFHOOK:
+				if (mPlayer.isPlaying()){
+					mPlayer.pause();
+					mResumeAfterCall  = true;
+				break;
+				}
+			case TelephonyManager.CALL_STATE_IDLE:
+				if (mResumeAfterCall){
+					mPlayer.start();
+					mResumeAfterCall = false;
+					break;
+				}
+			default:
+				Log.d(TAG, "Unknown phone state: " + state);
+			}
+		}
+	};
 }
