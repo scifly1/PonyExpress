@@ -41,6 +41,7 @@ public class PlayerActivity extends Activity {
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
+	private Button mPlayPauseButton;
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -105,18 +106,44 @@ public class PlayerActivity extends Activity {
 				if (!mPaused){
 					mPodcastPlayer.pause();
 					mPaused = true;
-					//mPlayPauseButton.setText(R.string.play);
+					mPlayPauseButton.setText(R.string.play);
 				} else {
 					// Play episdode
 					final String episode = data.getString(EpisodeKeys.FILENAME);
 					mPodcastPlayer.play(episode);
 					mPaused = false;
-					//mPlayPauseButton.setText(R.string.pause);
+					mPlayPauseButton.setText(R.string.pause);
 				}
 			}
 		};
-		Button mPlayPauseButton = (Button)findViewById(R.id.PlayButton);
+		
+		OnClickListener mRewindButtonListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (!mPaused){
+					mPodcastPlayer.rewind();
+				}
+				
+			}
+		};
+		
+		OnClickListener mFastForwardButtonListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				if (!mPaused){
+					mPodcastPlayer.fastForward();
+				}
+				
+			}
+		};
+		mPlayPauseButton = (Button)findViewById(R.id.PlayButton);
 		mPlayPauseButton.setOnClickListener(mPlayButtonListener);
+		Button rewindButton = (Button)findViewById(R.id.rewind);
+		rewindButton.setOnClickListener(mRewindButtonListener);
+		Button fastForwardButton = (Button)findViewById(R.id.fastforward);
+		fastForwardButton.setOnClickListener(mFastForwardButtonListener);
 		
 	}
 

@@ -45,6 +45,7 @@ public class PodcastPlayer extends Service {
 	private MediaPlayer mPlayer;
 	private String mTitlePlaying;
 	private boolean mResumeAfterCall = false; 
+	private int mSeekDelta = 30000; // 30 seconds
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -124,11 +125,15 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public void fastForward() {
-		//TODO
+		final int playbackPosition = mPlayer.getCurrentPosition();
+		final int newPosition = mSeekDelta + playbackPosition;
+		mPlayer.seekTo(newPosition);
 	}
 	
 	public void rewind() {
-		//TODO
+		final int playbackPosition = mPlayer.getCurrentPosition();
+		final int newPosition = playbackPosition - mSeekDelta;
+		mPlayer.seekTo(newPosition);
 	}
 	
 	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
