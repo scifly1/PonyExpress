@@ -38,14 +38,14 @@ public class Episode implements Comparable<Episode> {
     private Date mDate;
     private String mDescription;
 	private Boolean mDownloaded;
-	private Boolean mListened;
+	private int mListened;  // This is the number of msec that have been listened to, or -1 if not listened.
 	
     /**
      * Constructor.  Creates 'empty' episode.
      */
     public Episode() {
     	mDownloaded = false;
-    	mListened = false;
+    	mListened = -1;
 	}
     
     /**
@@ -64,7 +64,7 @@ public class Episode implements Comparable<Episode> {
      * @param _listened 
      * @param _description 
      */
-    private Episode(Date _date, URL _link, String _title, String _description, Boolean _downloaded, Boolean _listened) {
+    private Episode(Date _date, URL _link, String _title, String _description, Boolean _downloaded, int _listened) {
 		this.mDate = _date;
 		this.mLink = _link;
 		this.mTitle = _title;
@@ -125,8 +125,11 @@ public class Episode implements Comparable<Episode> {
 	/**
 	 * @return listened
 	 */
-	public Boolean beenListened() {
-		return mListened;
+	public boolean beenListened() {
+		if (mListened == -1){
+			return false;
+		}
+		return true;
 	}
 
 	@Override
