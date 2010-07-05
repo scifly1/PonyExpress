@@ -88,35 +88,39 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public void play(String file) {
-		if (!file.equals(mTitlePlaying)){
-			//Reset player as it is playing or paused on another episode
-			mPlayer.reset();
-		}
-		//Set podcast as data source and prepare the player
 		String path = PODCAST_PATH + file;
-		File podcast = new File(Environment.getExternalStorageDirectory(),path);
-		if (mPlayer != null){
-			try {
-				mPlayer.setDataSource(podcast.getAbsolutePath());
-			} catch (IllegalArgumentException e) {
-				Log.e(TAG, "Illegal path supplied to player", e);
-			} catch (IllegalStateException e) {
-				Log.e(TAG, "Player is not set up correctly", e);
-			} catch (IOException e) {
-				Log.e(TAG,"Player cannot access path",e);
-			}
-			try {
-				mPlayer.prepare();
-			} catch (IllegalStateException e) {
-				Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
-			} catch (IOException e) {
-				Log.e(TAG,"Player cannot access path",e);
-			}
-			//TODO move this off into another thread
+		
+		if (file.equals(mTitlePlaying) && mPlayer != null){
+			//We are probably resuming after pause
 			mPlayer.start();
-			mTitlePlaying = file;
 			Log.d(TAG,"Playing " + path);
-		} else Log.e(TAG, "Player is null");
+		} else {
+			//Reset player as it might be playing or paused on another episode
+			mPlayer.reset();
+			//Set podcast as data source and prepare the player
+			File podcast = new File(Environment.getExternalStorageDirectory(),path);
+			if (mPlayer != null){
+				try {
+					mPlayer.setDataSource(podcast.getAbsolutePath());
+				} catch (IllegalArgumentException e) {
+					Log.e(TAG, "Illegal path supplied to player", e);
+				} catch (IllegalStateException e) {
+					Log.e(TAG, "Player is not set up correctly", e);
+				} catch (IOException e) {
+					Log.e(TAG,"Player cannot access path",e);
+				}
+				try {
+					mPlayer.prepare();
+				} catch (IllegalStateException e) {
+					Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
+				} catch (IOException e) {
+					Log.e(TAG,"Player cannot access path",e);
+				}
+				mPlayer.start();
+				mTitlePlaying = file;
+			Log.d(TAG,"Playing " + path);
+			} else Log.e(TAG, "Player is null");
+		}
 		
 	}
 	
