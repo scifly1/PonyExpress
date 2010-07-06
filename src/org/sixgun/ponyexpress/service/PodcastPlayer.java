@@ -141,6 +141,14 @@ public class PodcastPlayer extends Service {
 		mPlayer.seekTo(newPosition);
 	}
 	
+	public int getEpisodeLength(){
+		return mPlayer.getDuration();
+	}
+	
+	public int getEpisodePosition(){
+		return mPlayer.getCurrentPosition();
+	}
+	
 	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
 
 		/**

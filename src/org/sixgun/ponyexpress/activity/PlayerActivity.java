@@ -28,10 +28,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.SeekBar;
 
 /**
  * Handles the media player service.
@@ -42,6 +44,9 @@ public class PlayerActivity extends Activity {
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
 	private Button mPlayPauseButton;
+	private SeekBar mSeekBar;
+	private Handler mHandler = new Handler();
+	private int mCurrentPosition = 0;
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -97,6 +102,7 @@ public class PlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		final Bundle data = getIntent().getExtras();
+		final String episode = data.getString(EpisodeKeys.FILENAME);
 		setContentView(R.layout.player);
 
 		
@@ -107,12 +113,16 @@ public class PlayerActivity extends Activity {
 					mPodcastPlayer.pause();
 					mPaused = true;
 					mPlayPauseButton.setText(R.string.play);
+					
 				} else {
 					// Play episdode
-					final String episode = data.getString(EpisodeKeys.FILENAME);
 					mPodcastPlayer.play(episode);
 					mPaused = false;
 					mPlayPauseButton.setText(R.string.pause);
+					mSeekBar.setMax(mPodcastPlayer.getEpisodeLength());
+					mSeekBar.setProgress(mCurrentPosition);
+					startSeekBar();
+					
 				}
 			}
 		};
@@ -144,9 +154,9 @@ public class PlayerActivity extends Activity {
 		rewindButton.setOnClickListener(mRewindButtonListener);
 		Button fastForwardButton = (Button)findViewById(R.id.fastforward);
 		fastForwardButton.setOnClickListener(mFastForwardButtonListener);
+		mSeekBar = (SeekBar)findViewById(R.id.PlayerSeekBar);	
 		
 	}
-
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onStart()
@@ -157,5 +167,32 @@ public class PlayerActivity extends Activity {
 		doBindPodcastPlayer();
 	}
 
-	
+	/**
+	 * Starts a thread to poll the episodes progress and updates the seek bar
+	 * via a handler. 
+	 */
+	private void startSeekBar() {
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				mCurrentPosition = mPodcastPlayer.getEpisodePosition();
+				int length = mPodcastPlayer.getEpisodeLength();
+				while (mPaused == false && mCurrentPosition < length){
+					try {
+						Thread.sleep(1000);
+						mCurrentPosition = mPodcastPlayer.getEpisodePosition();
+					} catch (InterruptedException e) {
+						return;
+					}
+					mHandler.post(new Runnable(){
+						@Override
+						public void run() {
+							mSeekBar.setProgress(mCurrentPosition);	
+						}
+					});
+				}	
+			}	
+		}).start();
+		
+	}
 }
