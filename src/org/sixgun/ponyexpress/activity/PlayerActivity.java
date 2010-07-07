@@ -34,6 +34,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
  * Handles the media player service.
@@ -47,6 +48,7 @@ public class PlayerActivity extends Activity {
 	private SeekBar mSeekBar;
 	private Handler mHandler = new Handler();
 	private int mCurrentPosition = 0;
+	private boolean mUserSeeking = false;
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -148,6 +150,37 @@ public class PlayerActivity extends Activity {
 				
 			}
 		};
+		
+		OnSeekBarChangeListener mSeekBarListener = new OnSeekBarChangeListener(){
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				if (fromUser){
+					mPodcastPlayer.SeekTo(progress);
+				}
+				
+			}
+			
+			/**
+			 * Stops the progrommatic update of the progess bar. 
+			 */
+			@Override
+			public void onStartTrackingTouch(SeekBar arg0) {
+				mUserSeeking = true;
+				
+			}
+			
+			/**
+			 * Re-staarts the progrommatic update of the progess bar. 
+			 */
+			@Override
+			public void onStopTrackingTouch(SeekBar arg0) {
+				mUserSeeking = false;
+				
+			}
+			
+		};
+		
 		mPlayPauseButton = (Button)findViewById(R.id.PlayButton);
 		mPlayPauseButton.setOnClickListener(mPlayButtonListener);
 		Button rewindButton = (Button)findViewById(R.id.rewind);
@@ -155,6 +188,7 @@ public class PlayerActivity extends Activity {
 		Button fastForwardButton = (Button)findViewById(R.id.fastforward);
 		fastForwardButton.setOnClickListener(mFastForwardButtonListener);
 		mSeekBar = (SeekBar)findViewById(R.id.PlayerSeekBar);	
+		mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
 		
 	}
 
@@ -178,18 +212,21 @@ public class PlayerActivity extends Activity {
 				mCurrentPosition = mPodcastPlayer.getEpisodePosition();
 				int length = mPodcastPlayer.getEpisodeLength();
 				while (mPaused == false && mCurrentPosition < length){
-					try {
-						Thread.sleep(1000);
-						mCurrentPosition = mPodcastPlayer.getEpisodePosition();
-					} catch (InterruptedException e) {
-						return;
-					}
-					mHandler.post(new Runnable(){
-						@Override
-						public void run() {
-							mSeekBar.setProgress(mCurrentPosition);	
+					if (!mUserSeeking){
+						try {
+							Thread.sleep(1000);
+							mCurrentPosition = mPodcastPlayer.getEpisodePosition();
+						} catch (InterruptedException e) {
+							return;
 						}
-					});
+						
+						mHandler.post(new Runnable(){
+							@Override
+							public void run() {
+								mSeekBar.setProgress(mCurrentPosition);	
+							}
+						});
+					}
 				}	
 			}	
 		}).start();

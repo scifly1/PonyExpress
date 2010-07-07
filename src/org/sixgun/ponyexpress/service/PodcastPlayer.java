@@ -141,6 +141,10 @@ public class PodcastPlayer extends Service {
 		mPlayer.seekTo(newPosition);
 	}
 	
+	public void SeekTo(int progress) {
+		mPlayer.seekTo(progress);		
+	}
+	
 	public int getEpisodeLength(){
 		return mPlayer.getDuration();
 	}
@@ -177,4 +181,5 @@ public class PodcastPlayer extends Service {
 			}
 		}
 	};
+
 }
