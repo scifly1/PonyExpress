@@ -46,7 +46,6 @@ public class PodcastPlayer extends Service {
 	private String mTitlePlaying;
 	private boolean mResumeAfterCall = false; 
 	private int mSeekDelta = 30000; // 30 seconds
-	private Thread playBackThread;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -151,6 +150,14 @@ public class PodcastPlayer extends Service {
 	
 	public int getEpisodePosition(){
 		return mPlayer.getCurrentPosition();
+	}
+	
+	public String getEpisodeTitle(){
+		return mTitlePlaying;
+	}
+	
+	public boolean isPlaying() {
+		return mPlayer.isPlaying();
 	}
 	
 	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
