@@ -125,11 +125,8 @@ public class Episode implements Comparable<Episode> {
 	/**
 	 * @return listened
 	 */
-	public boolean beenListened() {
-		if (mListened == -1){
-			return false;
-		}
-		return true;
+	public int beenListened() {
+		return mListened;
 	}
 
 	@Override

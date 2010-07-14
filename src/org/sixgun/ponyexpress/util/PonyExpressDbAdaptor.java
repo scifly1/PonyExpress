@@ -167,7 +167,7 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	/**
-	 * Updates the database when a podcast has been downloaded.
+	 * Updates the database when a podcast has been downloaded or listened to.
 	 * @param rowID 
 	 * @param key
 	 * @param newRecord
@@ -182,6 +182,13 @@ public class PonyExpressDbAdaptor {
 			}else {
 				values.put(EpisodeKeys.DOWNLOADED,false);
 			}
+		}
+		return mDb.update(TABLE_NAME, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
+	}
+	public boolean update(long rowID, String key, int newRecord){
+		ContentValues values = new ContentValues();
+		if (key == EpisodeKeys.LISTENED){
+			values.put(EpisodeKeys.LISTENED, newRecord);
 		}
 		return mDb.update(TABLE_NAME, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
@@ -248,6 +255,19 @@ public class PonyExpressDbAdaptor {
 		}
 		cursor.close();
 		return description;
+	}
+
+	public int getListened(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.LISTENED};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+		int listened = -1;
+		if (cursor != null){
+			cursor.moveToFirst();
+			listened = cursor.getInt(1);
+		}
+		cursor.close();
+		return listened;
 	}
     
     

@@ -137,7 +137,9 @@ public class PlayerActivity extends Activity {
 					
 				} else {
 					// Play episdode
-					mPodcastPlayer.play(mEpisodeTitle);
+					mCurrentPosition = data.getInt(EpisodeKeys.LISTENED);
+					final long row_ID = data.getLong(EpisodeKeys._ID);
+					mPodcastPlayer.play(mEpisodeTitle,mCurrentPosition,row_ID);
 					mPaused = false;
 					mPlayPauseButton.setText(R.string.pause);
 					mSeekBar.setMax(mPodcastPlayer.getEpisodeLength());

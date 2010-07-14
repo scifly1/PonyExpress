@@ -21,6 +21,9 @@ package org.sixgun.ponyexpress.service;
 import java.io.File;
 import java.io.IOException;
 
+import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
+
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -41,11 +44,12 @@ public class PodcastPlayer extends Service {
 	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
 
 	private final IBinder mBinder = new PodcastPlayerBinder();
-	
+	private PonyExpressApp mPonyExpressApp; 
 	private MediaPlayer mPlayer;
 	private String mTitlePlaying;
 	private boolean mResumeAfterCall = false; 
 	private int mSeekDelta = 30000; // 30 seconds
+	private long mRowID;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -66,6 +70,7 @@ public class PodcastPlayer extends Service {
 	public void onCreate() {
 		super.onCreate();
 		mPlayer = new MediaPlayer();
+		mPonyExpressApp = (PonyExpressApp)getApplication();
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
 		
@@ -86,8 +91,14 @@ public class PodcastPlayer extends Service {
 		mPlayer = null;
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
-	
-	public void play(String file) {
+	/**
+	 * Plays the file starting from position.  The rowID is used to update the position
+	 * that has been listened to in the database.
+	 * @param file
+	 * @param position
+	 * @param rowID
+	 */
+	public void play(String file, int position, long rowID) {
 		String path = PODCAST_PATH + file;
 		
 		if (file.equals(mTitlePlaying) && mPlayer != null){
@@ -95,7 +106,15 @@ public class PodcastPlayer extends Service {
 			mPlayer.start();
 			Log.d(TAG,"Playing " + path);
 		} else {
-			//Reset player as it might be playing or paused on another episode
+			//If player is playing then pause playback which also records the
+			//playback position in the database.
+			if (mPlayer.isPlaying()){
+				this.pause(); 
+			}
+			//Set mRowID now, after previously playing episode
+			//has been paused and playback position recorded.
+			mRowID = rowID;
+			//Reset player as it might well be paused on another episode
 			mPlayer.reset();
 			//Set podcast as data source and prepare the player
 			File podcast = new File(Environment.getExternalStorageDirectory(),path);
@@ -116,6 +135,11 @@ public class PodcastPlayer extends Service {
 				} catch (IOException e) {
 					Log.e(TAG,"Player cannot access path",e);
 				}
+				// SeekTo last listened position
+				if (position != -1){
+					SeekTo(position);
+					Log.d(TAG,"Seeking to " + position);
+				}
 				mPlayer.start();
 				mTitlePlaying = file;
 			Log.d(TAG,"Playing " + path);
@@ -126,7 +150,15 @@ public class PodcastPlayer extends Service {
 	
 	public void pause() {
 		mPlayer.pause();
+		//Record last listened position in database
+		final int playbackPosition = mPlayer.getCurrentPosition();
+		boolean res =mPonyExpressApp.getDbHelper().update(mRowID, 
+				EpisodeKeys.LISTENED, playbackPosition);
+		if (res){
+			Log.d(TAG, "Updated listened to position to " + playbackPosition);
+		}
 	}
+		
 	
 	public void fastForward() {
 		final int playbackPosition = mPlayer.getCurrentPosition();

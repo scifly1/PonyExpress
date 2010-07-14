@@ -173,15 +173,17 @@ public class PonyExpressActivity extends ListActivity {
 		intent.putExtra(EpisodeKeys.TITLE, title);
 		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
 		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
+		intent.putExtra(EpisodeKeys._ID, id);
 		//Determine if Episode has been downloaded and add required extras.
 		final boolean downloaded = mPonyExpressApp.getDbHelper().getEpisodeDownloaded(id);
 		if (downloaded){
 			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
 			intent.putExtra(EpisodeKeys.FILENAME, filename);
+			final int listened = mPonyExpressApp.getDbHelper().getListened(id);
+			intent.putExtra(EpisodeKeys.LISTENED, listened);
 		} else {
 			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
 			intent.putExtra(EpisodeKeys.URL, url);
-			intent.putExtra(EpisodeKeys._ID, id);
 		}
 		startActivity(intent);
 	}
