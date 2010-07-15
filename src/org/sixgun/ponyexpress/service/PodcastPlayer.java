@@ -27,6 +27,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Binder;
 import android.os.Environment;
 import android.os.IBinder;
@@ -73,6 +74,24 @@ public class PodcastPlayer extends Service {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
+		
+		OnCompletionListener onCompletionListener = new OnCompletionListener(){
+
+			@Override
+			public void onCompletion(MediaPlayer mp) {
+				mp.start();
+				Log.d(TAG,"Playback re-started");
+				mp.pause();
+				//Set Listened to 0
+				boolean res = mPonyExpressApp.getDbHelper().update(mRowID, 
+						EpisodeKeys.LISTENED, 0);
+				if (res) {
+					Log.d(TAG, "Updated listened to position to 0");
+				}
+			}
+			
+		};
+		mPlayer.setOnCompletionListener(onCompletionListener);
 		
 		Log.d(TAG, "PodcastPlayer started");
 	}
@@ -135,7 +154,7 @@ public class PodcastPlayer extends Service {
 				} catch (IOException e) {
 					Log.e(TAG,"Player cannot access path",e);
 				}
-				// SeekTo last listened position
+				//SeekTo last listened position
 				if (position != -1){
 					SeekTo(position);
 					Log.d(TAG,"Seeking to " + position);

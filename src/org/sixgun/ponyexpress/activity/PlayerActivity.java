@@ -322,7 +322,7 @@ public class PlayerActivity extends Activity {
 				mCurrentPosition = mPodcastPlayer.getEpisodePosition();
 				int length = mPodcastPlayer.getEpisodeLength();
 				mSeekBar.setMax(length);
-				while (mUpdateSeekBar && !mPaused && mCurrentPosition < length){
+				while (mUpdateSeekBar && !mPaused){
 					if (!mUserSeeking){
 						try {
 							Thread.sleep(1000);
@@ -334,7 +334,12 @@ public class PlayerActivity extends Activity {
 						mHandler.post(new Runnable(){
 							@Override
 							public void run() {
-								mSeekBar.setProgress(mCurrentPosition);	
+								mSeekBar.setProgress(mCurrentPosition);
+								//Poll player to see if it has been paused by completing playback
+								if (!mPodcastPlayer.isPlaying()){
+									mPaused = true;
+									mPlayPauseButton.setText(R.string.play);
+								}
 							}
 						});
 					}
