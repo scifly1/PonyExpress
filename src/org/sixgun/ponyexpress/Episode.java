@@ -22,6 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.Date;
 
 /*
@@ -32,7 +33,7 @@ import java.util.Date;
 public class Episode implements Comparable<Episode> {
 
 	static SimpleDateFormat FORMATTER = 
-        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z");
+        new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
     private String mTitle;
     private URL mLink;
     private Date mDate;
