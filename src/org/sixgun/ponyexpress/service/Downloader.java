@@ -49,7 +49,6 @@ import android.util.Log;
 public class Downloader extends IntentService {
 
 	private static final String TAG = "PonyExpress Downloader";
-	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
 	private static final String NO_MEDIA_FILE = ".nomedia";
 	private NotificationManager mNM;
 	private static final int NOTIFY_ID = 1;
@@ -148,7 +147,7 @@ public class Downloader extends IntentService {
 	 * Creates the path needed to save the files.
 	 */
 	private void prepareForDownload() {
-		File path = new File(mRoot, PODCAST_PATH);
+		File path = new File(mRoot, PonyExpressApp.PODCAST_PATH);
 		path.mkdirs();
 		
 		//Split filename from path url.
@@ -166,7 +165,7 @@ public class Downloader extends IntentService {
 	 * the media scanner to ignore the podcast files. 
 	 */
 	private void createNoMediaFile() {
-		final String path = mRoot + PODCAST_PATH + "/";
+		final String path = mRoot + PonyExpressApp.PODCAST_PATH + "/";
 		File noMedia = new File(path,NO_MEDIA_FILE);
 		if (!noMedia.exists()){
 			FileOutputStream writeFile = null;

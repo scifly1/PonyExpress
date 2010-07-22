@@ -42,7 +42,6 @@ import android.util.Log;
 public class PodcastPlayer extends Service {
 
 	private static final String TAG = "PonyExpress PodcastPlayer";
-	private static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
 
 	private final IBinder mBinder = new PodcastPlayerBinder();
 	private PonyExpressApp mPonyExpressApp; 
@@ -118,7 +117,7 @@ public class PodcastPlayer extends Service {
 	 * @param rowID
 	 */
 	public void play(String file, int position, long rowID) {
-		String path = PODCAST_PATH + file;
+		String path = PonyExpressApp.PODCAST_PATH + file;
 		
 		if (file.equals(mTitlePlaying) && mPlayer != null){
 			//We are probably resuming after pause
