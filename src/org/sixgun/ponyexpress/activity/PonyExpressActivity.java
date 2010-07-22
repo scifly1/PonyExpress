@@ -18,8 +18,13 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +40,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.AsyncTask.Status;
 import android.util.Log;
 import android.view.View;
@@ -54,6 +60,7 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String TAG = "PonyExpressActivity";
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
+	private DatabaseCheck mDataCheck;  
 	private Bundle mSavedState;
 	private ProgressDialog mProgDialog; 
 
@@ -65,10 +72,16 @@ public class PonyExpressActivity extends ListActivity {
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
-		//Hook up reload button with updateEpisodes()
-		ImageView reload_button =  (ImageButton)findViewById(R.id.view_refresh);
 		//Create Progress Dialog for use later.
 		mProgDialog = new ProgressDialog(this);
+		
+		//Check SDCard contents and database match.
+		//FIXME This does not handle activity lifecycle changes, but it's fairly quick
+		//so should not be a problem.
+		mDataCheck = (DatabaseCheck) new DatabaseCheck().execute();
+		
+		//Hook up reload button with updateEpisodes()
+		ImageView reload_button =  (ImageButton)findViewById(R.id.view_refresh);	
 		reload_button.setOnClickListener(new OnClickListener() {
 			
 			@Override
@@ -95,7 +108,7 @@ public class PonyExpressActivity extends ListActivity {
 	}
 
 	/**
-	 *  Close the database and cancel any update tasks when activity destroyed.
+	 *  Cancel progress dialog and close any running updates when activity destroyed.
 	 */
 	@Override
 	protected void onDestroy() {
@@ -261,6 +274,54 @@ public class PonyExpressActivity extends ListActivity {
 				this, R.layout.episode_row, c, from, to);
 		setListAdapter(episodes);
 		
+	}
+	
+	private class DatabaseCheck extends AsyncTask<Void, Void, Void> {
+		
+
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onPreExecute()
+		 */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mProgDialog.setMessage("Checking database consistency...");
+			mProgDialog.show();
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+			//Get a List of the file names that are on the SD Card.
+			File rootPath = Environment.getExternalStorageDirectory();
+			File path = new File(rootPath,PonyExpressApp.PODCAST_PATH);
+			final String[] filesOnDisk = path.list();
+			//Get a Map of filenames (and their index) that are in the database
+			final Map<Long, String> filesInDatabase = 
+				mPonyExpressApp.getDbHelper().getFilenamesOnDisk();
+			if (filesOnDisk != null){
+				List<String> diskFiles = Arrays.asList(filesOnDisk);
+				//If file is in database but not on disk, mark as not downloaded in database.
+				final int mapSize = filesInDatabase.size();
+				Iterator<Entry<Long, String>> fileIter = filesInDatabase.entrySet().iterator();
+				for (int i = 0; i < mapSize; i++){
+					Map.Entry<Long, String> entry = (Map.Entry<Long, String>)fileIter.next();
+					if (!diskFiles.contains(entry.getValue())){
+						mPonyExpressApp.getDbHelper().update(entry.getKey(), 
+								EpisodeKeys.DOWNLOADED, "false");
+					}
+				}
+			}
+			return null;
+		}
+		
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			mProgDialog.dismiss();
+		}
 	}
 	
 }

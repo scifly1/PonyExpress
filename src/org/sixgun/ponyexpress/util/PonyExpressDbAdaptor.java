@@ -2,6 +2,8 @@ package org.sixgun.ponyexpress.util;
 
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
@@ -21,6 +23,7 @@ public class PonyExpressDbAdaptor {
 	private static final int DATABASE_VERSION = 11;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
+    private static final String TEMP_TABLE_NAME = "Temp_Episodes";
     private static final String TABLE_CREATE =
                 "CREATE TABLE " + TABLE_NAME + " (" +
                 EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
@@ -31,7 +34,18 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.DESCRIPTION + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
                 EpisodeKeys.LISTENED + " INTEGER);";
-	private static final String TAG = "PonyExpressDbAdaptor";
+    private static final String TEMP_TABLE_CREATE = 
+    	"CREATE TEMP TABLE " + TEMP_TABLE_NAME + " (" +
+    	EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
+        EpisodeKeys.TITLE + " TEXT," +
+        EpisodeKeys.DATE + " INTEGER," +
+        EpisodeKeys.URL + " TEXT," +
+        EpisodeKeys.FILENAME + " TEXT," +
+        EpisodeKeys.DESCRIPTION + " TEXT," +
+        EpisodeKeys.DOWNLOADED + " INTEGER," +
+        EpisodeKeys.LISTENED + " INTEGER);";
+    	
+    private static final String TAG = "PonyExpressDbAdaptor";
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
@@ -56,9 +70,37 @@ public class PonyExpressDbAdaptor {
     	@Override
     	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     		Log.w("PonyExpress", "Upgrading database from version " + oldVersion + " to "
-                    + newVersion + ", which will destroy all old data");
-            db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-            onCreate(db);
+                    + newVersion);
+    		// Copy old data across to new table
+    		switch (newVersion) {
+			case 12:
+				//Begin transaction
+				db.beginTransaction();
+				try {
+					//Create temp table
+					db.execSQL(TEMP_TABLE_CREATE);
+					//copy all needed columns accross (this copies all, adjust depeding on what the upgrade is)
+					db.execSQL("INSERT INTO " + TEMP_TABLE_NAME + " SELECT * FROM " +
+							TABLE_NAME + ";");
+					//Add/remove/change any new columns to get to new version
+					//Drop old table
+					db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+					//Create new table
+					db.execSQL(TABLE_CREATE);
+					//INSERT into new table.
+					db.execSQL("INSERT INTO " + TABLE_NAME + " SELECT * FROM " +
+							TEMP_TABLE_NAME + ";");
+					db.execSQL("DROP TABLE " + TEMP_TABLE_NAME);				
+					db.setTransactionSuccessful();
+				} finally {
+				db.endTransaction();
+				}
+				break;
+
+			default:
+				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
+				break;
+			}
     	}
     }
     
@@ -131,6 +173,30 @@ public class PonyExpressDbAdaptor {
 				true,TABLE_NAME,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
 	}
 	/**
+	 * Gets all filenames of all the files that have been downloaded and should be 
+	 * on the SD Card.
+	 */
+	public Map<Long, String> getFilenamesOnDisk(){
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.DOWNLOADED, 
+				EpisodeKeys.FILENAME};
+		final Cursor cursor = mDb.query(true, TABLE_NAME, columns, 
+				EpisodeKeys.DOWNLOADED + "!= 0", null, null, null, null, null);
+		Map<Long, String> files = new HashMap<Long, String>();
+		String short_filename = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++){
+				final String filename = cursor.getString(2);
+				//get everything after last '/' (separator) and remove the '/'
+				short_filename = filename.substring(filename.lastIndexOf('/')).substring(1);
+				files.put(cursor.getLong(0),short_filename);
+				cursor.moveToNext();
+			}
+		}
+		cursor.close();		
+		return files;
+	}
+	/**
 	 * Method to determine the date of the latest episode in the database.
 	 * @return The Latest episodes date as a string.
 	 */
@@ -193,7 +259,11 @@ public class PonyExpressDbAdaptor {
 		return mDb.update(TABLE_NAME, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
 
-
+	/**
+	 * Gets the episodes filename
+	 * @param row_ID
+	 * @return filename in the form "/file.ext"
+	 */
 	public String getEpisodeFilename(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.FILENAME};
 		final Cursor cursor = mDb.query(true, TABLE_NAME,
@@ -269,6 +339,7 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return listened;
 	}
-    
+
+	   
     
 }
