@@ -35,7 +35,7 @@ import android.util.Xml;
 
 /**
  * EpisodeFeedPArser implements a basic Android SAX parser.  It finds the XML tags in the RSS
- * feed that is returned by this.getInputStream() and extracts the text elements
+ * feed that is returned by getInputStream() and extracts the text elements
  * or attributes from them using ElementListeners.
  */
 public class EpisodeFeedParser extends BaseFeedParser{
@@ -118,7 +118,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		});
 		//Finally, now the listeners are set up we can parse the XML file.
 		
-		InputStream istream = this.getInputStream();
+		InputStream istream = getInputStream();
 		//To debug with test feeds comment out the above line and uncomment the next line.
 	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
 		if (istream != null){
