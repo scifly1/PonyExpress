@@ -139,7 +139,7 @@ public class PonyExpressDbAdaptor {
      * @return The row ID of the inserted row or -1 if an error occurred.
      */
     public long insertEpisode(Episode episode) {
-    	//TODO Check if episode is already in the database first.
+    	//FIXME Check if episode is already in the database first?.
         ContentValues episodeValues = new ContentValues();
         episodeValues.put(EpisodeKeys.TITLE, episode.getTitle());
         episodeValues.put(EpisodeKeys.DATE, episode.getDate().getTime());
@@ -156,8 +156,6 @@ public class PonyExpressDbAdaptor {
      * Deletes the episode with rowID index.
      * @param rowID
      * @return True if successful.
-     * 
-     * TODO Implement somewhere, not used anywhere at present
      */
 	public boolean deleteEpisode(Long rowID) {
 		
@@ -295,11 +293,11 @@ public class PonyExpressDbAdaptor {
 		return title;
 	}
 
-	public boolean getEpisodeDownloaded(long row_ID) {
+	public boolean isEpisodeDownloaded(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DOWNLOADED};
 		final Cursor cursor = mDb.query(true, TABLE_NAME,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
-		int downloaded = 0;
+		int downloaded = 0;  //false
 		if (cursor != null){
 			cursor.moveToFirst();
 			downloaded = cursor.getInt(1);
@@ -338,6 +336,34 @@ public class PonyExpressDbAdaptor {
 		}
 		cursor.close();
 		return listened;
+	}
+	/**
+	 * Returns the row_ID of the oldest episode in the database.
+	 * @return row_ID
+	 */
+	public long getOldestEpisode() {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DATE};
+		final Cursor cursor = mDb.query(true, TABLE_NAME, columns, 
+				null, null, null, null, EpisodeKeys.DATE + " ASC", "1");
+		long row_ID = -1;
+		if (cursor != null){
+			cursor.moveToFirst();
+			row_ID = cursor.getLong(0);
+		}
+		cursor.close();
+		return row_ID;
+	}
+
+	public int getNumberOfRows() {
+		final String[] columns = {EpisodeKeys._ID};
+		final Cursor cursor = mDb.query(TABLE_NAME, columns, 
+				null, null, null, null, null);
+		int rows = 0;
+		if (cursor != null){
+			rows = cursor.getCount();
+		}
+		cursor.close();
+		return rows;
 	}
 
 	   

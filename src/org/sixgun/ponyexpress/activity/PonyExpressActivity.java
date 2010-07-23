@@ -60,9 +60,11 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String TAG = "PonyExpressActivity";
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
+	@SuppressWarnings("unused")
 	private DatabaseCheck mDataCheck;  
 	private Bundle mSavedState;
 	private ProgressDialog mProgDialog; 
+	private int mEpisodesToHold = 10;
 
 
 	@Override
@@ -188,7 +190,7 @@ public class PonyExpressActivity extends ListActivity {
 		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
 		intent.putExtra(EpisodeKeys._ID, id);
 		//Determine if Episode has been downloaded and add required extras.
-		final boolean downloaded = mPonyExpressApp.getDbHelper().getEpisodeDownloaded(id);
+		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id);
 		if (downloaded){
 			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
 			intent.putExtra(EpisodeKeys.FILENAME, filename);
@@ -235,13 +237,41 @@ public class PonyExpressActivity extends ListActivity {
 			List<Episode> episodes = parser.parse();
 
 			final Date date = mPonyExpressApp.getDbHelper().getLatestEpisodeDate();
-
+						
 			for (Episode episode: episodes){
+				//Add any new episodes
 				if (episode.getDate().compareTo(date) > 0) {
 					mPonyExpressApp.getDbHelper().insertEpisode(episode);
 				}	
+				//Determine how many episodes to remove
+				final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows();
+				final int episodesToDelete = rows - mEpisodesToHold;
+				//Remove correct number of episodes from oldest episodes to maintain required number.
+				for (int i = episodesToDelete; i > 0; i--){
+					final long rowID = 
+						mPonyExpressApp.getDbHelper().getOldestEpisode();
+					if (rowID != -1){
+						if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID)){
+							//delete from SD Card
+							deleteFile(rowID);
+						}
+						//remove from database after deleting.
+						mPonyExpressApp.getDbHelper().deleteEpisode(rowID);
+					} else {Log.e(TAG, "Cannot find oldest episode");}
+				}
 			}
 			return null;
+		}
+		/** Deletes a file from the SD Card.
+		 * 
+		 * @param rowID of the file to be deleted from the database.
+		 */
+		private void deleteFile(long rowID) {
+			File rootPath = Environment.getExternalStorageDirectory();
+			File dirPath = new File(rootPath,PonyExpressApp.PODCAST_PATH);
+			String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(rowID);
+			File fullPath = new File(dirPath,filename);
+			fullPath.delete();			
 		}
 		/* 
 		 */
