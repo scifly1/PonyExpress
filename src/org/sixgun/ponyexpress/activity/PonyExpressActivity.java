@@ -63,7 +63,8 @@ public class PonyExpressActivity extends ListActivity {
 	@SuppressWarnings("unused")
 	private DatabaseCheck mDataCheck;  
 	private Bundle mSavedState;
-	private ProgressDialog mProgDialog; 
+	private ProgressDialog mProgDialog;
+	private ProgressDialog mProgDialogDb;
 	private int mEpisodesToHold = 10;
 
 
@@ -74,8 +75,11 @@ public class PonyExpressActivity extends ListActivity {
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
-		//Create Progress Dialog for use later.
+		//Create Progress Dialogs for later use.
+		mProgDialogDb = new ProgressDialog(this);
+		mProgDialogDb.setMessage("Checking database consistency...");
 		mProgDialog = new ProgressDialog(this);
+		mProgDialog.setMessage("Checking for new Episodes. Please wait...");
 		
 		//Check SDCard contents and database match.
 		//FIXME This does not handle activity lifecycle changes, but it's fairly quick
@@ -115,6 +119,7 @@ public class PonyExpressActivity extends ListActivity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		//Dismiss dialog now or it will leak.
 		if (mProgDialog.isShowing()){
 			mProgDialog.dismiss();
 		}
@@ -216,7 +221,6 @@ public class PonyExpressActivity extends ListActivity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-				mProgDialog.setMessage("Checking for new Episodes. Please wait...");
 				mProgDialog.show();
 			} else {
 				Toast.makeText(mPonyExpressApp, 
@@ -284,7 +288,7 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			mProgDialog.dismiss();
+			mProgDialog.hide();
 			listEpisodes();			
 		}
 		
@@ -315,8 +319,7 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			mProgDialog.setMessage("Checking database consistency...");
-			mProgDialog.show();
+			mProgDialogDb.show();
 		}
 
 		@Override
@@ -350,7 +353,7 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			mProgDialog.dismiss();
+			mProgDialogDb.dismiss();
 		}
 	}
 	
