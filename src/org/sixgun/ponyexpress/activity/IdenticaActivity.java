@@ -36,7 +36,10 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,7 +63,9 @@ public class IdenticaActivity extends ListActivity {
 	private boolean mIdenticaHandlerBound;
 	private Bundle mData;
 	
-	EditText mDentText;
+	private EditText mDentText;
+	private TextView mCharCounter;
+	private Button mDentButton;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -157,13 +162,17 @@ public class IdenticaActivity extends ListActivity {
 			}
 		};
 		//Check connectivity first and inactivate button if no connection
-		Button dentButton = (Button) findViewById(R.id.dent_ok);
+		mDentButton = (Button) findViewById(R.id.dent_ok);
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-			dentButton.setOnClickListener(DentButtonListener);
-			dentButton.setEnabled(true);
+			mDentButton.setOnClickListener(DentButtonListener);
+			mDentButton.setEnabled(true);
 		}else{
-			dentButton.setEnabled(false);
+			mDentButton.setEnabled(false);
 		}
+		
+		mCharCounter = (TextView) findViewById(R.id.char_count);
+		mCharCounter.setText("140");
+		
 		mDentText = (EditText) findViewById(R.id.dent_entry);
 		String text;
 		if (savedInstanceState != null){
@@ -173,6 +182,34 @@ public class IdenticaActivity extends ListActivity {
 		}
 		mDentText.setText("#lo"+text + " ");
 		
+		mDentText.addTextChangedListener(new TextWatcher() {
+			
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+				updateCounter();
+			}
+			
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count,
+					int after) {				
+			}
+			
+			@Override
+			public void afterTextChanged(Editable s) {
+				
+			}
+		});
+	}
+
+	protected void updateCounter() {
+		final int chars = 140;
+		int charsRemaining = chars-mDentText.length();
+		mCharCounter.setText("" + charsRemaining);
+		if (charsRemaining < 0) {
+			mDentButton.setEnabled(false);
+		} else {
+			mDentButton.setEnabled(true);
+		}
 	}
 
 	/* (non-Javadoc)
