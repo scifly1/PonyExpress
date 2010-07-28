@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import org.sixgun.ponyexpress.Dent;
+import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
 import android.sax.Element;
@@ -39,15 +40,15 @@ import android.util.Xml;
 public class DentParser extends BaseFeedParser {
 
 	//The context is only needed for using the debug testfeeds.
-	@SuppressWarnings("unused")
 	private Context mCtx;
 	// names of the XML tags
-	static final String ENTRY = "entry";
-	static final String TITLE = "title";
-	static final String AUTHOR = "author";
+	static final String STATUS = "status";
+	static final String TEXT = "text";
+	static final String USER = "user";
 	static final String NAME = "name";
+	static final String SCREEN_NAME = "screen_name";
 	protected static final String TAG = "DentParser";
-	private static final String ATOM_NS = "http://www.w3.org/2005/Atom";
+	private static final String NS = "";
 	
 	
 	public DentParser(Context ctx, String feedUrl) {
@@ -65,8 +66,8 @@ public class DentParser extends BaseFeedParser {
 		final ArrayList<Dent> dents = new ArrayList<Dent>();
 		
 		//Set up the required elements.
-		RootElement root = new RootElement(ATOM_NS,"feed");
-		Element entry = root.getChild(ATOM_NS,ENTRY);  
+		RootElement root = new RootElement(NS,"statuses");
+		Element status = root.getChild(NS,STATUS);  
 				
 		/*Set up the ElementListeners.
 		 * The first listens for the end of the entry element, which marks the end
@@ -74,13 +75,13 @@ public class DentParser extends BaseFeedParser {
 		 * the list as it should have had all its details recorded by the other 
 		 * listeners.
 		 */
-		entry.setEndElementListener(new EndElementListener(){
+		status.setEndElementListener(new EndElementListener(){
             public void end() {
                 dents.add(new Dent(new_dent));
             }
 		});
 		//This listener catches the title.
-		entry.getChild(ATOM_NS,TITLE).setEndTextElementListener(new EndTextElementListener() {
+		status.getChild(NS,TEXT).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
@@ -88,16 +89,27 @@ public class DentParser extends BaseFeedParser {
 				new_dent.setTitle(body);
 			}
 		});
-		//This listener catches the Author.
-		entry.getChild(ATOM_NS,AUTHOR).getChild(ATOM_NS,NAME).setEndTextElementListener(
+		//This listener catches the user.
+		status.getChild(NS,USER).getChild(NS,NAME).setEndTextElementListener(
 				new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
-				Log.d(TAG,"Found author: " + body);
-				new_dent.setAuthor(body);
+				Log.d(TAG,"Found user: " + body);
+				new_dent.setUser(body);
 			}
 		});
+		//This listener catches the user's screen name.
+		status.getChild(NS,USER).getChild(NS,SCREEN_NAME).setEndTextElementListener(
+				new EndTextElementListener() {
+			
+			@Override
+			public void end(String body) {
+				Log.d(TAG,"Found user's screen name: " + body);
+				new_dent.setUserScreenName(body);
+			}
+		});
+		
 		
 		//Finally, now the listeners are set up we can parse the XML file.
 		
@@ -111,6 +123,11 @@ public class DentParser extends BaseFeedParser {
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			}
+		} else {
+			//If connection errors tell user
+			Dent no_dents = new Dent();
+			no_dents.setTitle(mCtx.getString(R.string.conn_err_query_failed));
+			dents.add(no_dents);
 		}
 		return dents;
 		

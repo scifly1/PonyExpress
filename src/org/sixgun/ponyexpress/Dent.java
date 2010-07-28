@@ -21,7 +21,8 @@ package org.sixgun.ponyexpress;
 
 public class Dent {
 	private String mTitle;
-	private String mAuthor;
+	private String mUser;
+	private String mUserScreenName;
 	
 	//This is a key for saving partially written dents should another activity interupt 
 	// the IdenticaActivity.
@@ -40,16 +41,17 @@ public class Dent {
 	 * @param dent to copy
 	 */
 	public Dent(Dent dent) {
-		this(dent.mTitle,dent.mAuthor);
+		this(dent.mTitle,dent.mUser,dent.mUserScreenName);
 	}
 	/**
 	 * Private constructor used by the copy constructor.
 	 * @param mTitle2
 	 * @param mAuthor2
 	 */
-	private Dent(String _title, String _author) {
+	private Dent(String _title, String _author, String _screen_name) {
 		this.mTitle = _title;
-		this.mAuthor = _author;
+		this.mUser = _author;
+		this.mUserScreenName = _screen_name;
 	}
 
 	/**
@@ -65,15 +67,28 @@ public class Dent {
 		return mTitle;
 	}
 	/**
-	 * @param mAuthor the mAuthor to set
+	 * @param mUser the mUser to set
 	 */
-	public void setAuthor(String mAuthor) {
-		this.mAuthor = mAuthor;
+	public void setUser(String user) {
+		this.mUser = user;
 	}
 	/**
-	 * @return the mAuthor
+	 * @return the mUser
 	 */
-	public String getAuthor() {
-		return mAuthor;
+	public String getUser() {
+		return mUser;
+	}
+	/**
+	 * @return the mUserScreenName
+	 */
+	public String getUserScreenName() {
+		return mUserScreenName;
+	}
+
+	/**
+	 * @param mUserScreenName the mUserScreenName to set
+	 */
+	public void setUserScreenName(String mUserScreenName) {
+		this.mUserScreenName = mUserScreenName;
 	}
 }

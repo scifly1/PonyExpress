@@ -20,7 +20,6 @@ package org.sixgun.ponyexpress.service;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +31,6 @@ import org.apache.http.HttpRequestInterceptor;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
-import org.apache.http.ParseException;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.AuthState;
 import org.apache.http.auth.Credentials;
@@ -50,7 +48,6 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
-import org.apache.http.util.EntityUtils;
 import org.sixgun.ponyexpress.Dent;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.util.DentParser;
@@ -71,7 +68,7 @@ public class IdenticaHandler extends Service {
 
 	
 	private static final String TAG = "PonyExpress IdenticaHandler";
-	private static final String SEARCH_API = "https://identi.ca/api/search.atom?q=";
+	private static final String TAG_TIMELINE_API = "https://identi.ca/api/statusnet/tags/timeline/";
 	private static final String UPDATE_API = "https://identi.ca/api/statuses/update.xml";
 	private static final String VERIFY_API = "https://identi.ca/api/account/verify_credentials.xml";
 	public static final String LOGINFILE = "IdenticaLogin";
@@ -158,14 +155,7 @@ public class IdenticaHandler extends Service {
 	
 	
 	public ArrayList<Dent> queryIdentica(String query){
-		String q = query;
-		String encoded_q = null;
-		try {
-			encoded_q = URLEncoder.encode(q,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "Cannot encode your identi.ca query!", e);
-		}
-		String url = new String(SEARCH_API + encoded_q);
+		String url = new String(TAG_TIMELINE_API + query);
 		Log.d(TAG,"Identica query: "+ url);
 		DentParser parser = new DentParser(getApplicationContext(),url);
 		ArrayList<Dent> dents = parser.parse();
@@ -201,17 +191,6 @@ public class IdenticaHandler extends Service {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			String responseBody = null;
-			try {
-				responseBody = EntityUtils.toString(response.getEntity());
-			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			Log.d(TAG, responseBody);
 			return true;
 		}
 		

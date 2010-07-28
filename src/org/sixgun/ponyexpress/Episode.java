@@ -22,8 +22,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Locale;
 import java.util.Date;
+import java.util.Locale;
 
 /*
  * POJO representing an Episode of a podcast.  Holds the pubDate,

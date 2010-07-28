@@ -39,7 +39,6 @@ import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -140,13 +139,10 @@ public class IdenticaActivity extends ListActivity {
 					 try {
 						dentSent = sendDent.get();
 					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Log.e(TAG, "Error: Thread interuppted while getting dents.",e);
 					} catch (ExecutionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+						Log.e(TAG, "Error: Could not get Dents.", e);
 					}
-					
 				}
 				if (!dentSent) {
 					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
@@ -157,6 +153,7 @@ public class IdenticaActivity extends ListActivity {
 							SETUP_ACCOUNT);
 				} else {
 					mDentText.setText("");
+					new GetLatestDents().execute();
 				}
 				
 			}
@@ -277,10 +274,15 @@ public class IdenticaActivity extends ListActivity {
                 if (dent != null) {
                         TextView content = (TextView) v.findViewById(R.id.dent_content);
                         TextView author = (TextView) v.findViewById(R.id.dent_author);
+                        TextView userName = (TextView) v.findViewById(R.id.dent_screen_name);
                         if (content != null) {
-                              content.setText(dent.getTitle());                            }
+                              content.setText(dent.getTitle());                            
+                        }
                         if(author != null){
-                              author.setText(dent.getAuthor());
+                              author.setText(dent.getUser());
+                        }
+                        if (userName != null && dent.getUserScreenName() != null){
+                        	userName.setText(" -- " + dent.getUserScreenName());
                         }
                 }
                 return v;
@@ -294,7 +296,7 @@ public class IdenticaActivity extends ListActivity {
 			//Check for connectivity first.
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 				final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
-				dents = mIdenticaHandler.queryIdentica("#lo" + ep_number);
+				dents = mIdenticaHandler.queryIdentica("lo" + ep_number + ".xml");
 			} else {
 				Dent no_dents = new Dent();
 				no_dents.setTitle(getString(R.string.conn_err_query_failed));
