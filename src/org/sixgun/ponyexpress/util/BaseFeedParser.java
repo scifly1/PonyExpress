@@ -21,8 +21,14 @@ package org.sixgun.ponyexpress.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+
+import org.apache.http.HttpStatus;
+
+import android.util.Log;
 
 /*
  * BaseFeedParser is an abstract class that takes a url and its getInputStream() 
@@ -31,7 +37,9 @@ import java.net.URL;
 
 public abstract class BaseFeedParser {
     
-    final URL feedUrl;
+    private static final String TAG = "BaseFeedParser";
+	final URL feedUrl;
+	
     /**
      * Constructor - takes the URL of the RSS feed to be parsed.
      * @param feedUrl
@@ -49,12 +57,39 @@ public abstract class BaseFeedParser {
      * @return an InputStream from the feedUrl
      */
     protected InputStream getInputStream() {
-    	try {
-    			return feedUrl.openConnection().getInputStream();
-    	} catch (IOException e) {
-    		return null; 
+    	InputStream istream = null;
+    	int attempts = 0;
+    	URLConnection conn;
+		//try to connect to server a maximum of five times
+    	do {
+			conn = openConnection();
+			attempts++;
+		} while (conn == null && attempts < 5);
+    	//if connected get Inputstream
+    	if (conn != null){
+    		try {
+    			istream = conn.getInputStream();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}
     	}
-
+		return istream;
+    }
+    
+    private HttpURLConnection openConnection(){
+    	HttpURLConnection conn;
+		try {
+			conn = (HttpURLConnection) feedUrl.openConnection();
+			Log.d(TAG,"Response code: " + conn.getResponseCode());
+			//Check that the server responds properly
+			if (conn.getResponseCode() != HttpStatus.SC_OK){
+				return null;
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return conn;
     }
 
 }
