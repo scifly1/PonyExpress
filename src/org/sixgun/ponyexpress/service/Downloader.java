@@ -43,7 +43,7 @@ import android.util.Log;
 /**
  *Service that handles the downloading and saving of podcasts.
  *It queues multiple calls to startService from the calling Activity 
- *and do them one at a time in a worker thread.  When it is finished all
+ *and does them one at a time in a worker thread.  When it is finished all
  * its work it stops itself.
  */
 public class Downloader extends IntentService {
@@ -108,7 +108,7 @@ public class Downloader extends IntentService {
 
 	/**
 	 * Parse the url string to a URL type.
-	 * @param url string from the Intent.
+	 * @param _url string from the Intent.
 	 * @return URL object.
 	 */
 	private URL getURL(String _url) {

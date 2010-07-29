@@ -267,6 +267,8 @@ public class PodcastPlayer extends Service {
 			case 0:
 				mHeadPhonesIn = false;
 				break;
+			case 1:
+				//Fall through.  Some headsets cause state 1 some 2..
 			case 2:
 				mHeadPhonesIn = true;
 				break;
