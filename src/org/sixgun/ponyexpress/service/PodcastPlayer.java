@@ -25,10 +25,14 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Binder;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
@@ -50,6 +54,8 @@ public class PodcastPlayer extends Service {
 	private boolean mResumeAfterCall = false; 
 	private int mSeekDelta = 30000; // 30 seconds
 	private long mRowID;
+	HeadPhoneReceiver mHeadPhoneReciever;
+	boolean mHeadPhonesIn = false;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -101,7 +107,6 @@ public class PodcastPlayer extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		//TODO Stop any running threads /Tidy up
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
 		
@@ -118,6 +123,11 @@ public class PodcastPlayer extends Service {
 	 */
 	public void play(String file, int position, long rowID) {
 		String path = PonyExpressApp.PODCAST_PATH + file;
+		
+		//Register HeadPhone receiver
+		mHeadPhoneReciever = new HeadPhoneReceiver();
+		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+		registerReceiver(mHeadPhoneReciever, filter);
 		
 		if (file.equals(mTitlePlaying) && mPlayer != null){
 			//We are probably resuming after pause
@@ -167,6 +177,10 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public void pause() {
+		//unregister HeadPhone reciever
+		unregisterReceiver(mHeadPhoneReciever);
+		mHeadPhoneReciever = null;
+		
 		mPlayer.pause();
 		//Record last listened position in database
 		final int playbackPosition = mPlayer.getCurrentPosition();
@@ -238,5 +252,33 @@ public class PodcastPlayer extends Service {
 			}
 		}
 	};
+	
+	private class HeadPhoneReceiver extends BroadcastReceiver {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			//FIXME This caching of the previous headphone state could be avoided 
+			//if we used Android 2.0 (API level 5) as we could 
+			//use isInitialStickyBroadcast()
+			boolean prevHeadPhonesIn = mHeadPhonesIn;
+			Bundle data = intent.getExtras();
+			final int state = data.getInt("state");
+			switch (state) {
+			case 0:
+				mHeadPhonesIn = false;
+				break;
+			case 2:
+				mHeadPhonesIn = true;
+				break;
+			default:
+				Log.w(TAG, "Headphone state unknown: " + state);
+				break;
+			}
+			if (prevHeadPhonesIn && !mHeadPhonesIn){
+				pause();
+			}
+		}
+		
+	}
 
 }
