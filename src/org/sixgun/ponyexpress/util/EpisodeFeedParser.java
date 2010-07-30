@@ -31,6 +31,7 @@ import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
+import android.util.Log;
 import android.util.Xml;
 
 /**
@@ -48,6 +49,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
     static final String DESCRIPTION = "description";
     static final String TITLE = "title";
     static final String ITEM = "item";
+	protected static final String TAG = "EpisodeFeedParser";
     
     /**
      * Constructor - Takes a feedUrl and passes it to the SuperClass.
@@ -99,6 +101,16 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			}
 		});
 		//This Listener catches the url of the podcast.
+		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
+			
+			@Override
+			public void start(Attributes attributes) {
+				String length = attributes.getValue("", "length");
+				Log.d(TAG,"Episode Length is "+ length);
+				new_episode.setLength(length);
+			}
+		});
+		//This Listener catches the length of the podcast.
 		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
 			
 			@Override

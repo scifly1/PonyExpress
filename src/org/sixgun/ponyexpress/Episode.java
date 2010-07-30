@@ -40,6 +40,7 @@ public class Episode implements Comparable<Episode> {
     private String mDescription;
 	private Boolean mDownloaded;
 	private int mListened;  // This is the number of msec that have been listened to, or -1 if not listened.
+	private String mLength; //This is the file size in bytes
 	
     /**
      * Constructor.  Creates 'empty' episode.
@@ -54,7 +55,7 @@ public class Episode implements Comparable<Episode> {
      * @param episode to copy.
      */
     public Episode(Episode episode){
-    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDescription,episode.mDownloaded,episode.mListened);
+    	this(episode.mDate,episode.mLink,episode.mTitle,episode.mDescription,episode.mDownloaded,episode.mListened,episode.mLength);
     }
     /**
      * Alternative private constructor used by the copy constructor to create copies.
@@ -64,14 +65,16 @@ public class Episode implements Comparable<Episode> {
      * @param _downloaded 
      * @param _listened 
      * @param _description 
+     * @param _length
      */
-    private Episode(Date _date, URL _link, String _title, String _description, Boolean _downloaded, int _listened) {
+    private Episode(Date _date, URL _link, String _title, String _description, Boolean _downloaded, int _listened, String _length) {
 		this.mDate = _date;
 		this.mLink = _link;
 		this.mTitle = _title;
 		this.mDescription = _description;
 		this.mDownloaded = _downloaded;
 		this.mListened = _listened;
+		this.mLength = _length;
 	}
 
 	
@@ -144,4 +147,14 @@ public class Episode implements Comparable<Episode> {
 	public String getDescription(){
 		return mDescription;
 	}
+
+	public void setLength(String length) {
+		this.mLength = length;
+		
+	}
+	public String getLength() {
+		return mLength;
+		
+	}
+	
 }

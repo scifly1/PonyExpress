@@ -20,7 +20,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TEMP_TABLE_NAME = "Temp_Episodes";
@@ -33,7 +33,8 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.FILENAME + " TEXT," +
                 EpisodeKeys.DESCRIPTION + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
-                EpisodeKeys.LISTENED + " INTEGER);";
+                EpisodeKeys.LISTENED + " INTEGER" +
+                EpisodeKeys.LENGTH + " INTEGER);";
     private static final String TEMP_TABLE_CREATE = 
     	"CREATE TEMP TABLE " + TEMP_TABLE_NAME + " (" +
     	EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
@@ -149,6 +150,7 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.DESCRIPTION, episode.getDescription());
         episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
         episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
+        episodeValues.put(EpisodeKeys.LENGTH, episode.getLength());
 
         return mDb.insert(TABLE_NAME, null, episodeValues);
     }
