@@ -6,12 +6,12 @@
 <string name="download">Download</string>
 <string name="listen">Listen</string>
 <string name="dent">Dent about this episode..</string>
-<string name="downloading_episode">Downloading Episode.</string>
-<string name="no_dents">No Dents for this Episode yet!  Go on be the first!</string>
-<string name="dent_here">Type new Dent here:</string>
+<string name="downloading_episode">Downloading episode.</string>
+<string name="no_dents">No dents for this episode yet!  Go on, be the first!</string>
+<string name="dent_here">Type new dent here:</string>
 <string name="dent_ok">Dent!</string>
 <string name="conn_err_query_failed">Connection error! Cannot get Dents.</string>
-<string name="login_failed">Identi.ca login failed! Have set up your account?</string>
+<string name="login_failed">Identi.ca login failed! Have you set up your account?</string>
 <string name="credentials_not_verified">Could not verify your credentials!</string>
 
 <string name="ok">OK</string>
