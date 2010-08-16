@@ -33,7 +33,7 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.FILENAME + " TEXT," +
                 EpisodeKeys.DESCRIPTION + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
-                EpisodeKeys.LISTENED + " INTEGER" +
+                EpisodeKeys.LISTENED + " INTEGER," +
                 EpisodeKeys.LENGTH + " INTEGER);";
     private static final String TEMP_TABLE_CREATE = 
     	"CREATE TEMP TABLE " + TEMP_TABLE_NAME + " (" +
