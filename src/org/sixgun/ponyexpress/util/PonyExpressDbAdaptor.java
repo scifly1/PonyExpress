@@ -50,6 +50,7 @@ public class PonyExpressDbAdaptor {
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
+    public boolean mDatabaseUpgraded = false;
     
     private final Context mCtx;
     /*
@@ -94,6 +95,7 @@ public class PonyExpressDbAdaptor {
 					db.execSQL("DROP TABLE " + TEMP_TABLE_NAME);				
 					db.setTransactionSuccessful();
 				} finally {
+				mDatabaseUpgraded = true;
 				db.endTransaction();
 				}
 				break;

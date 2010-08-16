@@ -86,6 +86,16 @@ public class PonyExpressActivity extends ListActivity {
 		//so should not be a problem.
 		mDataCheck = (DatabaseCheck) new DatabaseCheck().execute();
 		
+		//Update the Episodes list if the database has been upgraded.
+		if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
+			mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
+			if (mUpdateTask.isCancelled()){
+				Log.d(TAG, "Cancelled Update, No Connectivity");
+				mUpdateTask = null;
+			}
+			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
+		}
+		
 		//Hook up reload button with updateEpisodes()
 		ImageView reload_button =  (ImageButton)findViewById(R.id.view_refresh);	
 		reload_button.setOnClickListener(new OnClickListener() {
