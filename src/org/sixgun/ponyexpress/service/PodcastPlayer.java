@@ -52,10 +52,13 @@ public class PodcastPlayer extends Service {
 	private MediaPlayer mPlayer;
 	private String mTitlePlaying;
 	private boolean mResumeAfterCall = false; 
+	private boolean mBeenResumedAfterCall = false; 
 	private int mSeekDelta = 30000; // 30 seconds
 	private long mRowID;
 	HeadPhoneReceiver mHeadPhoneReciever;
 	boolean mHeadPhonesIn = false;
+
+	
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -224,6 +227,12 @@ public class PodcastPlayer extends Service {
 		return mPlayer.isPlaying();
 	}
 	
+	public boolean isResumeAfterCall() {
+		final boolean ret = mBeenResumedAfterCall;
+		mBeenResumedAfterCall = false;
+		return ret;
+	}
+	
 	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
 
 		/**
@@ -239,12 +248,13 @@ public class PodcastPlayer extends Service {
 				if (mPlayer.isPlaying()){
 					mPlayer.pause();
 					mResumeAfterCall  = true;
-				break;
 				}
+				break;
 			case TelephonyManager.CALL_STATE_IDLE:
 				if (mResumeAfterCall){
 					mPlayer.start();
 					mResumeAfterCall = false;
+					mBeenResumedAfterCall = true;
 					break;
 				}
 			default:

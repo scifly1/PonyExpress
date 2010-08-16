@@ -114,7 +114,13 @@ public class PlayerActivity extends Activity {
 			Bundle state = new Bundle();
 			state.putInt(EPISODE_LENGTH, mPodcastPlayer.getEpisodeLength());
 			state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
-			state.putBoolean(IS_PLAYING, mPodcastPlayer.isPlaying());
+			//if activity is restarted after a call, isPlaying() may not
+			// be set true yet, as it is asynchronous. 
+			if (mPodcastPlayer.isPlaying() || mPodcastPlayer.isResumeAfterCall()){
+				state.putBoolean(IS_PLAYING, true);
+			} else {
+			    state.putBoolean(IS_PLAYING, false);
+			}
 			restoreSeekBar(state);
 		}
 	}
