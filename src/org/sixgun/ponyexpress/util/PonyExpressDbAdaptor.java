@@ -89,7 +89,7 @@ public class PonyExpressDbAdaptor {
 					//Create new table
 					db.execSQL(TABLE_CREATE);
 					//INSERT into new table.
-					db.execSQL("INSERT INTO " + TABLE_NAME + " SELECT * FROM " +
+					db.execSQL("INSERT INTO " + TABLE_NAME + " SELECT *, NULL FROM " +
 							TEMP_TABLE_NAME + ";");
 					db.execSQL("DROP TABLE " + TEMP_TABLE_NAME);				
 					db.setTransactionSuccessful();

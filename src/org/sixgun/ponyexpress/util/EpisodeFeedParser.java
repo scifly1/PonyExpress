@@ -100,7 +100,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				new_episode.setDate(body);
 			}
 		});
-		//This Listener catches the url of the podcast.
+		//This Listener catches the length and url of the podcast.
 		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
 			
 			@Override
@@ -108,13 +108,6 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				String length = attributes.getValue("", "length");
 				Log.d(TAG,"Episode Length is "+ length);
 				new_episode.setLength(length);
-			}
-		});
-		//This Listener catches the length of the podcast.
-		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
-			
-			@Override
-			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "url");
 				new_episode.setLink(url);
 			}
