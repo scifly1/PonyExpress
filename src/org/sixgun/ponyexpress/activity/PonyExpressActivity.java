@@ -189,7 +189,7 @@ public class PonyExpressActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		
+		//Get all info from database and put it in an Intent for EpisodeTabs
 		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id);
 		final String description = mPonyExpressApp.getDbHelper().getDescription(id);
 		//Seperate episode number from filename for hashtag.
@@ -214,6 +214,8 @@ public class PonyExpressActivity extends ListActivity {
 		} else {
 			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
 			intent.putExtra(EpisodeKeys.URL, url);
+			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id);
+			intent.putExtra(EpisodeKeys.SIZE, size);
 		}
 		startActivity(intent);
 	}
@@ -256,7 +258,8 @@ public class PonyExpressActivity extends ListActivity {
 				//Add any new episodes
 				if (episode.getDate().compareTo(date) > 0) {
 					mPonyExpressApp.getDbHelper().insertEpisode(episode);
-				}	
+				}		
+				
 				//Determine how many episodes to remove
 				final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows();
 				final int episodesToDelete = rows - mEpisodesToHold;

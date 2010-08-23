@@ -34,7 +34,7 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.DESCRIPTION + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
                 EpisodeKeys.LISTENED + " INTEGER," +
-                EpisodeKeys.LENGTH + " INTEGER);";
+                EpisodeKeys.SIZE + " INTEGER);";
     private static final String TEMP_TABLE_CREATE = 
     	"CREATE TEMP TABLE " + TEMP_TABLE_NAME + " (" +
     	EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
@@ -152,7 +152,7 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.DESCRIPTION, episode.getDescription());
         episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
         episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
-        episodeValues.put(EpisodeKeys.LENGTH, episode.getLength());
+        episodeValues.put(EpisodeKeys.SIZE, episode.getLength());
 
         return mDb.insert(TABLE_NAME, null, episodeValues);
     }
@@ -370,6 +370,18 @@ public class PonyExpressDbAdaptor {
 		return rows;
 	}
 
-	   
-    
+	public int getEpisodeSize(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.SIZE};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, 
+				null, null, null, null, null);
+		int size = 0;
+		if (cursor != null){
+			cursor.moveToFirst();
+			size = cursor.getInt(1);
+		}
+		cursor.close();
+		return size;
+	}
+	
 }
