@@ -31,9 +31,11 @@ public final class EpisodeKeys implements BaseColumns {
 	public static final String DESCRIPTION = "description";
 	public static final String DOWNLOADED = "downloaded";
 	public static final String LISTENED = "listened";
+	public static final String SIZE = "length";
 	
 	//This is not a key in the Db, only a useful constant.
 	public static final String EP_NUMBER = "episode_number";
+	
 	
 
 }

@@ -11,7 +11,9 @@
      <TextView android:id="@id/android:empty"
                android:layout_width="fill_parent"
                android:layout_height="wrap_content"
-               android:text="@string/no_dents"/>
+               android:text="@string/no_dents"
+               android:layout_above="@+id/dent_label"
+               android:layout_alignParentTop="true"/>
 	<TextView
         android:id="@+id/dent_label"
         android:layout_width="fill_parent"
@@ -23,7 +25,9 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:background="@android:drawable/editbox_background"
-        android:layout_above="@+id/dent_ok"/>
+        android:layout_above="@+id/dent_ok"
+        android:inputType="textShortMessage|textCapSentences|textAutoCorrect|textImeMultiLine"
+        android:maxLength="150"/>
     <Button
         android:id="@+id/dent_ok"
         android:layout_width="wrap_content"

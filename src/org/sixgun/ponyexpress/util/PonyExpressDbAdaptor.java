@@ -20,7 +20,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 11;
+	private static final int DATABASE_VERSION = 12;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String TABLE_NAME = "Episodes";
     private static final String TEMP_TABLE_NAME = "Temp_Episodes";
@@ -33,7 +33,8 @@ public class PonyExpressDbAdaptor {
                 EpisodeKeys.FILENAME + " TEXT," +
                 EpisodeKeys.DESCRIPTION + " TEXT," +
                 EpisodeKeys.DOWNLOADED + " INTEGER," +
-                EpisodeKeys.LISTENED + " INTEGER);";
+                EpisodeKeys.LISTENED + " INTEGER," +
+                EpisodeKeys.SIZE + " INTEGER);";
     private static final String TEMP_TABLE_CREATE = 
     	"CREATE TEMP TABLE " + TEMP_TABLE_NAME + " (" +
     	EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
@@ -49,6 +50,7 @@ public class PonyExpressDbAdaptor {
     
     private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
+    public boolean mDatabaseUpgraded = false;
     
     private final Context mCtx;
     /*
@@ -88,11 +90,12 @@ public class PonyExpressDbAdaptor {
 					//Create new table
 					db.execSQL(TABLE_CREATE);
 					//INSERT into new table.
-					db.execSQL("INSERT INTO " + TABLE_NAME + " SELECT * FROM " +
+					db.execSQL("INSERT INTO " + TABLE_NAME + " SELECT *, NULL FROM " +
 							TEMP_TABLE_NAME + ";");
 					db.execSQL("DROP TABLE " + TEMP_TABLE_NAME);				
 					db.setTransactionSuccessful();
 				} finally {
+				mDatabaseUpgraded = true;
 				db.endTransaction();
 				}
 				break;
@@ -149,6 +152,7 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.DESCRIPTION, episode.getDescription());
         episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
         episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
+        episodeValues.put(EpisodeKeys.SIZE, episode.getLength());
 
         return mDb.insert(TABLE_NAME, null, episodeValues);
     }
@@ -366,6 +370,18 @@ public class PonyExpressDbAdaptor {
 		return rows;
 	}
 
-	   
-    
+	public int getEpisodeSize(long row_ID) {
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.SIZE};
+		final Cursor cursor = mDb.query(true, TABLE_NAME,
+				columns, EpisodeKeys._ID + "=" + row_ID, 
+				null, null, null, null, null);
+		int size = 0;
+		if (cursor != null){
+			cursor.moveToFirst();
+			size = cursor.getInt(1);
+		}
+		cursor.close();
+		return size;
+	}
+	
 }

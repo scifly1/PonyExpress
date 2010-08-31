@@ -60,6 +60,8 @@ public class Downloader extends IntentService {
 	private FileOutputStream mOutFile;
 	private InputStream mInFile;
 	private String mFilename;
+	private int mSize;
+	private volatile int mTotalDownloaded = 0;
 
 	public Downloader() {
 		super("Downloader");
@@ -83,7 +85,8 @@ public class Downloader extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Bundle data = intent.getExtras();
 		mUrl = getURL(data.getString(EpisodeKeys.URL));
-		mRow_ID= data.getLong(EpisodeKeys._ID);
+		mRow_ID = data.getLong(EpisodeKeys._ID);
+		mSize = data.getInt(EpisodeKeys.SIZE);
 		if (mUrl != null && isSDCardWritable()){
 			prepareForDownload();
 			createNoMediaFile();
@@ -195,11 +198,12 @@ public class Downloader extends IntentService {
 		}
 		byte[] buffer = new byte[1024];
 		int size = 0;
-
+				
 		Log.d(TAG,"Writing " + mFilename);
 		try {
 			while ((size = mInFile.read(buffer)) > 0 ) {
 				mOutFile.write(buffer,0, size);
+				mTotalDownloaded  += size;
 			}
 			Log.d(TAG,"Podcast written to SD card.");
 			mDbHelper.update(mRow_ID, EpisodeKeys.DOWNLOADED,"true");
@@ -208,18 +212,55 @@ public class Downloader extends IntentService {
 			//TODO NM
 		}
 	}
+
 	/**
 	 * Shows a notification in the status bar when downloading an episode.
 	 */
 	private void showNotification() {
-		CharSequence text = getText(R.string.downloading_episode);
-		Notification notification = new Notification(
-				android.R.drawable.stat_notify_sync, null, System.currentTimeMillis());
-		//This uses an empty intent because there is no new activity to start.
-		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 0, new Intent(), 0);
-		notification.setLatestEventInfo(mPonyExpressApp, 
-				getText(R.string.app_name), text, intent);
-		mNM.notify(NOTIFY_ID, notification);
+		new Thread(new Runnable() {
+			CharSequence text = "";
+			//This uses an empty intent because there is no new activity to start.
+			PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+					0, new Intent(), 0);
+			
+			@Override
+			public void run() {
+				int icon = R.drawable.sixgunicon0;
+				String progress = "";
+				double percent = 0.0;
+				do {
+					percent = mTotalDownloaded/(double)mSize * 100;
+					progress = String.format("%.0f", percent);
+					text = progress + "% " + getText(R.string.downloading_episode);
+					if (percent > 15.0 && percent < 30.0) {
+						icon = R.drawable.sixgunicon1;
+					} else if (percent > 30.0 && percent < 45.0) {
+						icon = R.drawable.sixgunicon2;
+					} else if (percent > 45.0 && percent < 60.0) {
+						icon = R.drawable.sixgunicon3;
+					} else if (percent > 60.0 && percent < 75.0) {
+						icon = R.drawable.sixgunicon4;
+					} else if (percent > 75.0 && percent < 90.0) {
+						icon = R.drawable.sixgunicon5;
+					} else if (percent > 90.0) {
+						icon = R.drawable.sixgunicon6;
+					}
+					
+					Notification notification = new Notification(
+							icon, null,
+							System.currentTimeMillis());
+					notification.setLatestEventInfo(mPonyExpressApp, 
+							getText(R.string.app_name), text, intent);
+					
+					mNM.notify(NOTIFY_ID, notification);
+					try {
+						Thread.sleep(2000);
+					} catch (InterruptedException e) {
+						return;
+					}
+				} while (mTotalDownloaded < mSize);
+			}
+		}).start();
 	}
 
 }

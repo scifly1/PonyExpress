@@ -65,6 +65,7 @@ public class IdenticaActivity extends ListActivity {
 	private EditText mDentText;
 	private TextView mCharCounter;
 	private Button mDentButton;
+	private String mTagText;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -152,7 +153,8 @@ public class IdenticaActivity extends ListActivity {
 							IdenticaActivity.this,IdenticaAccountSetupActivity.class),
 							SETUP_ACCOUNT);
 				} else {
-					mDentText.setText("");
+					mDentText.setText(mTagText);
+					mDentText.setSelection(mDentText.length()); //Moves cursor to the end
 					new GetLatestDents().execute();
 				}
 				
@@ -177,7 +179,8 @@ public class IdenticaActivity extends ListActivity {
 		} else {
 			text = mData.getString(EpisodeKeys.EP_NUMBER);
 		}
-		mDentText.setText("#lo"+text + " ");
+		mTagText = "#lo"+text + " ";
+		mDentText.setText(mTagText);
 		
 		mDentText.addTextChangedListener(new TextWatcher() {
 			
