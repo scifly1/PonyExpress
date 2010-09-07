@@ -21,6 +21,7 @@ package org.sixgun.ponyexpress.activity;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -46,7 +47,6 @@ public class PlayerActivity extends Activity {
 	private static final String IS_PLAYING = "is_playing";
 	private static final String TAG = "PonyExpress PlayerActivity";
 	private static final String CURRENT_POSITION = "current_position";
-	private static final String EPISODE_LENGTH = "episode_length";
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
@@ -54,10 +54,11 @@ public class PlayerActivity extends Activity {
 	private boolean mUpdateSeekBar;
 	private Button mPlayPauseButton;
 	private SeekBar mSeekBar;
-	private TextView mElapsed; //TODO 
-	private TextView mEpisodeLength; //TODO 
+	private TextView mElapsed; 
+	private TextView mEpisodeLength;
+	private int mEpisodeDuration;
 	private Handler mHandler = new Handler();
-	private int mCurrentPosition = 0;
+	volatile private int mCurrentPosition = 0;
 	private boolean mUserSeeking = false;
 	private Bundle mSavedState;
 	private Bundle mData;
@@ -121,7 +122,7 @@ public class PlayerActivity extends Activity {
 	
 	private void queryPlayer() {
 		Bundle state = new Bundle();
-		state.putInt(EPISODE_LENGTH, mPodcastPlayer.getEpisodeLength());
+		mEpisodeDuration = mPodcastPlayer.getEpisodeLength();
 		state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
 		//if activity is restarted after a call, isPlaying() may not
 		// be set true yet, as it is asynchronous. 
@@ -131,6 +132,9 @@ public class PlayerActivity extends Activity {
 			state.putBoolean(IS_PLAYING, false);
 		}
 		restoreSeekBar(state);
+		
+		//Set text of episode duration
+		mEpisodeLength.setText(Utils.milliToTime(mEpisodeDuration));
 	}
 	
 	@Override
@@ -288,9 +292,11 @@ public class PlayerActivity extends Activity {
 		//but it will be a good enough approximation.
 		mCurrentPosition = savedInstanceState.getInt(CURRENT_POSITION);
 		//Must set max before progress if progress is > 100 (default Max)
-		final int length = savedInstanceState.getInt(EPISODE_LENGTH);
-		mSeekBar.setMax(length);
+		mSeekBar.setMax(mEpisodeDuration);
 		mSeekBar.setProgress(mCurrentPosition);
+		//Set text of elapsed text view
+		mElapsed.setText(Utils.milliToTime(mCurrentPosition));
+		
 		if (savedInstanceState.getBoolean(IS_PLAYING)){
 			mPaused = false;
 			mPlayPauseButton.setText(R.string.pause);
@@ -312,7 +318,6 @@ public class PlayerActivity extends Activity {
 			outState.putBoolean(IS_PLAYING, false);
 		}
 		outState.putInt(CURRENT_POSITION, mCurrentPosition);
-		outState.putInt(EPISODE_LENGTH, mPodcastPlayer.getEpisodeLength());
 		mSavedState = outState;
 	}
 
@@ -337,8 +342,7 @@ public class PlayerActivity extends Activity {
 					}
 				}
 				mCurrentPosition = mPodcastPlayer.getEpisodePosition();
-				int length = mPodcastPlayer.getEpisodeLength();
-				mSeekBar.setMax(length);
+				mSeekBar.setMax(mEpisodeDuration);
 				while (mUpdateSeekBar && !mPaused){
 					if (!mUserSeeking){
 						try {
@@ -352,6 +356,7 @@ public class PlayerActivity extends Activity {
 							@Override
 							public void run() {
 								mSeekBar.setProgress(mCurrentPosition);
+								mElapsed.setText(Utils.milliToTime(mCurrentPosition));
 								//Poll player to see if it has been paused by completing playback
 								if (!mPodcastPlayer.isPlaying()){
 									mPaused = true;
