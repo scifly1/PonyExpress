@@ -49,14 +49,20 @@ public class PodcastPlayer extends Service {
 
 	private final IBinder mBinder = new PodcastPlayerBinder();
 	private PonyExpressApp mPonyExpressApp; 
-	private MediaPlayer mPlayer;
+	private MediaPlayer mPlayer1;
+	private MediaPlayer mPlayer2;
+	private MediaPlayer mFreePlayer;//All initialisation of the players happens through this
+	private MediaPlayer mPlayer;//All playing of the players happens through this.
+	private String mTitleQueued;
 	private String mTitlePlaying;
 	private boolean mResumeAfterCall = false; 
 	private boolean mBeenResumedAfterCall = false; 
 	private int mSeekDelta = 30000; // 30 seconds
 	private long mRowID;
+	private long mRowIDQueued;
 	HeadPhoneReceiver mHeadPhoneReciever;
 	boolean mHeadPhonesIn = false;
+	
 
 	
 	
@@ -78,13 +84,15 @@ public class PodcastPlayer extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		mPlayer = new MediaPlayer();
+		mPlayer1 = new MediaPlayer();
+		mPlayer2 = new MediaPlayer();
+		mPlayer = mPlayer1;
+		mFreePlayer = mPlayer2;
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
 		
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
-
 			@Override
 			public void onCompletion(MediaPlayer mp) {
 				mp.start();
@@ -100,6 +108,7 @@ public class PodcastPlayer extends Service {
 			
 		};
 		mPlayer.setOnCompletionListener(onCompletionListener);
+		mFreePlayer.setOnCompletionListener(onCompletionListener);
 		
 		Log.d(TAG, "PodcastPlayer started");
 	}
@@ -113,69 +122,88 @@ public class PodcastPlayer extends Service {
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
 		
-		mPlayer.release();
-		mPlayer = null;
+		if (mFreePlayer != null){
+			mFreePlayer.release();
+			mFreePlayer = null;
+		}
+		if (mPlayer != null){
+			mPlayer.release();
+			mPlayer = null;
+		}
+		
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
-	/**
-	 * Plays the file starting from position.  The rowID is used to update the position
+	
+	/** Initilises a the free Media Player with the correct title and sets 
+	 * it up for playback.
+	 * The rowID is used to update the position
 	 * that has been listened to in the database.
 	 * @param file
 	 * @param position
 	 * @param rowID
 	 */
-	public void play(String file, int position, long rowID) {
+	public void initPlayer(String file, int position, long rowID){
 		String path = PonyExpressApp.PODCAST_PATH + file;
+		mRowIDQueued = rowID;
+		if (!file.equals(mTitleQueued)){
+			mFreePlayer.reset();
+			//Set podcast as data source and prepare the player
+			File podcast = new File(Environment.getExternalStorageDirectory(),path);
+			try {
+				mFreePlayer.setDataSource(podcast.getAbsolutePath());
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Illegal path supplied to player", e);
+			} catch (IllegalStateException e) {
+				Log.e(TAG, "Player is not set up correctly", e);
+			} catch (IOException e) {
+				Log.e(TAG,"Player cannot access path",e);
+			}
+			try {
+				mFreePlayer.prepare();
+			} catch (IllegalStateException e) {
+				Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
+			} catch (IOException e) {
+				Log.e(TAG,"Player cannot access path",e);
+			}
+			//SeekTo last listened position
+			if (position != -1){
+				mFreePlayer.seekTo(position);
+				Log.d(TAG,"Seeking to " + position);
+			}
+			mTitleQueued = file;
+		}
+	}
+	
+	/**
+	 * Swaps the queued episode on the free player
+	 * to the mPlayer and begins playback.  
+	 */
+	public void play() {
 		
 		//Register HeadPhone receiver
 		mHeadPhoneReciever = new HeadPhoneReceiver();
 		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
 		registerReceiver(mHeadPhoneReciever, filter);
 		
-		if (file.equals(mTitlePlaying) && mPlayer != null){
-			//We are probably resuming after pause
-			mPlayer.start();
-			Log.d(TAG,"Playing " + path);
-		} else {
-			//If player is playing then pause playback which also records the
-			//playback position in the database.
+		if (!mTitleQueued.equals(mTitlePlaying)) {
+			//We want to play a different episode so stop any currently playing
+			// and record the playback position
 			if (mPlayer.isPlaying()){
-				this.pause(); 
+				this.pause();
 			}
-			//Set mRowID now, after previously playing episode
-			//has been paused and playback position recorded.
-			mRowID = rowID;
-			//Reset player as it might well be paused on another episode
 			mPlayer.reset();
-			//Set podcast as data source and prepare the player
-			File podcast = new File(Environment.getExternalStorageDirectory(),path);
-			if (mPlayer != null){
-				try {
-					mPlayer.setDataSource(podcast.getAbsolutePath());
-				} catch (IllegalArgumentException e) {
-					Log.e(TAG, "Illegal path supplied to player", e);
-				} catch (IllegalStateException e) {
-					Log.e(TAG, "Player is not set up correctly", e);
-				} catch (IOException e) {
-					Log.e(TAG,"Player cannot access path",e);
-				}
-				try {
-					mPlayer.prepare();
-				} catch (IllegalStateException e) {
-					Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
-				} catch (IOException e) {
-					Log.e(TAG,"Player cannot access path",e);
-				}
-				//SeekTo last listened position
-				if (position != -1){
-					SeekTo(position);
-					Log.d(TAG,"Seeking to " + position);
-				}
-				mPlayer.start();
-				mTitlePlaying = file;
-			Log.d(TAG,"Playing " + path);
-			} else Log.e(TAG, "Player is null");
+						
+			//Swap mPlayer and mFreePlayer
+			MediaPlayer swap = null;
+			swap = mPlayer;
+			mPlayer = mFreePlayer;
+			mFreePlayer = swap;
+			mRowID = mRowIDQueued;
 		}
+		
+		mPlayer.start();
+		mTitlePlaying = mTitleQueued;
+		Log.d(TAG,"Playing " + mTitlePlaying);
 		
 	}
 	
@@ -206,17 +234,34 @@ public class PodcastPlayer extends Service {
 		final int newPosition = playbackPosition - mSeekDelta;
 		mPlayer.seekTo(newPosition);
 	}
-	
+	/** This Method is called from PlayerActivity to Seek using the SeekBar  
+	 * 
+	 * @param progress
+	 */
 	public void SeekTo(int progress) {
-		mPlayer.seekTo(progress);		
+		mPlayer.seekTo(progress);
 	}
-	
+
 	public int getEpisodeLength(){
-		return mPlayer.getDuration();
+		if (!mTitleQueued.equals(mTitlePlaying)) {
+			//The queued title is the one needed for the current PlayerActivity.
+			// before playback begins
+			return mFreePlayer.getDuration();
+		} else {
+			//Playback has been started now, so the mPlayer duration is correct
+			return mPlayer.getDuration();
+		}
 	}
 	
 	public int getEpisodePosition(){
-		return mPlayer.getCurrentPosition();
+		if (!mTitleQueued.equals(mTitlePlaying)) {
+			//The queued title is the one needed for the current PlayerActivity.
+			// before playback begins
+			return mFreePlayer.getCurrentPosition();
+		} else {
+			//Playback has been started now, so the mPlayer duration is correct
+			return mPlayer.getCurrentPosition();
+		}
 	}
 	
 	public String getEpisodeTitle(){

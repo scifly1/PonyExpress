@@ -15,6 +15,12 @@
 	<Button android:layout_below="@+id/PlayerSeekBar" android:text="Forward"
 		android:layout_toRightOf="@+id/PlayButton" android:layout_height="wrap_content"
 		android:id="@+id/fastforward" android:layout_width="wrap_content" />
+	<TextView android:id="@+id/elapsed_time" android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:layout_toLeftOf="@+id/rewind" android:layout_below="@+id/PlayerSeekBar" android:layout_marginRight="10sp"
+		android:text="0:00" android:layout_marginTop="10sp"/>
+	<TextView android:id="@+id/length" android:layout_width="wrap_content" android:layout_height="wrap_content"
+		android:layout_toRightOf="@+id/fastforward" android:layout_below="@+id/PlayerSeekBar" android:layout_marginLeft="10sp"
+		android:text="0:00" android:layout_marginTop="10sp"/>
 	
 
 </RelativeLayout>

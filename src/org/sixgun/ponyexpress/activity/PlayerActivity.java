@@ -35,6 +35,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
@@ -53,10 +54,13 @@ public class PlayerActivity extends Activity {
 	private boolean mUpdateSeekBar;
 	private Button mPlayPauseButton;
 	private SeekBar mSeekBar;
+	private TextView mElapsed; //TODO 
+	private TextView mEpisodeLength; //TODO 
 	private Handler mHandler = new Handler();
 	private int mCurrentPosition = 0;
 	private boolean mUserSeeking = false;
 	private Bundle mSavedState;
+	private Bundle mData;
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -79,6 +83,7 @@ public class PlayerActivity extends Activity {
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
 			mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
+			initPlayer();
 			queryPlayer();
 		}
 	};
@@ -97,7 +102,6 @@ public class PlayerActivity extends Activity {
 	    mPodcastPlayerBound = true;
 	}
 
-
 	protected void doUnbindPodcastPlayer() {
 	    if (mPodcastPlayerBound) {
 	        // Detach our existing connection.
@@ -108,28 +112,33 @@ public class PlayerActivity extends Activity {
 	    }
 	}
 	
+	private void initPlayer() {
+		final long row_ID = mData.getLong(EpisodeKeys._ID);
+		mPodcastPlayer.initPlayer(mEpisodeTitle,mCurrentPosition,row_ID);
+	}
+
+
+	
 	private void queryPlayer() {
-		final String title = mPodcastPlayer.getEpisodeTitle();
-		if (title != null && title.equals(mEpisodeTitle)){
-			Bundle state = new Bundle();
-			state.putInt(EPISODE_LENGTH, mPodcastPlayer.getEpisodeLength());
-			state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
-			//if activity is restarted after a call, isPlaying() may not
-			// be set true yet, as it is asynchronous. 
-			if (mPodcastPlayer.isPlaying() || mPodcastPlayer.isResumeAfterCall()){
-				state.putBoolean(IS_PLAYING, true);
-			} else {
-			    state.putBoolean(IS_PLAYING, false);
-			}
-			restoreSeekBar(state);
+		Bundle state = new Bundle();
+		state.putInt(EPISODE_LENGTH, mPodcastPlayer.getEpisodeLength());
+		state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
+		//if activity is restarted after a call, isPlaying() may not
+		// be set true yet, as it is asynchronous. 
+		if (mPodcastPlayer.isPlaying() || mPodcastPlayer.isResumeAfterCall()){
+			state.putBoolean(IS_PLAYING, true);
+		} else {
+			state.putBoolean(IS_PLAYING, false);
 		}
+		restoreSeekBar(state);
 	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		final Bundle data = getIntent().getExtras();
-		mEpisodeTitle = data.getString(EpisodeKeys.FILENAME);
+		mData = getIntent().getExtras();
+		mEpisodeTitle = mData.getString(EpisodeKeys.FILENAME);
+		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		setContentView(R.layout.player);
 
 		
@@ -143,9 +152,7 @@ public class PlayerActivity extends Activity {
 					
 				} else {
 					// Play episdode
-					mCurrentPosition = data.getInt(EpisodeKeys.LISTENED);
-					final long row_ID = data.getLong(EpisodeKeys._ID);
-					mPodcastPlayer.play(mEpisodeTitle,mCurrentPosition,row_ID);
+					mPodcastPlayer.play();
 					mPaused = false;
 					mPlayPauseButton.setText(R.string.pause);
 					mSeekBar.setMax(mPodcastPlayer.getEpisodeLength());
@@ -189,7 +196,7 @@ public class PlayerActivity extends Activity {
 			}
 			
 			/**
-			 * Stops the progrommatic update of the progess bar. 
+			 * Stops the programmatic update of the progess bar. 
 			 */
 			@Override
 			public void onStartTrackingTouch(SeekBar arg0) {
@@ -198,7 +205,7 @@ public class PlayerActivity extends Activity {
 			}
 			
 			/**
-			 * Re-starts the progrommatic update of the progess bar. 
+			 * Re-starts the programmatic update of the progess bar. 
 			 */
 			@Override
 			public void onStopTrackingTouch(SeekBar arg0) {
@@ -216,6 +223,9 @@ public class PlayerActivity extends Activity {
 		fastForwardButton.setOnClickListener(mFastForwardButtonListener);
 		mSeekBar = (SeekBar)findViewById(R.id.PlayerSeekBar);	
 		mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
+		mElapsed = (TextView)findViewById(R.id.elapsed_time);
+		mEpisodeLength = (TextView)findViewById(R.id.length);
+		
 				
 	}
 
@@ -278,7 +288,8 @@ public class PlayerActivity extends Activity {
 		//but it will be a good enough approximation.
 		mCurrentPosition = savedInstanceState.getInt(CURRENT_POSITION);
 		//Must set max before progress if progress is > 100 (default Max)
-		mSeekBar.setMax(savedInstanceState.getInt(EPISODE_LENGTH));
+		final int length = savedInstanceState.getInt(EPISODE_LENGTH);
+		mSeekBar.setMax(length);
 		mSeekBar.setProgress(mCurrentPosition);
 		if (savedInstanceState.getBoolean(IS_PLAYING)){
 			mPaused = false;
