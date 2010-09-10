@@ -19,10 +19,12 @@
 package org.sixgun.ponyexpress;
 
 
+
 public class Dent {
 	private String mTitle;
 	private String mUser;
 	private String mUserScreenName;
+	private String mAvatarURI;
 	
 	//This is a key for saving partially written dents should another activity interupt 
 	// the IdenticaActivity.
@@ -41,17 +43,18 @@ public class Dent {
 	 * @param dent to copy
 	 */
 	public Dent(Dent dent) {
-		this(dent.mTitle,dent.mUser,dent.mUserScreenName);
+		this(dent.mTitle,dent.mUser,dent.mUserScreenName, dent.mAvatarURI);
 	}
 	/**
 	 * Private constructor used by the copy constructor.
 	 * @param mTitle2
 	 * @param mAuthor2
 	 */
-	private Dent(String _title, String _author, String _screen_name) {
+	private Dent(String _title, String _author, String _screen_name, String _avatar) {
 		this.mTitle = _title;
 		this.mUser = _author;
 		this.mUserScreenName = _screen_name;
+		this.mAvatarURI = _avatar;
 	}
 
 	/**
@@ -90,5 +93,19 @@ public class Dent {
 	 */
 	public void setUserScreenName(String mUserScreenName) {
 		this.mUserScreenName = mUserScreenName;
+	}
+	
+	/**
+	 * @return the mAvatarURI
+	 */
+	public String getAvatarURI() {
+		return mAvatarURI;
+	}
+
+	/**
+	 * @param AvatarURL the mAvatarURI to set
+	 */
+	public void setAvatarURI(String AvatarURL) {
+		mAvatarURI = AvatarURL;
 	}
 }

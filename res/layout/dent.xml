@@ -4,24 +4,34 @@
      android:layout_height="wrap_content"
      android:orientation="vertical">
 
+	<org.sixgun.ponyexpress.view.RemoteImageView android:id="@+id/avatar"
+     	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+     	android:layout_alignParentLeft="true"
+     	android:paddingRight="3dp"
+     	android:maxWidth="48dp"
+     	android:maxHeight="48dp" />
+     	
      <TextView android:id="@+id/dent_content"
          android:textSize="16sp"
          android:textStyle="bold"
-         android:layout_width="fill_parent"
-         android:layout_height="wrap_content"/>
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_toRightOf="@+id/avatar"
+         />
 
      <TextView android:id="@+id/dent_author"
          android:textSize="12sp"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content"
          android:layout_below="@id/dent_content"
-         android:layout_alignParentLeft="true" />
+         android:layout_toRightOf="@+id/avatar" />
          
      <TextView android:id="@+id/dent_screen_name"
          android:textSize="12sp"
          android:layout_width="wrap_content"
          android:layout_height="wrap_content" 
-         android:paddingLeft="3sp"
+         android:paddingLeft="3dp"
          android:layout_below="@+id/dent_content"
          android:layout_toRightOf="@+id/dent_author"
          />

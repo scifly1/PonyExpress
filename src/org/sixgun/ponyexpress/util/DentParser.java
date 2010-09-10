@@ -47,6 +47,7 @@ public class DentParser extends BaseFeedParser {
 	static final String USER = "user";
 	static final String NAME = "name";
 	static final String SCREEN_NAME = "screen_name";
+	static final String AVATAR = "profile_image_url";
 	protected static final String TAG = "DentParser";
 	private static final String NS = "";
 	
@@ -107,6 +108,17 @@ public class DentParser extends BaseFeedParser {
 			public void end(String body) {
 				Log.d(TAG,"Found user's screen name: " + body);
 				new_dent.setUserScreenName(body);
+			}
+		});
+		
+		//This listener catches the user's avatar URL.
+		status.getChild(NS,USER).getChild(NS,AVATAR).setEndTextElementListener(
+				new EndTextElementListener() {
+			
+			@Override
+			public void end(String body) {
+				Log.d(TAG,"Found Avatar URL: " + body);
+				new_dent.setAvatarURI(body);
 			}
 		});
 		

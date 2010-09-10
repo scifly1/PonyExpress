@@ -27,6 +27,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.service.IdenticaHandler;
+import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -278,6 +279,7 @@ public class IdenticaActivity extends ListActivity {
                         TextView content = (TextView) v.findViewById(R.id.dent_content);
                         TextView author = (TextView) v.findViewById(R.id.dent_author);
                         TextView userName = (TextView) v.findViewById(R.id.dent_screen_name);
+                        RemoteImageView avatar = (RemoteImageView) v.findViewById(R.id.avatar);
                         if (content != null) {
                               content.setText(dent.getTitle());                            
                         }
@@ -286,6 +288,13 @@ public class IdenticaActivity extends ListActivity {
                         }
                         if (userName != null && dent.getUserScreenName() != null){
                         	userName.setText(" -- " + dent.getUserScreenName());
+                        }
+                        if (avatar != null){
+                        	String url = dent.getAvatarURI();
+                        	if (url!= null && !"".equals(url) && !"null".equalsIgnoreCase(url)){
+                        		avatar.setRemoteURI(url);
+                        		avatar.loadImage();
+                        	}
                         }
                 }
                 return v;

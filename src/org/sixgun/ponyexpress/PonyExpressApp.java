@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress;
 
+import org.sixgun.ponyexpress.util.ImageManager;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
 
@@ -32,6 +33,7 @@ public class PonyExpressApp extends Application {
 	public static final String APPLICATION_NAME = "Pony Express";
 	//TODO When app is capable of handling more podcasts change path to ../files/LinuxOutlaws or whatever
 	public static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
+	public static ImageManager sImageManager;
 	
 	private PonyExpressDbAdaptor DbHelper;
 	private InternetHelper mInternetHelper;
@@ -50,6 +52,8 @@ public class PonyExpressApp extends Application {
 		DbHelper.open();
 		//Set up InternetHelper
 		mInternetHelper = new InternetHelper(this);
+		//Start ImageManager
+		sImageManager = new ImageManager(this);
 	}
 
 	/* (non-Javadoc)
