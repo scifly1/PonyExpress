@@ -34,7 +34,7 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -52,7 +52,7 @@ public class PlayerActivity extends Activity {
 	private boolean mPaused = true;
 	private String mEpisodeTitle;
 	private boolean mUpdateSeekBar;
-	private Button mPlayPauseButton;
+	private ImageButton mPlayPauseButton;
 	private SeekBar mSeekBar;
 	private TextView mElapsed; 
 	private TextView mEpisodeLength;
@@ -152,13 +152,13 @@ public class PlayerActivity extends Activity {
 				if (!mPaused){
 					mPodcastPlayer.pause();
 					mPaused = true;
-					mPlayPauseButton.setText(R.string.play);
+					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
 					
 				} else {
 					// Play episdode
 					mPodcastPlayer.play();
 					mPaused = false;
-					mPlayPauseButton.setText(R.string.pause);
+					mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
 					mSeekBar.setMax(mPodcastPlayer.getEpisodeLength());
 					mSeekBar.setProgress(mCurrentPosition);
 					startSeekBar();
@@ -219,11 +219,11 @@ public class PlayerActivity extends Activity {
 			
 		};
 		
-		mPlayPauseButton = (Button)findViewById(R.id.PlayButton);
+		mPlayPauseButton = (ImageButton)findViewById(R.id.PlayButton);
 		mPlayPauseButton.setOnClickListener(mPlayButtonListener);
-		Button rewindButton = (Button)findViewById(R.id.rewind);
+		ImageButton rewindButton = (ImageButton)findViewById(R.id.rewind);
 		rewindButton.setOnClickListener(mRewindButtonListener);
-		Button fastForwardButton = (Button)findViewById(R.id.fastforward);
+		ImageButton fastForwardButton = (ImageButton)findViewById(R.id.fastforward);
 		fastForwardButton.setOnClickListener(mFastForwardButtonListener);
 		mSeekBar = (SeekBar)findViewById(R.id.PlayerSeekBar);	
 		mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
@@ -299,7 +299,7 @@ public class PlayerActivity extends Activity {
 		
 		if (savedInstanceState.getBoolean(IS_PLAYING)){
 			mPaused = false;
-			mPlayPauseButton.setText(R.string.pause);
+			mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
 			startSeekBar();
 		}
 		
@@ -360,7 +360,7 @@ public class PlayerActivity extends Activity {
 								//Poll player to see if it has been paused by completing playback
 								if (!mPodcastPlayer.isPlaying()){
 									mPaused = true;
-									mPlayPauseButton.setText(R.string.play);
+									mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
 								}
 							}
 						});

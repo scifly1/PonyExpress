@@ -5,22 +5,22 @@
 	<SeekBar android:layout_width="wrap_content" android:id="@+id/PlayerSeekBar"
 		android:layout_centerHorizontal="true" android:layout_height="wrap_content"
 		android:minWidth="250dp" />
-	<Button android:layout_below="@+id/PlayerSeekBar" android:text="@string/play"
+	<ImageButton android:layout_below="@+id/PlayerSeekBar" android:src="@drawable/media_playback_start"
 		android:layout_height="wrap_content" android:id="@+id/PlayButton"
 		android:layout_width="wrap_content" android:layout_centerHorizontal="true" />
-	<Button android:layout_below="@+id/PlayerSeekBar"
-		android:layout_toLeftOf="@+id/PlayButton" android:text="Rewind"
+	<ImageButton android:layout_below="@+id/PlayerSeekBar"
+		android:layout_toLeftOf="@+id/PlayButton" android:src="@drawable/media_seek_backward"
 		android:layout_height="wrap_content" android:id="@+id/rewind"
 		android:layout_width="wrap_content" />
-	<Button android:layout_below="@+id/PlayerSeekBar" android:text="Forward"
+	<ImageButton android:layout_below="@+id/PlayerSeekBar" android:src="@drawable/media_seek_forward"
 		android:layout_toRightOf="@+id/PlayButton" android:layout_height="wrap_content"
 		android:id="@+id/fastforward" android:layout_width="wrap_content" />
 	<TextView android:id="@+id/elapsed_time" android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:layout_toLeftOf="@+id/rewind" android:layout_below="@+id/PlayerSeekBar" android:layout_marginRight="1sp"
-		android:text="0:00:00" android:layout_marginTop="10sp"/>
+		android:text="0:00:00" android:layout_marginTop="10dp"/>
 	<TextView android:id="@+id/length" android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:layout_toRightOf="@+id/fastforward" android:layout_below="@+id/PlayerSeekBar" android:layout_marginLeft="1sp"
-		android:text="0:00:00" android:layout_marginTop="10sp"/>
+		android:text="0:00:00" android:layout_marginTop="10dp"/>
 	
 
 </RelativeLayout>
