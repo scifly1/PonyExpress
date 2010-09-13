@@ -195,6 +195,7 @@ public class PlayerActivity extends Activity {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser){
 					mPodcastPlayer.SeekTo(progress);
+					mElapsed.setText(Utils.milliToTime(progress));
 				}
 				
 			}
