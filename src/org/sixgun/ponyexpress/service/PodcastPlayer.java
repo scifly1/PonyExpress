@@ -239,12 +239,19 @@ public class PodcastPlayer extends Service {
 	 * @param progress
 	 */
 	public void SeekTo(int progress) {
-		mPlayer.seekTo(progress);
+		if (!mTitleQueued.equals(mTitlePlaying)) {
+			//The queued title is the one needed for the current PlayerActivity
+			// before playback begins
+			mFreePlayer.seekTo(progress);
+		} else {
+			//Playback has been started now, so the mPlayer is correct#
+			mPlayer.seekTo(progress);
+		}
 	}
 
 	public int getEpisodeLength(){
 		if (!mTitleQueued.equals(mTitlePlaying)) {
-			//The queued title is the one needed for the current PlayerActivity.
+			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
 			return mFreePlayer.getDuration();
 		} else {
@@ -255,7 +262,7 @@ public class PodcastPlayer extends Service {
 	
 	public int getEpisodePosition(){
 		if (!mTitleQueued.equals(mTitlePlaying)) {
-			//The queued title is the one needed for the current PlayerActivity.
+			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
 			return mFreePlayer.getCurrentPosition();
 		} else {
