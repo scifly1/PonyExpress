@@ -25,8 +25,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
@@ -37,7 +35,6 @@ import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -45,10 +42,10 @@ import android.os.AsyncTask.Status;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 /**
@@ -66,12 +63,11 @@ public class PonyExpressActivity extends ListActivity {
 	private ProgressDialog mProgDialog;
 	private ProgressDialog mProgDialogDb;
 	private int mEpisodesToHold = 10;
-
-
-	@Override
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
@@ -110,14 +106,11 @@ public class PonyExpressActivity extends ListActivity {
 			}
 		});
 	}
-
-	/** 
-	 * (Re-)list the episodes.
-	 */
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
-		listEpisodes();
+		listPodcasts();
 		if (mSavedState != null){
 			restoreLocalState(mSavedState);
 		}
@@ -181,43 +174,22 @@ public class PonyExpressActivity extends ListActivity {
 			mUpdateTask = null;
 		}
 	}
-
-
+	
 	/* (non-Javadoc)
 	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
 	 */
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		//Get all info from database and put it in an Intent for EpisodeTabs
-		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id);
-		final String description = mPonyExpressApp.getDbHelper().getDescription(id);
-		//Seperate episode number from filename for hashtag.
-		Pattern digits = Pattern.compile("[0-9]+");
-		Matcher m = digits.matcher(title);
-		m.find();
-		String epNumber = m.group(); 
-		Log.d(TAG, "Episode number: " + epNumber);
-
-		Intent intent = new Intent(this,EpisodeTabs.class);
-		intent.putExtra(EpisodeKeys.TITLE, title);
-		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
-		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
-		intent.putExtra(EpisodeKeys._ID, id);
-		//Determine if Episode has been downloaded and add required extras.
-		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id);
-		if (downloaded){
-			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
-			intent.putExtra(EpisodeKeys.FILENAME, filename);
-			final int listened = mPonyExpressApp.getDbHelper().getListened(id);
-			intent.putExtra(EpisodeKeys.LISTENED, listened);
-		} else {
-			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
-			intent.putExtra(EpisodeKeys.URL, url);
-			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id);
-			intent.putExtra(EpisodeKeys.SIZE, size);
-		}
+		//TODO We only have LO so this always starts LO episodes at present.
+		Intent intent = new Intent(this,EpisodesActivity.class);
 		startActivity(intent);
+		
+	}
+	
+	private void listPodcasts() {
+		String[] podcasts = getResources().getStringArray(R.array.Podcasts);
+		setListAdapter(new ArrayAdapter<String>(this, R.layout.podcast_row, podcasts));
 	}
 
 	/**
@@ -301,27 +273,10 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			mProgDialog.hide();
-			listEpisodes();			
+			mProgDialog.hide();		
 		}
 		
 	};
-
-	/**
-	 * Query the database for all Episode titles to populate the ListView.
-	 */
-	private void listEpisodes(){
-		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames();
-		startManagingCursor(c);
-		//Set up columns to map from, and layout to map to
-		String[] from = new String[] { EpisodeKeys.TITLE };
-		int[] to = new int[] { R.id.episode_text };
-		
-		SimpleCursorAdapter episodes = new SimpleCursorAdapter(
-				this, R.layout.episode_row, c, from, to);
-		setListAdapter(episodes);
-		
-	}
 	
 	private class DatabaseCheck extends AsyncTask<Void, Void, Void> {
 		
@@ -369,5 +324,4 @@ public class PonyExpressActivity extends ListActivity {
 			mProgDialogDb.dismiss();
 		}
 	}
-	
 }

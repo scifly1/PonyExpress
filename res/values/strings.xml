@@ -1,25 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    
-    <string name="app_name">Pony Express</string><string name="Episodes_title"><b>Episodes</b></string>
-    <string name="no_internet_connection">Cannot connect to the Internet.  Check your connectivity.</string>
-<string name="download">Download</string>
-<string name="listen">Listen</string>
-<string name="dent">Dent about this episode..</string>
-<string name="downloading_episode">Downloaded.</string>
-<string name="no_dents">No dents for this episode yet!  Go on, be the first!</string>
-<string name="dent_here">Type new dent here:</string>
-<string name="dent_ok">Dent!</string>
-<string name="conn_err_query_failed">Connection error! Cannot get dents.</string>
-<string name="error_generic">Sorry, something has gone wrong..</string>
-<string name="login_failed">Identi.ca login failed! Have you set up your account?</string>
-<string name="credentials_not_verified">Could not verify your credentials!</string>
 
-<string name="ok">OK</string>
-<string name="cancel">Cancel</string>
-<string name="enter_username">Username:</string>
-<string name="enter_password">Password:</string>
-<string name="account_setup">Enter your Identi.ca account details.</string>
-<string name="pause">Pause</string>
-<string name="play">Play</string>
+	<string name="app_name">Pony Express</string>
+	<string name="Episodes_title">
+		<b>Episodes</b>
+	</string>
+	<string name="Sixgun_title">
+		<b>Sixgun Productions</b>
+	</string>
+	<string name="no_internet_connection">Cannot connect to the Internet. Check your
+		connectivity.</string>
+	<string name="download">Download</string>
+	<string name="listen">Listen</string>
+	<string name="dent">Dent about this episode..</string>
+	<string name="downloading_episode">Downloaded.</string>
+	<string name="no_dents">No dents for this episode yet! Go on, be the first!
+	</string>
+	<string name="dent_here">Type new dent here:</string>
+	<string name="dent_ok">Dent!</string>
+	<string name="conn_err_query_failed">Connection error! Cannot get dents.</string>
+	<string name="error_generic">Sorry, something has gone wrong..</string>
+	<string name="login_failed">Identi.ca login failed! Have you set up your
+		account?</string>
+	<string name="credentials_not_verified">Could not verify your credentials!</string>
+
+	<string name="ok">OK</string>
+	<string name="cancel">Cancel</string>
+	<string name="enter_username">Username:</string>
+	<string name="enter_password">Password:</string>
+	<string name="account_setup">Enter your Identi.ca account details.</string>
+	<string name="pause">Pause</string>
+	<string name="play">Play</string>
+<string-array name="Podcasts"><item>Linux Outlaws</item><item>Rant-o\'Fab</item></string-array>
 </resources>

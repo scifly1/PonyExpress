@@ -16,6 +16,7 @@
 		<service android:name=".service.Downloader" />
 		<service android:name=".service.IdenticaHandler" />
 		<service android:name=".service.PodcastPlayer" />
+		<activity android:name=".activity.EpisodesActivity" />
 		<activity android:name=".activity.PlayerActivity" />
 		<activity android:name=".activity.DownloadActivity" />
 		<activity android:name=".activity.EpisodeTabs" android:theme="@android:style/Theme.NoTitleBar" 

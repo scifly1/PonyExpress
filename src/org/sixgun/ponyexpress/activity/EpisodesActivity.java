@@ -1,0 +1,126 @@
+/*
+ * Copyright 2010 Paul Elms
+ *
+ *  This file is part of PonyExpress.
+ *
+ *  PonyExpress is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  PonyExpress is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
+*/
+package org.sixgun.ponyexpress.activity;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.R;
+
+import android.app.ListActivity;
+import android.content.Intent;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+
+
+public class EpisodesActivity extends ListActivity {
+
+	private static final String TAG = "EpisodesActivity";
+	private PonyExpressApp mPonyExpressApp; 
+
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.episodes);
+		TextView title = (TextView)findViewById(R.id.title);
+		//FIXME This string should not be hard coded, 
+		//it should come from the database.
+		//We can get it from the feed at <channel><title>...</></>
+		title.setText("Linux Outlaws");
+		
+		//Get the application context.
+		mPonyExpressApp = (PonyExpressApp)getApplication();
+	}
+
+	/** 
+	 * (Re-)list the episodes.
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		listEpisodes();
+	}
+
+
+	/* (non-Javadoc)
+	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
+	 */
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		super.onListItemClick(l, v, position, id);
+		//Get all info from database and put it in an Intent for EpisodeTabs
+		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id);
+		final String description = mPonyExpressApp.getDbHelper().getDescription(id);
+		//Seperate episode number from filename for hashtag.
+		Pattern digits = Pattern.compile("[0-9]+");
+		Matcher m = digits.matcher(title);
+		m.find();
+		String epNumber = m.group(); 
+		Log.d(TAG, "Episode number: " + epNumber);
+
+		Intent intent = new Intent(this,EpisodeTabs.class);
+		intent.putExtra(EpisodeKeys.TITLE, title);
+		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
+		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
+		intent.putExtra(EpisodeKeys._ID, id);
+		//Determine if Episode has been downloaded and add required extras.
+		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id);
+		if (downloaded){
+			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
+			intent.putExtra(EpisodeKeys.FILENAME, filename);
+			final int listened = mPonyExpressApp.getDbHelper().getListened(id);
+			intent.putExtra(EpisodeKeys.LISTENED, listened);
+		} else {
+			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
+			intent.putExtra(EpisodeKeys.URL, url);
+			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id);
+			intent.putExtra(EpisodeKeys.SIZE, size);
+		}
+		startActivity(intent);
+	}
+
+	
+
+	/**
+	 * Query the database for all Episode titles to populate the ListView.
+	 */
+	private void listEpisodes(){
+		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames();
+		startManagingCursor(c);
+		//Set up columns to map from, and layout to map to
+		String[] from = new String[] { EpisodeKeys.TITLE };
+		int[] to = new int[] { R.id.episode_text };
+		
+		SimpleCursorAdapter episodes = new SimpleCursorAdapter(
+				this, R.layout.episode_row, c, from, to);
+		setListAdapter(episodes);
+		
+	}
+	
+
+	
+}

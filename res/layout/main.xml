@@ -2,15 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-	<TextView android:id="@+id/title" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:text="@string/Episodes_title"
+	<TextView android:id="@+id/sixguntitle" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:text="@string/Sixgun_title"
 		android:padding="10dp" android:textSize="30sp" />
+
+	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_below="@id/sixguntitle"
+		android:paddingTop="5dp" />
 	<ImageButton android:id="@+id/view_refresh" android:src="@drawable/view_refresh"
 		android:layout_width="wrap_content" android:layout_height="wrap_content"
 		android:tint="#ff888888" android:layout_alignParentRight="true"
-		android:clickable="true"  />
-
-	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_below="@id/view_refresh"
-		android:paddingTop="5dp" />
+		android:layout_alignParentBottom="true" android:clickable="true" />
 </RelativeLayout>
