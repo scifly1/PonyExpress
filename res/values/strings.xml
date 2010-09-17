@@ -33,6 +33,7 @@
 	<string name="play">Play</string>
 <!--	The sixgun Podcasts array holds the default podcasts that are added when first installed-->
 <string-array name="Sixgun_Podcasts"><item>http://feeds.feedburner.com/linuxoutlaws-ogg</item><item>http://feeds.feedburner.com/rantofab-ogg</item></string-array>
-
-
+<!-- The Sixgun podcasts tags array holds the identi.ca tags for each podcast.  They need to be in the same order as the podcasts
+Tags for other podcasts will be added by the user when they add the feed url -->
+<string-array name="Sixgun_Podcast_Tags"><item>lo</item><item>"rantofab"</item></string-array>
 </resources>

@@ -30,12 +30,13 @@ public class Podcast {
 	private String mName;
     private URL mFeed_Url;
     private URL mArt_Url;
+    private String mIdenticaTag;
     
     /**
      * Constructor.  Creates 'empty' podcast.
      */
     public Podcast() {
-    	
+    	mIdenticaTag = "";  //If this is not set later it will remain empty and can be checked for.
 	}
     
     /**
@@ -43,7 +44,7 @@ public class Podcast {
      * @param episode to copy.
      */
     public Podcast(Podcast newPodcast) {
-    	this(newPodcast.mName,newPodcast.mFeed_Url,newPodcast.mArt_Url);
+    	this(newPodcast.mName,newPodcast.mFeed_Url,newPodcast.mArt_Url,newPodcast.mIdenticaTag);
 	}
     
     /**
@@ -52,10 +53,11 @@ public class Podcast {
      * @param _link
      * @param _title
      */
-    private Podcast(String _name, URL _feed, URL _art){
+    private Podcast(String _name, URL _feed, URL _art, String _tag){
     	this.mName = _name;
     	this.mFeed_Url = _feed;
     	this.mArt_Url = _art;
+    	this.mIdenticaTag = _tag;
     }
     
 	/*
@@ -105,5 +107,19 @@ public class Podcast {
 	 */
 	public URL getArt_Url() {
 		return mArt_Url;
+	}
+
+	/**
+	 * @param mIdenticaTag the mIdenticaTag to set
+	 */
+	public void setIdenticaTag(String mIdenticaTag) {
+		this.mIdenticaTag = mIdenticaTag;
+	}
+
+	/**
+	 * @return the mIdenticaTag
+	 */
+	public String getIdenticaTag() {
+		return mIdenticaTag;
 	}
 }

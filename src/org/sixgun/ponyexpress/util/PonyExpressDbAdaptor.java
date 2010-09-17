@@ -58,7 +58,8 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.NAME + " TEXT," +
     	PodcastKeys.FEED_URL + " TEXT," +
     	PodcastKeys.ALBUM_ART_URL + " TEXT," +
-    	PodcastKeys.TABLE_NAME + " TEXT);";
+    	PodcastKeys.TABLE_NAME + " TEXT," + 
+    	PodcastKeys.TAG + " TEXT);";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
     
@@ -471,14 +472,20 @@ public class PonyExpressDbAdaptor {
 	 */
 	private void loadSixgunPodcasts() {
 		String[] feed_urls =  mCtx.getResources().getStringArray(R.array.Sixgun_Podcasts);
-		for (String feed: feed_urls) {
-			PodcastFeedParser parser = new PodcastFeedParser(feed);
+		String[] identica_tags = mCtx.getResources().getStringArray(R.array.Sixgun_Podcast_Tags); 
+		final int feeds = feed_urls.length;
+		final int tags = identica_tags.length;
+		if (feeds != tags){
+			throw new RuntimeException("Number of Sixgun Podcast feed does not equal the number of tags.");			
+		}
+		for (int i = 0; i < feeds; ++i) {
+			PodcastFeedParser parser = new PodcastFeedParser(feed_urls[i]);
 			Podcast podcast = parser.parse();
+			podcast.setIdenticaTag(identica_tags[i]);
 			insertPodcast(podcast);
 			//Create table for this podcast's episodes
 			String tableName = getTableName(podcast.getName());
-			mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
-			
+			mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);	
 		}
 	}
 	
@@ -494,6 +501,7 @@ public class PonyExpressDbAdaptor {
         podcastValues.put(PodcastKeys.NAME, name);
         podcastValues.put(PodcastKeys.FEED_URL, podcast.getFeed_Url().toString());
         podcastValues.put(PodcastKeys.ALBUM_ART_URL, podcast.getArt_Url().toString());
+        podcastValues.put(PodcastKeys.TAG, podcast.getIdenticaTag());
         podcastValues.putNull(PodcastKeys.TABLE_NAME);
      
         //Insert the record and then update it with the created Episode table name
@@ -536,6 +544,21 @@ public class PonyExpressDbAdaptor {
 	public String getPodcastUrl(String podcast_name) {
 		final String quotedName = "\"" + podcast_name + "\"";
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.FEED_URL};
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, PodcastKeys.NAME + "=" + quotedName ,
+				null, null, null, null, null);
+		String url = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			url = cursor.getString(1);
+		}
+		cursor.close();
+		return url;
+	}
+
+	public String getIdenticaTag(String podcast_name) {
+		final String quotedName = "\"" + podcast_name + "\"";
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.TAG};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quotedName ,
 				null, null, null, null, null);

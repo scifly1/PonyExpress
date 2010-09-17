@@ -76,7 +76,11 @@ public class EpisodesActivity extends ListActivity {
 		//Get all info from database and put it in an Intent for EpisodeTabs
 		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id, mPodcastName);
 		final String description = mPonyExpressApp.getDbHelper().getDescription(id, mPodcastName);
+		final String identicaTag = mPonyExpressApp.getDbHelper().getIdenticaTag(mPodcastName);
 		//Seperate episode number from filename for hashtag.
+		//FIXME This only works for filename with xxxxxxnn format not 
+		//for others such as xxxxxxxsnnenn
+		//If cannot be determined don't do ep specific dents, only group dents
 		Pattern digits = Pattern.compile("[0-9]+");
 		Matcher m = digits.matcher(title);
 		m.find();
@@ -87,6 +91,9 @@ public class EpisodesActivity extends ListActivity {
 		intent.putExtra(PodcastKeys.NAME, mPodcastName);
 		intent.putExtra(EpisodeKeys.TITLE, title);
 		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
+		if (!identicaTag.equals("")){
+			intent.putExtra(PodcastKeys.TAG, identicaTag);
+		}
 		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
 		intent.putExtra(EpisodeKeys._ID, id);
 		//Determine if Episode has been downloaded and add required extras.

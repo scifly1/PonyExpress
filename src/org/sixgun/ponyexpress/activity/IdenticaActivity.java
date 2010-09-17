@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 import org.sixgun.ponyexpress.Dent;
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
@@ -66,6 +67,7 @@ public class IdenticaActivity extends ListActivity {
 	private EditText mDentText;
 	private TextView mCharCounter;
 	private Button mDentButton;
+	private String mIdenticaTag;
 	private String mTagText;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
@@ -128,6 +130,7 @@ public class IdenticaActivity extends ListActivity {
 		doBindIdenticaHandler();
 		Log.d(TAG, "IdenticaActivity Started.");
 		mData = getIntent().getExtras();
+		mIdenticaTag= mData.getString(PodcastKeys.TAG);
 		setContentView(R.layout.identica);
 		
 		OnClickListener DentButtonListener = new OnClickListener() {
@@ -180,7 +183,7 @@ public class IdenticaActivity extends ListActivity {
 		} else {
 			text = mData.getString(EpisodeKeys.EP_NUMBER);
 		}
-		mTagText = "#lo"+text + " ";
+		mTagText = "#" + mIdenticaTag +text + " ";
 		mDentText.setText(mTagText);
 		
 		mDentText.addTextChangedListener(new TextWatcher() {
@@ -308,7 +311,7 @@ public class IdenticaActivity extends ListActivity {
 			//Check for connectivity first.
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 				final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
-				dents = mIdenticaHandler.queryIdentica("lo" + ep_number + ".xml");
+				dents = mIdenticaHandler.queryIdentica(mIdenticaTag + ep_number + ".xml");
 			} else {
 				Dent no_dents = new Dent();
 				no_dents.setTitle(getString(R.string.conn_err_query_failed));

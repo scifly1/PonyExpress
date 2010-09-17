@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
 
 import android.app.TabActivity;
@@ -76,11 +77,13 @@ public class EpisodeTabs extends TabActivity {
 	    spec = tabHost.newTabSpec("episode").setIndicator(tabTitle).setContent(intent);
 	    tabHost.addTab(spec);
 	    
-	    //Add Identi.ca feed Activity
-	    intent = new Intent(this,IdenticaActivity.class);
-	    intent.putExtras(data);
-	    spec = tabHost.newTabSpec("identica").setIndicator("Identi.ca").setContent(intent);
-	    tabHost.addTab(spec);
+	    //Add Identi.ca feed Activity if a tag has been set.
+	    if (data.getExtras().containsKey(PodcastKeys.TAG)){
+	    	intent = new Intent(this,IdenticaActivity.class);
+	    	intent.putExtras(data);
+	    	spec = tabHost.newTabSpec("identica").setIndicator("Identi.ca").setContent(intent);
+	    	tabHost.addTab(spec);
+	    }
 	    
 	    tabHost.setCurrentTab(0);
 	    
