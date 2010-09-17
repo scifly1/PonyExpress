@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress.activity;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
@@ -28,6 +29,7 @@ import java.util.Map.Entry;
 
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
@@ -35,6 +37,7 @@ import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -42,10 +45,10 @@ import android.os.AsyncTask.Status;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 /**
@@ -181,15 +184,25 @@ public class PonyExpressActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		//TODO We only have LO so this always starts LO episodes at present.
+		//Get the podcast name.
+		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
+		//Store in an intent and send to EpisodesActivity
 		Intent intent = new Intent(this,EpisodesActivity.class);
+		intent.putExtra(PodcastKeys.NAME, name);
 		startActivity(intent);
 		
 	}
 	
 	private void listPodcasts() {
-		String[] podcasts = getResources().getStringArray(R.array.Podcasts);
-		setListAdapter(new ArrayAdapter<String>(this, R.layout.podcast_row, podcasts));
+		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNames();
+		startManagingCursor(c);
+		//Set up columns to map from, and layout to map to
+		String[] from = new String[] { PodcastKeys.NAME };
+		int[] to = new int[] { R.id.podcast_text };
+		
+		SimpleCursorAdapter podcasts = new SimpleCursorAdapter(
+				this, R.layout.podcast_row, c, from, to);
+		setListAdapter(podcasts);
 	}
 
 	/**
@@ -217,37 +230,44 @@ public class PonyExpressActivity extends ListActivity {
 		 */
 		@Override
 		protected Void doInBackground(Void... params) {
+			//Get each podcast name then its feed url, and update each.
+			List<String> podcast_names = 
+				mPonyExpressApp.getDbHelper().listAllPodcasts();
 			
-			final String feed = "http://feeds.feedburner.com/linuxoutlaws-ogg";
-
-			EpisodeFeedParser parser = new EpisodeFeedParser(mPonyExpressApp,feed);
-
-			List<Episode> episodes = parser.parse();
-
-			final Date date = mPonyExpressApp.getDbHelper().getLatestEpisodeDate();
-						
-			for (Episode episode: episodes){
-				//Add any new episodes
-				if (episode.getDate().compareTo(date) > 0) {
-					mPonyExpressApp.getDbHelper().insertEpisode(episode);
-				}		
+			for (String podcast: podcast_names){
+				String podcast_url = 
+					mPonyExpressApp.getDbHelper().getPodcastUrl(podcast);
+				EpisodeFeedParser parser = new EpisodeFeedParser(mPonyExpressApp,
+						podcast_url);
+				List<Episode> episodes = parser.parse();
 				
-				//Determine how many episodes to remove
-				final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows();
-				final int episodesToDelete = rows - mEpisodesToHold;
-				//Remove correct number of episodes from oldest episodes to maintain required number.
-				for (int i = episodesToDelete; i > 0; i--){
-					final long rowID = 
-						mPonyExpressApp.getDbHelper().getOldestEpisode();
-					if (rowID != -1){
-						if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID)){
-							//delete from SD Card
-							deleteFile(rowID);
-						}
-						//remove from database after deleting.
-						mPonyExpressApp.getDbHelper().deleteEpisode(rowID);
-					} else {Log.e(TAG, "Cannot find oldest episode");}
+				final Date date = 
+					mPonyExpressApp.getDbHelper().getLatestEpisodeDate(podcast);
+				
+				for (Episode episode: episodes){
+					//Add any new episodes
+					if (episode.getDate().compareTo(date) > 0) {
+						mPonyExpressApp.getDbHelper().insertEpisode(episode, podcast);
+					}		
+					
+					//Determine how many episodes to remove
+					final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows(podcast);
+					final int episodesToDelete = rows - mEpisodesToHold;
+					//Remove correct number of episodes from oldest episodes to maintain required number.
+					for (int i = episodesToDelete; i > 0; i--){
+						final long rowID = 
+							mPonyExpressApp.getDbHelper().getOldestEpisode(podcast);
+						if (rowID != -1){
+							if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast)){
+								//delete from SD Card
+								deleteFile(rowID, podcast);
+							}
+							//remove from database after deleting.
+							mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast);
+						} else {Log.e(TAG, "Cannot find oldest episode");}
+					}
 				}
+				
 			}
 			return null;
 		}
@@ -255,10 +275,12 @@ public class PonyExpressActivity extends ListActivity {
 		 * 
 		 * @param rowID of the file to be deleted from the database.
 		 */
-		private void deleteFile(long rowID) {
+		private void deleteFile(long rowID, String podcast_name) {
 			File rootPath = Environment.getExternalStorageDirectory();
 			File dirPath = new File(rootPath,PonyExpressApp.PODCAST_PATH);
-			String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(rowID);
+			String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(rowID, podcast_name);
+			//Add the podcast name as a folder under the PODCAST_PATH
+			filename = podcast_name + filename;
 			File fullPath = new File(dirPath,filename);
 			fullPath.delete();			
 		}
@@ -292,23 +314,29 @@ public class PonyExpressActivity extends ListActivity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			//Get a List of the file names that are on the SD Card.
+			//Get a List of the file names that are on the SD Card for each podcast.
 			File rootPath = Environment.getExternalStorageDirectory();
 			File path = new File(rootPath,PonyExpressApp.PODCAST_PATH);
-			final String[] filesOnDisk = path.list();
-			//Get a Map of filenames (and their index) that are in the database
-			final Map<Long, String> filesInDatabase = 
-				mPonyExpressApp.getDbHelper().getFilenamesOnDisk();
-			if (filesOnDisk != null){
-				List<String> diskFiles = Arrays.asList(filesOnDisk);
-				//If file is in database but not on disk, mark as not downloaded in database.
-				final int mapSize = filesInDatabase.size();
-				Iterator<Entry<Long, String>> fileIter = filesInDatabase.entrySet().iterator();
-				for (int i = 0; i < mapSize; i++){
-					Map.Entry<Long, String> entry = (Map.Entry<Long, String>)fileIter.next();
-					if (!diskFiles.contains(entry.getValue())){
-						mPonyExpressApp.getDbHelper().update(entry.getKey(), 
-								EpisodeKeys.DOWNLOADED, "false");
+			final String[] podcastsOnDisk = path.list();
+			List<String> filesOnDisk = new ArrayList<String>();
+			if (podcastsOnDisk != null){
+				for (String podcast: podcastsOnDisk){
+					String[] files = path.list();
+					filesOnDisk.addAll(Arrays.asList(files));
+					//Get a Map of filenames (and their index) that are in the database
+					final Map<Long, String> filesInDatabase = 
+						mPonyExpressApp.getDbHelper().getFilenamesOnDisk(podcast);
+					if (filesOnDisk != null){
+						//If file is in database but not on disk, mark as not downloaded in database.
+						final int mapSize = filesInDatabase.size();
+						Iterator<Entry<Long, String>> fileIter = filesInDatabase.entrySet().iterator();
+						for (int i = 0; i < mapSize; i++){
+							Map.Entry<Long, String> entry = (Map.Entry<Long, String>)fileIter.next();
+							if (!filesOnDisk.contains(entry.getValue())){
+								mPonyExpressApp.getDbHelper().update(podcast, entry.getKey(), 
+										EpisodeKeys.DOWNLOADED, "false");
+							}
+						}
 					}
 				}
 			}

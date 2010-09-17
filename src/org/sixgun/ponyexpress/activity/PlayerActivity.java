@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
@@ -50,6 +51,7 @@ public class PlayerActivity extends Activity {
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
+	private String mPodcastName;
 	private String mEpisodeTitle;
 	private boolean mUpdateSeekBar;
 	private ImageButton mPlayPauseButton;
@@ -115,7 +117,7 @@ public class PlayerActivity extends Activity {
 	
 	private void initPlayer() {
 		final long row_ID = mData.getLong(EpisodeKeys._ID);
-		mPodcastPlayer.initPlayer(mEpisodeTitle,mCurrentPosition,row_ID);
+		mPodcastPlayer.initPlayer(mPodcastName, mEpisodeTitle,mCurrentPosition,row_ID);
 	}
 
 
@@ -141,6 +143,7 @@ public class PlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mData = getIntent().getExtras();
+		mPodcastName = mData.getString(PodcastKeys.NAME);
 		mEpisodeTitle = mData.getString(EpisodeKeys.FILENAME);
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		setContentView(R.layout.player);

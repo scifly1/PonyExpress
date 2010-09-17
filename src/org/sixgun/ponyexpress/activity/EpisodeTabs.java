@@ -57,6 +57,7 @@ public class EpisodeTabs extends TabActivity {
 	    
 	    //Add Episode Notes Activity
 	    intent = new Intent(this,EpisodeNotesActivity.class);
+	    //Pass on the Extras
 	    intent.putExtras(data);
 	    spec = tabHost.newTabSpec("notes").setIndicator("Show Notes").setContent(intent);
 	    tabHost.addTab(spec);

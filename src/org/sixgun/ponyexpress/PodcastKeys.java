@@ -21,21 +21,12 @@ package org.sixgun.ponyexpress;
 
 import android.provider.BaseColumns;
 
-public final class EpisodeKeys implements BaseColumns {
-	// This class cannot be instantiated
-	//These are all keys in each Episodes table in the database
-	public static final String TITLE = "title";
-	public static final String DATE = "date";
-	public static final String URL = "url";
-	public static final String FILENAME = "filename";
-	public static final String DESCRIPTION = "description";
-	public static final String DOWNLOADED = "downloaded";
-	public static final String LISTENED = "listened";
-	public static final String SIZE = "length";
-	
-	//This is not a key in the Db, only a useful constant.
-	public static final String EP_NUMBER = "episode_number";
-	
-	
 
+public class PodcastKeys implements BaseColumns {
+	// This class cannot be instantiated
+	//These are all keys in the podcasts table in the database
+	public static final String NAME = "name";
+	public static final String ALBUM_ART_URL = "art";
+	public static final String FEED_URL = "url";
+	public static final String TABLE_NAME = "table_name";
 }

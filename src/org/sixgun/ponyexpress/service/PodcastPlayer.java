@@ -53,8 +53,10 @@ public class PodcastPlayer extends Service {
 	private MediaPlayer mPlayer2;
 	private MediaPlayer mFreePlayer;//All initialisation of the players happens through this
 	private MediaPlayer mPlayer;//All playing of the players happens through this.
-	private String mTitleQueued;
-	private String mTitlePlaying;
+	private String mPodcastName;
+	private String mPodcastNameQueued;
+	private String mEpisodeQueued;
+	private String mEpisodePlaying;
 	private boolean mResumeAfterCall = false; 
 	private boolean mBeenResumedAfterCall = false; 
 	private int mSeekDelta = 30000; // 30 seconds
@@ -99,7 +101,7 @@ public class PodcastPlayer extends Service {
 				Log.d(TAG,"Playback re-started");
 				mp.pause();
 				//Set Listened to 0
-				boolean res = mPonyExpressApp.getDbHelper().update(mRowID, 
+				boolean res = mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
 						EpisodeKeys.LISTENED, 0);
 				if (res) {
 					Log.d(TAG, "Updated listened to position to 0");
@@ -142,10 +144,11 @@ public class PodcastPlayer extends Service {
 	 * @param position
 	 * @param rowID
 	 */
-	public void initPlayer(String file, int position, long rowID){
-		String path = PonyExpressApp.PODCAST_PATH + file;
+	public void initPlayer(String podcast_name, String file, int position, long rowID){
+		mPodcastNameQueued = podcast_name;
+		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = rowID;
-		if (!file.equals(mTitleQueued)){
+		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
 			//Set podcast as data source and prepare the player
 			File podcast = new File(Environment.getExternalStorageDirectory(),path);
@@ -170,7 +173,7 @@ public class PodcastPlayer extends Service {
 				mFreePlayer.seekTo(position);
 				Log.d(TAG,"Seeking to " + position);
 			}
-			mTitleQueued = file;
+			mEpisodeQueued = file;
 		}
 	}
 	
@@ -185,7 +188,7 @@ public class PodcastPlayer extends Service {
 		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
 		registerReceiver(mHeadPhoneReciever, filter);
 		
-		if (!mTitleQueued.equals(mTitlePlaying)) {
+		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//We want to play a different episode so stop any currently playing
 			// and record the playback position
 			if (mPlayer.isPlaying()){
@@ -199,11 +202,12 @@ public class PodcastPlayer extends Service {
 			mPlayer = mFreePlayer;
 			mFreePlayer = swap;
 			mRowID = mRowIDQueued;
+			mPodcastName = mPodcastNameQueued;
 		}
 		
 		mPlayer.start();
-		mTitlePlaying = mTitleQueued;
-		Log.d(TAG,"Playing " + mTitlePlaying);
+		mEpisodePlaying = mEpisodeQueued;
+		Log.d(TAG,"Playing " + mEpisodePlaying);
 		
 	}
 	
@@ -215,7 +219,7 @@ public class PodcastPlayer extends Service {
 		mPlayer.pause();
 		//Record last listened position in database
 		final int playbackPosition = mPlayer.getCurrentPosition();
-		boolean res =mPonyExpressApp.getDbHelper().update(mRowID, 
+		boolean res =mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID, 
 				EpisodeKeys.LISTENED, playbackPosition);
 		if (res){
 			Log.d(TAG, "Updated listened to position to " + playbackPosition);
@@ -239,7 +243,7 @@ public class PodcastPlayer extends Service {
 	 * @param progress
 	 */
 	public void SeekTo(int progress) {
-		if (!mTitleQueued.equals(mTitlePlaying)) {
+		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
 			mFreePlayer.seekTo(progress);
@@ -250,7 +254,7 @@ public class PodcastPlayer extends Service {
 	}
 
 	public int getEpisodeLength(){
-		if (!mTitleQueued.equals(mTitlePlaying)) {
+		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
 			return mFreePlayer.getDuration();
@@ -261,7 +265,7 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public int getEpisodePosition(){
-		if (!mTitleQueued.equals(mTitlePlaying)) {
+		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
 			return mFreePlayer.getCurrentPosition();
@@ -272,7 +276,7 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public String getEpisodeTitle(){
-		return mTitlePlaying;
+		return mEpisodePlaying;
 	}
 	
 	public boolean isPlaying() {

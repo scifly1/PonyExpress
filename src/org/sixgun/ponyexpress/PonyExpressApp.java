@@ -31,8 +31,8 @@ import android.app.Application;
  */
 public class PonyExpressApp extends Application {
 	public static final String APPLICATION_NAME = "Pony Express";
-	//TODO When app is capable of handling more podcasts change path to ../files/LinuxOutlaws or whatever
-	public static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files";
+	
+	public static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files/";
 	public static ImageManager sImageManager;
 	
 	private PonyExpressDbAdaptor DbHelper;

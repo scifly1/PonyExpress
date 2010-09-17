@@ -125,7 +125,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		
 		InputStream istream = getInputStream();
 		//To debug with test feeds comment out the above line and uncomment the next line.
-	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
+	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed2);
 		if (istream != null){
 			try {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 

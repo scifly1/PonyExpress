@@ -31,5 +31,8 @@
 	<string name="account_setup">Enter your Identi.ca account details.</string>
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
-<string-array name="Podcasts"><item>Linux Outlaws</item><item>Rant-o\'Fab</item></string-array>
+<!--	The sixgun Podcasts array holds the default podcasts that are added when first installed-->
+<string-array name="Sixgun_Podcasts"><item>http://feeds.feedburner.com/linuxoutlaws-ogg</item><item>http://feeds.feedburner.com/rantofab-ogg</item></string-array>
+
+
 </resources>

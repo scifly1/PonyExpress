@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
@@ -54,7 +55,9 @@ public class Downloader extends IntentService {
 	private static final int NOTIFY_ID = 1;
 	private PonyExpressApp mPonyExpressApp;
 	private PonyExpressDbAdaptor mDbHelper;
+	private String mPodcastName;
 	private long mRow_ID; //Needed in order to update db.
+	private String mPodcastPath;
 	private URL mUrl;
 	private File mRoot;
 	private FileOutputStream mOutFile;
@@ -62,6 +65,7 @@ public class Downloader extends IntentService {
 	private String mFilename;
 	private int mSize;
 	private volatile int mTotalDownloaded = 0;
+	
 
 	public Downloader() {
 		super("Downloader");
@@ -84,6 +88,8 @@ public class Downloader extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Bundle data = intent.getExtras();
+		mPodcastName = (data.getString(PodcastKeys.NAME));
+		mPodcastPath = PonyExpressApp.PODCAST_PATH + mPodcastName;
 		mUrl = getURL(data.getString(EpisodeKeys.URL));
 		mRow_ID = data.getLong(EpisodeKeys._ID);
 		mSize = data.getInt(EpisodeKeys.SIZE);
@@ -150,7 +156,7 @@ public class Downloader extends IntentService {
 	 * Creates the path needed to save the files.
 	 */
 	private void prepareForDownload() {
-		File path = new File(mRoot, PonyExpressApp.PODCAST_PATH);
+		File path = new File(mRoot, mPodcastPath);
 		path.mkdirs();
 		
 		//Split filename from path url.
@@ -168,7 +174,7 @@ public class Downloader extends IntentService {
 	 * the media scanner to ignore the podcast files. 
 	 */
 	private void createNoMediaFile() {
-		final String path = mRoot + PonyExpressApp.PODCAST_PATH + "/";
+		final String path = mRoot + mPodcastPath + "/";
 		File noMedia = new File(path,NO_MEDIA_FILE);
 		if (!noMedia.exists()){
 			FileOutputStream writeFile = null;
@@ -206,7 +212,7 @@ public class Downloader extends IntentService {
 				mTotalDownloaded  += size;
 			}
 			Log.d(TAG,"Podcast written to SD card.");
-			mDbHelper.update(mRow_ID, EpisodeKeys.DOWNLOADED,"true");
+			mDbHelper.update(mPodcastName, mRow_ID, EpisodeKeys.DOWNLOADED,"true");
 		} catch (IOException e) {
 			Log.e(TAG, "Error reading/writing to file.", e);
 			//TODO NM

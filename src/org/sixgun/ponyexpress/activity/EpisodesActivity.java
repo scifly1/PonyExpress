@@ -22,6 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
@@ -39,7 +40,8 @@ import android.widget.TextView;
 public class EpisodesActivity extends ListActivity {
 
 	private static final String TAG = "EpisodesActivity";
-	private PonyExpressApp mPonyExpressApp; 
+	private PonyExpressApp mPonyExpressApp;
+	private String mPodcastName; 
 
 	
 	@Override
@@ -47,10 +49,9 @@ public class EpisodesActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.episodes);
 		TextView title = (TextView)findViewById(R.id.title);
-		//FIXME This string should not be hard coded, 
-		//it should come from the database.
-		//We can get it from the feed at <channel><title>...</></>
-		title.setText("Linux Outlaws");
+		//Get Podcast name from bundle and set title text.
+		mPodcastName = getIntent().getExtras().getString(PodcastKeys.NAME);
+		title.setText(mPodcastName);
 		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
@@ -73,8 +74,8 @@ public class EpisodesActivity extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		//Get all info from database and put it in an Intent for EpisodeTabs
-		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id);
-		final String description = mPonyExpressApp.getDbHelper().getDescription(id);
+		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id, mPodcastName);
+		final String description = mPonyExpressApp.getDbHelper().getDescription(id, mPodcastName);
 		//Seperate episode number from filename for hashtag.
 		Pattern digits = Pattern.compile("[0-9]+");
 		Matcher m = digits.matcher(title);
@@ -83,21 +84,22 @@ public class EpisodesActivity extends ListActivity {
 		Log.d(TAG, "Episode number: " + epNumber);
 
 		Intent intent = new Intent(this,EpisodeTabs.class);
+		intent.putExtra(PodcastKeys.NAME, mPodcastName);
 		intent.putExtra(EpisodeKeys.TITLE, title);
 		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
 		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
 		intent.putExtra(EpisodeKeys._ID, id);
 		//Determine if Episode has been downloaded and add required extras.
-		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id);
+		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName);
 		if (downloaded){
-			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id);
+			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id, mPodcastName);
 			intent.putExtra(EpisodeKeys.FILENAME, filename);
-			final int listened = mPonyExpressApp.getDbHelper().getListened(id);
+			final int listened = mPonyExpressApp.getDbHelper().getListened(id, mPodcastName);
 			intent.putExtra(EpisodeKeys.LISTENED, listened);
 		} else {
-			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id);
+			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id, mPodcastName);
 			intent.putExtra(EpisodeKeys.URL, url);
-			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id);
+			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id, mPodcastName);
 			intent.putExtra(EpisodeKeys.SIZE, size);
 		}
 		startActivity(intent);
@@ -109,7 +111,7 @@ public class EpisodesActivity extends ListActivity {
 	 * Query the database for all Episode titles to populate the ListView.
 	 */
 	private void listEpisodes(){
-		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames();
+		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames(mPodcastName);
 		startManagingCursor(c);
 		//Set up columns to map from, and layout to map to
 		String[] from = new String[] { EpisodeKeys.TITLE };
