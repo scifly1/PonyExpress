@@ -521,8 +521,8 @@ public class PonyExpressDbAdaptor {
 	 * Gets all unique Podcast names from the database.
 	 * @return A Cursor object, which is positioned before the first entry
 	 */
-	public Cursor getAllPodcastNames() {
-		final String[] columns = {PodcastKeys._ID, PodcastKeys.NAME};
+	public Cursor getAllPodcastNamesAndArt() {
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.NAME, PodcastKeys.ALBUM_ART_URL};
 		return mDb.query(
 				true,PODCAST_TABLE,columns,null,null,null,null,PodcastKeys.NAME ,null);
 	}
@@ -547,6 +547,19 @@ public class PonyExpressDbAdaptor {
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quotedName ,
 				null, null, null, null, null);
+		String url = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			url = cursor.getString(1);
+		}
+		cursor.close();
+		return url;
+	}
+	
+	public String getAlbumArtUrl(long row_ID){
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		String url = "";
 		if (cursor != null){
 			cursor.moveToFirst();

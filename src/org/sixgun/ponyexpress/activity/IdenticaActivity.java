@@ -259,7 +259,7 @@ public class IdenticaActivity extends ListActivity {
 	/**
 	 * We subclass ArrayAdapter to handle our specific Dent ListArray.  The override of
 	 * getView() provides a mapping between the fields of a Dent we want to view and the 
-	 * TextView instances in which we want them to appear.
+	 * TextView/ImageView instances in which we want them to appear.
 	 *
 	 */
 	private class DentAdapter extends ArrayAdapter<Dent> {

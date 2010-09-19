@@ -2,9 +2,20 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
+	<ImageView android:id="@+id/sixgunlogo"
+     	android:layout_width="wrap_content"
+     	android:layout_height="wrap_content"
+     	android:layout_alignParentLeft="true"
+     	android:layout_alignParentTop="true"
+     	android:src="@drawable/sixgunlogo"
+     	android:paddingRight="3dp"
+     	android:maxWidth="55dp"
+     	android:maxHeight="55dp"
+     	android:adjustViewBounds="true" />
 	<TextView android:id="@+id/sixguntitle" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:text="@string/Sixgun_title"
-		android:padding="10dp" android:textSize="30sp" />
+		android:layout_height="wrap_content" android:text="@string/app_name"
+		android:textStyle="bold" android:padding="10dp" 
+		android:textSize="25sp" android:layout_toRightOf="@+id/sixgunlogo"/>
 
 	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_below="@id/sixguntitle"

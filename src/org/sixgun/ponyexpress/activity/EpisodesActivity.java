@@ -25,6 +25,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -52,6 +53,13 @@ public class EpisodesActivity extends ListActivity {
 		//Get Podcast name from bundle and set title text.
 		mPodcastName = getIntent().getExtras().getString(PodcastKeys.NAME);
 		title.setText(mPodcastName);
+		//Get Album art url and set image.
+		RemoteImageView albumArt = (RemoteImageView)findViewById(R.id.album_art);
+		String albumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
+		if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
+    		albumArt.setRemoteURI(albumArtUrl);
+    		albumArt.loadImage();
+		}
 		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();

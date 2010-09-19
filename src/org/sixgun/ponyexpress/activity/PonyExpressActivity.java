@@ -33,9 +33,11 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
+import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -43,12 +45,15 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.AsyncTask.Status;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.widget.CursorAdapter;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -66,10 +71,12 @@ public class PonyExpressActivity extends ListActivity {
 	private ProgressDialog mProgDialog;
 	private ProgressDialog mProgDialogDb;
 	private int mEpisodesToHold = 10;
+	private Cursor mPodcastCursor;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		setTitle(R.string.Sixgun_title);
 		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
@@ -184,27 +191,63 @@ public class PonyExpressActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		//Get the podcast name.
+		//Get the podcast name and album art url.
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
+		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
 		//Store in an intent and send to EpisodesActivity
 		Intent intent = new Intent(this,EpisodesActivity.class);
 		intent.putExtra(PodcastKeys.NAME, name);
+		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
 		startActivity(intent);
 		
 	}
 	
 	private void listPodcasts() {
-		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNames();
-		startManagingCursor(c);
-		//Set up columns to map from, and layout to map to
-		String[] from = new String[] { PodcastKeys.NAME };
-		int[] to = new int[] { R.id.podcast_text };
-		
-		SimpleCursorAdapter podcasts = new SimpleCursorAdapter(
-				this, R.layout.podcast_row, c, from, to);
-		setListAdapter(podcasts);
+		mPodcastCursor = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
+		startManagingCursor(mPodcastCursor);
+		//Create a CursorAdapter to map podcast title and art to the ListView.
+		PodcastCursorAdapter adapter = new PodcastCursorAdapter(mPonyExpressApp, mPodcastCursor);
+		setListAdapter(adapter);
 	}
 
+	/**
+	 * We subclass CursorAdapter to handle our display the results from our Podcast cursor. 
+	 * Overide newView to create/inflate a view to bind the data to.
+	 * Overide bindView to determine how the data is bound to the view.
+	 */
+	private class PodcastCursorAdapter extends CursorAdapter{
+
+		public PodcastCursorAdapter(Context context, Cursor c) {
+			super(context, c);
+		}
+
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			final int nameIndex = cursor.getColumnIndex(PodcastKeys.NAME);
+			final int artUrlIndex = cursor.getColumnIndex(PodcastKeys.ALBUM_ART_URL);
+			
+			TextView podcastName = (TextView) view.findViewById(R.id.podcast_text);
+			RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
+			String name = cursor.getString(nameIndex);
+			podcastName.setText(name);
+			String albumArtUrl = cursor.getString(artUrlIndex);
+			if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
+        		albumArt.setRemoteURI(albumArtUrl);
+        		albumArt.loadImage();
+			}
+			
+		}
+
+		@Override
+		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View v = new View(context);
+			v = vi.inflate(R.layout.podcast_row, null);
+			return v;
+		}
+		
+	}
+	
 	/**
 	 * Parse the RSS feed and update the database with new episodes in a background thread.
 	 * 
@@ -321,7 +364,8 @@ public class PonyExpressActivity extends ListActivity {
 			List<String> filesOnDisk = new ArrayList<String>();
 			if (podcastsOnDisk != null){
 				for (String podcast: podcastsOnDisk){
-					String[] files = path.list();
+					File podcast_path = new File(path,podcast);
+					String[] files = podcast_path.list();
 					filesOnDisk.addAll(Arrays.asList(files));
 					//Get a Map of filenames (and their index) that are in the database
 					final Map<Long, String> filesInDatabase = 

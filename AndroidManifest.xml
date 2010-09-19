@@ -5,8 +5,7 @@
 	<application android:icon="@drawable/pony_icon"
 		android:label="@string/app_name" android:debuggable="true"
 		android:name="PonyExpressApp">
-		<activity android:name=".activity.PonyExpressActivity"
-			android:label="@string/app_name">
+		<activity android:name=".activity.PonyExpressActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
 				<category android:name="android.intent.category.LAUNCHER" />
@@ -19,7 +18,7 @@
 		<activity android:name=".activity.EpisodesActivity" />
 		<activity android:name=".activity.PlayerActivity" />
 		<activity android:name=".activity.DownloadActivity" />
-		<activity android:name=".activity.EpisodeTabs" android:theme="@android:style/Theme.NoTitleBar" 
+		<activity android:name=".activity.EpisodeTabs"  
 		android:windowSoftInputMode="adjustResize"/>
 		<activity android:name=".activity.EpisodeNotesActivity" />
 		<activity android:name=".activity.IdenticaActivity" 

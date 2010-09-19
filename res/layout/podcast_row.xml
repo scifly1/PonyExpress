@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView android:id="@+id/podcast_text"
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="10dp"
-    android:textSize="16sp"/>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent">
+	<org.sixgun.ponyexpress.view.RemoteImageView
+		android:id="@+id/album_art" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_alignParentLeft="true"
+		android:adjustViewBounds="true" android:paddingRight="3dp"
+		android:paddingTop="1dp" android:paddingBottom="2dp" android:maxWidth="70dp" android:maxHeight="70dp"
+		android:scaleType="fitCenter" />
+
+	<TextView android:id="@+id/podcast_text" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_toRightOf="@+id/album_art"
+		android:padding="10dp" android:textSize="16sp" />
+</RelativeLayout>
