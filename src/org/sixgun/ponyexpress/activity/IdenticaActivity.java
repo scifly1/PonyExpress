@@ -67,7 +67,9 @@ public class IdenticaActivity extends ListActivity {
 	private EditText mDentText;
 	private TextView mCharCounter;
 	private Button mDentButton;
+	private boolean mGroupDents = false;
 	private String mIdenticaTag;
+	private String mIdenticaGroup;
 	private String mTagText;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
@@ -130,7 +132,11 @@ public class IdenticaActivity extends ListActivity {
 		doBindIdenticaHandler();
 		Log.d(TAG, "IdenticaActivity Started.");
 		mData = getIntent().getExtras();
-		mIdenticaTag= mData.getString(PodcastKeys.TAG);
+		if (mData.containsKey(PodcastKeys.GROUP)){
+			mGroupDents = true;
+			mIdenticaGroup = mData.getString(PodcastKeys.GROUP);
+		}
+		mIdenticaTag = mData.getString(PodcastKeys.TAG);
 		setContentView(R.layout.identica);
 		
 		OnClickListener DentButtonListener = new OnClickListener() {
@@ -177,13 +183,17 @@ public class IdenticaActivity extends ListActivity {
 		mCharCounter.setText("140");
 		
 		mDentText = (EditText) findViewById(R.id.dent_entry);
-		String text;
+		String text = "";
 		if (savedInstanceState != null){
 			text = savedInstanceState.getString(DentKeys.PARTIALDENT);
-		} else {
+		} else if (!mGroupDents){
 			text = mData.getString(EpisodeKeys.EP_NUMBER);
 		}
-		mTagText = "#" + mIdenticaTag +text + " ";
+		if (mGroupDents){
+			mTagText = "!" + mIdenticaTag + text + " ";
+		} else {
+			mTagText = "#" + mIdenticaTag + text + " ";
+		}
 		mDentText.setText(mTagText);
 		
 		mDentText.addTextChangedListener(new TextWatcher() {
@@ -310,9 +320,20 @@ public class IdenticaActivity extends ListActivity {
 			ArrayList<Dent> dents;
 			//Check for connectivity first.
 			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-				final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
-				dents = mIdenticaHandler.queryIdentica(mIdenticaTag + ep_number + ".xml");
-			} else {
+				if (!mGroupDents){ //Check if using group tag or not
+					final String ep_number = mData.getString(EpisodeKeys.EP_NUMBER);
+					dents = mIdenticaHandler.queryIdentica(mIdenticaTag +
+							ep_number + ".xml");
+				}else{
+					dents = mIdenticaHandler.queryIdenticaGroup(mIdenticaGroup + ".xml");
+				}
+				if (dents.isEmpty()){ //If no dents then say so
+					Dent no_dents = new Dent();
+					no_dents.setTitle(getString(R.string.no_dents));
+					dents = new ArrayList<Dent>(1);
+					dents.add(no_dents);
+				}
+			} else { //No connection, so say so
 				Dent no_dents = new Dent();
 				no_dents.setTitle(getString(R.string.conn_err_query_failed));
 				dents = new ArrayList<Dent>(1);

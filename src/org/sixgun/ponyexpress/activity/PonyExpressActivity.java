@@ -195,7 +195,7 @@ public class PonyExpressActivity extends ListActivity {
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
 		//Store in an intent and send to EpisodesActivity
-		Intent intent = new Intent(this,EpisodesActivity.class);
+		Intent intent = new Intent(this,PodcastTabs.class);
 		intent.putExtra(PodcastKeys.NAME, name);
 		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
 		startActivity(intent);

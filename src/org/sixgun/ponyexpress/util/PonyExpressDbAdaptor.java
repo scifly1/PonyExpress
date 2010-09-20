@@ -59,7 +59,8 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.FEED_URL + " TEXT," +
     	PodcastKeys.ALBUM_ART_URL + " TEXT," +
     	PodcastKeys.TABLE_NAME + " TEXT," + 
-    	PodcastKeys.TAG + " TEXT);";
+    	PodcastKeys.TAG + " TEXT," +
+    	PodcastKeys.GROUP + " TEXT);";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
     
@@ -473,15 +474,18 @@ public class PonyExpressDbAdaptor {
 	private void loadSixgunPodcasts() {
 		String[] feed_urls =  mCtx.getResources().getStringArray(R.array.Sixgun_Podcasts);
 		String[] identica_tags = mCtx.getResources().getStringArray(R.array.Sixgun_Podcast_Tags); 
+		String[] identica_groups = mCtx.getResources().getStringArray(R.array.Sixgun_Podcast_Groups);
 		final int feeds = feed_urls.length;
 		final int tags = identica_tags.length;
-		if (feeds != tags){
-			throw new RuntimeException("Number of Sixgun Podcast feed does not equal the number of tags.");			
+		final int groups = identica_groups.length;
+		if (feeds != tags || groups != feeds){
+			throw new RuntimeException("Number of Sixgun Podcast feed does not equal the number of tags/groups.");			
 		}
 		for (int i = 0; i < feeds; ++i) {
 			PodcastFeedParser parser = new PodcastFeedParser(feed_urls[i]);
 			Podcast podcast = parser.parse();
 			podcast.setIdenticaTag(identica_tags[i]);
+			podcast.setIdenticaGroup(identica_groups[i]);
 			insertPodcast(podcast);
 			//Create table for this podcast's episodes
 			String tableName = getTableName(podcast.getName());
@@ -502,6 +506,7 @@ public class PonyExpressDbAdaptor {
         podcastValues.put(PodcastKeys.FEED_URL, podcast.getFeed_Url().toString());
         podcastValues.put(PodcastKeys.ALBUM_ART_URL, podcast.getArt_Url().toString());
         podcastValues.put(PodcastKeys.TAG, podcast.getIdenticaTag());
+        podcastValues.put(PodcastKeys.GROUP, podcast.getIdenticaGroup());
         podcastValues.putNull(PodcastKeys.TABLE_NAME);
      
         //Insert the record and then update it with the created Episode table name
@@ -572,6 +577,21 @@ public class PonyExpressDbAdaptor {
 	public String getIdenticaTag(String podcast_name) {
 		final String quotedName = "\"" + podcast_name + "\"";
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.TAG};
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, PodcastKeys.NAME + "=" + quotedName ,
+				null, null, null, null, null);
+		String url = "";
+		if (cursor != null){
+			cursor.moveToFirst();
+			url = cursor.getString(1);
+		}
+		cursor.close();
+		return url;
+	}
+
+	public String getIdenticaGroup(String podcast_name) {
+		final String quotedName = "\"" + podcast_name + "\"";
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.GROUP};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quotedName ,
 				null, null, null, null, null);

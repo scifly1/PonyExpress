@@ -31,6 +31,7 @@ public class Podcast {
     private URL mFeed_Url;
     private URL mArt_Url;
     private String mIdenticaTag;
+    private String mIdenticaGroup;
     
     /**
      * Constructor.  Creates 'empty' podcast.
@@ -121,5 +122,21 @@ public class Podcast {
 	 */
 	public String getIdenticaTag() {
 		return mIdenticaTag;
+	}
+
+	/**
+	 * @param mIdenticaGroup the mIdenticaGroup to set
+	 */
+	public void setIdenticaGroup(String mIdenticaGroup) {
+		this.mIdenticaGroup = mIdenticaGroup;
+	}
+
+	/**
+	 * @return the mIdenticaGroup
+	 */
+	public String getIdenticaGroup() {
+		if (mIdenticaGroup.equals(null)){
+			return mIdenticaTag;
+		}else return mIdenticaGroup;
 	}
 }

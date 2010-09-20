@@ -12,6 +12,7 @@
 	<string name="listen">Listen</string>
 	<string name="dent">Dent about this episode..</string>
 	<string name="downloading_episode">Downloaded.</string>
+	<string name="searching_dents">Searching for dents..."</string>
 	<string name="no_dents">No dents for this episode yet! Go on, be the first!
 	</string>
 	<string name="dent_here">Type new dent here:</string>
@@ -34,4 +35,7 @@
 <!-- The Sixgun podcasts tags array holds the identi.ca tags for each podcast.  They need to be in the same order as the podcasts
 Tags for other podcasts will be added by the user when they add the feed url -->
 <string-array name="Sixgun_Podcast_Tags"><item>lo</item><item>rantofab</item></string-array>
+<!-- The Sixgun podcasts groups array holds the identi.ca groups for each podcast.  They need to be in the same order as the podcasts
+Groups for other podcasts will be added by the user when they add the feed url -->
+<string-array name="Sixgun_Podcast_Groups"><item>linuxoutlaws</item><item>rantofab</item></string-array>
 </resources>

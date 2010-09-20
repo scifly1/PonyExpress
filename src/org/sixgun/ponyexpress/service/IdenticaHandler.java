@@ -69,6 +69,7 @@ public class IdenticaHandler extends Service {
 	
 	private static final String TAG = "PonyExpress IdenticaHandler";
 	private static final String TAG_TIMELINE_API = "https://identi.ca/api/statusnet/tags/timeline/";
+	private static final String GROUP_TIMELINE_API = "https://identi.ca/api/statusnet/groups/timeline/";
 	private static final String UPDATE_API = "https://identi.ca/api/statuses/update.xml";
 	private static final String VERIFY_API = "https://identi.ca/api/account/verify_credentials.xml";
 	public static final String LOGINFILE = "IdenticaLogin";
@@ -161,6 +162,14 @@ public class IdenticaHandler extends Service {
 		ArrayList<Dent> dents = parser.parse();
 		return dents;
 	}
+	public ArrayList<Dent> queryIdenticaGroup(String query){
+		String url = new String(GROUP_TIMELINE_API + query);
+		Log.d(TAG,"Identica query: "+ url);
+		DentParser parser = new DentParser(getApplicationContext(),url);
+		ArrayList<Dent> dents = parser.parse();
+		return dents;
+	}
+	
 	
 	/**
 	 * AsyncTask that posts the String dent on Identica.

@@ -1,20 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
 	android:layout_height="fill_parent">
-	<org.sixgun.ponyexpress.view.RemoteImageView
-		android:id="@+id/album_art" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_alignParentLeft="true"
-		android:adjustViewBounds="true" android:padding="3dp"
-		android:maxWidth="70dp" android:maxHeight="70dp"
-		android:scaleType="fitCenter" />
-	
-	<TextView android:id="@+id/title" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:text="@string/Episodes_title"
-		 android:textSize="25sp" android:textStyle="bold"
-		android:layout_toRightOf="@+id/album_art" />
 	
 	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_below="@id/album_art"
-		android:paddingTop="5dp" />
-</RelativeLayout>
+		android:layout_height="wrap_content" android:paddingTop="5dp" />
+</LinearLayout>
