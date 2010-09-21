@@ -50,6 +50,9 @@ import android.os.Environment;
 import android.os.AsyncTask.Status;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
@@ -195,6 +198,36 @@ public class PonyExpressActivity extends ListActivity {
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.main_options_menu, menu);
+	    return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+	    case R.id.update_feeds:
+	        updateFeeds();
+	        return true;
+	    case R.id.settings_menu:
+	        
+	        return true;
+	    case R.id.identica_account_settings:
+	    	
+	    	return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+		}
+	}
+
 	private boolean isTimeToUpdate(){
 		SharedPreferences updateStatus = getSharedPreferences(UPDATEFILE, 0);
 		final long lastUpdateMillis = updateStatus.getLong(LASTUPDATE, 0);

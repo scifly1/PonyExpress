@@ -38,4 +38,7 @@ Tags for other podcasts will be added by the user when they add the feed url -->
 <!-- The Sixgun podcasts groups array holds the identi.ca groups for each podcast.  They need to be in the same order as the podcasts
 Groups for other podcasts will be added by the user when they add the feed url -->
 <string-array name="Sixgun_Podcast_Groups"><item>linuxoutlaws</item><item>rantofab</item></string-array>
+<string name="settings">Settings</string>
+<string name="identica_account_settings">Setup Identi.ca Account</string>
+<string name="updatefeeds">Refresh subscriptions</string>
 </resources>

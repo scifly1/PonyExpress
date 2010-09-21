@@ -23,7 +23,6 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
-import android.app.TabActivity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -34,7 +33,7 @@ import android.widget.TextView;
  * @author scifly
  *
  */
-public class PodcastTabs extends TabActivity {
+public class PodcastTabs extends GeneralOptionsMenuActivity {
 	private String mPodcastName;
 	private PonyExpressApp mPonyExpressApp;
 	private String mAlbumArtUrl; 

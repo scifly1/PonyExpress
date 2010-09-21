@@ -22,7 +22,6 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
 
-import android.app.TabActivity;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
@@ -34,7 +33,7 @@ import android.widget.TextView;
  * the Identi.ca stream and commenter.
  *
  */
-public class EpisodeTabs extends TabActivity {
+public class EpisodeTabs extends GeneralOptionsMenuActivity {
 
 	private CharSequence mTitleText;
 
