@@ -2,9 +2,17 @@
 <RelativeLayout android:id="@+id/RelativeLayout01"
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	xmlns:android="http://schemas.android.com/apk/res/android">
+	<org.sixgun.ponyexpress.view.RemoteImageView
+		android:id="@+id/album_art" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" android:layout_centerHorizontal="true"
+		android:adjustViewBounds="true" android:paddingRight="3dp"
+		android:paddingTop="1dp" android:paddingBottom="2dp" android:maxWidth="240dp" 
+		android:maxHeight="220dp"
+		android:scaleType="fitCenter" />
+	
 	<SeekBar android:layout_width="wrap_content" android:id="@+id/PlayerSeekBar"
 		android:layout_centerHorizontal="true" android:layout_height="wrap_content"
-		android:minWidth="250dp" />
+		android:minWidth="250dp" android:layout_below="@+id/album_art"/>
 	<ImageButton android:layout_below="@+id/PlayerSeekBar" android:src="@drawable/media_playback_start"
 		android:layout_height="wrap_content" android:id="@+id/PlayButton"
 		android:layout_width="wrap_content" android:layout_centerHorizontal="true" />

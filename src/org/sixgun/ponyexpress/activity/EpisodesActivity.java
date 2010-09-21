@@ -40,7 +40,8 @@ public class EpisodesActivity extends ListActivity {
 
 	private static final String TAG = "EpisodesActivity";
 	private PonyExpressApp mPonyExpressApp;
-	private String mPodcastName; 
+	private String mPodcastName;
+	private String mAlbumArtUrl; 
 
 	
 	@Override
@@ -48,9 +49,11 @@ public class EpisodesActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.episodes);
 		
-		//Get Podcast name from bundle and set title text.
-		mPodcastName = getIntent().getExtras().getString(PodcastKeys.NAME);
-		
+		//Get Podcast name and album art url from bundle.
+		//The album art url is not used by this activity but is passed to the player by intent
+		final Bundle data = getIntent().getExtras();
+		mPodcastName = data.getString(PodcastKeys.NAME);
+		mAlbumArtUrl = data.getString(PodcastKeys.ALBUM_ART_URL);
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 	}
@@ -97,6 +100,7 @@ public class EpisodesActivity extends ListActivity {
 		//Determine if Episode has been downloaded and add required extras.
 		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName);
 		if (downloaded){
+			intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
 			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id, mPodcastName);
 			intent.putExtra(EpisodeKeys.FILENAME, filename);
 			final int listened = mPonyExpressApp.getDbHelper().getListened(id, mPodcastName);

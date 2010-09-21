@@ -36,7 +36,8 @@ import android.widget.TextView;
  */
 public class PodcastTabs extends TabActivity {
 	private String mPodcastName;
-	private PonyExpressApp mPonyExpressApp; 
+	private PonyExpressApp mPonyExpressApp;
+	private String mAlbumArtUrl; 
 	
 	/* (non-Javadoc)
 	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
@@ -56,9 +57,9 @@ public class PodcastTabs extends TabActivity {
 		title.setText(mPodcastName);
 		//Get Album art url and set image.
 		RemoteImageView albumArt = (RemoteImageView)findViewById(R.id.album_art);
-		String albumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
-		if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
-    		albumArt.setRemoteURI(albumArtUrl);
+		mAlbumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
+		if (mAlbumArtUrl!= null && !"".equals(mAlbumArtUrl) && !"null".equalsIgnoreCase(mAlbumArtUrl)){
+    		albumArt.setRemoteURI(mAlbumArtUrl);
     		albumArt.loadImage();
 		}
 		
@@ -70,6 +71,7 @@ public class PodcastTabs extends TabActivity {
 	  //Add EpisodesActivity
 	    intent = new Intent(this,EpisodesActivity.class);
 	    intent.putExtra(PodcastKeys.NAME, mPodcastName);
+	    intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
 	    spec = tabHost.newTabSpec("episodes").setIndicator("Episodes").setContent(intent);
 	    tabHost.addTab(spec);
 	    

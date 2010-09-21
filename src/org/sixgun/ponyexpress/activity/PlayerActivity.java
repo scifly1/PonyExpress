@@ -23,6 +23,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
+import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
 import android.content.ComponentName;
@@ -53,6 +54,7 @@ public class PlayerActivity extends Activity {
 	private boolean mPaused = true;
 	private String mPodcastName;
 	private String mEpisodeTitle;
+	private String mAlbumArtUrl;
 	private boolean mUpdateSeekBar;
 	private ImageButton mPlayPauseButton;
 	private SeekBar mSeekBar;
@@ -146,6 +148,7 @@ public class PlayerActivity extends Activity {
 		mPodcastName = mData.getString(PodcastKeys.NAME);
 		mEpisodeTitle = mData.getString(EpisodeKeys.FILENAME);
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
+		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		setContentView(R.layout.player);
 
 		
@@ -234,6 +237,13 @@ public class PlayerActivity extends Activity {
 		mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
 		mElapsed = (TextView)findViewById(R.id.elapsed_time);
 		mEpisodeLength = (TextView)findViewById(R.id.length);
+		//Get Album art url and set image.
+		RemoteImageView album_art = (RemoteImageView)findViewById(R.id.album_art);
+		mAlbumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
+		if (mAlbumArtUrl!= null && !"".equals(mAlbumArtUrl) && !"null".equalsIgnoreCase(mAlbumArtUrl)){
+    		album_art.setRemoteURI(mAlbumArtUrl);
+    		album_art.loadImage();
+		}
 		
 				
 	}
