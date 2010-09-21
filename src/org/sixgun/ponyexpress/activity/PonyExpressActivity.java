@@ -21,9 +21,12 @@ package org.sixgun.ponyexpress.activity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -39,6 +42,7 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,10 +52,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.View.OnClickListener;
 import android.widget.CursorAdapter;
-import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -63,6 +64,8 @@ public class PonyExpressActivity extends ListActivity {
 
 	private static final String UPDATE_IN_PROGRESS = "ponyexpress.update.inprogress";
 	private static final String TAG = "PonyExpressActivity";
+	private static final String UPDATEFILE = "Updatestatus";
+	private static final String LASTUPDATE = "lastupdate";
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
 	@SuppressWarnings("unused")
@@ -71,6 +74,8 @@ public class PonyExpressActivity extends ListActivity {
 	private ProgressDialog mProgDialog;
 	private ProgressDialog mProgDialogDb;
 	private int mEpisodesToHold = 10;
+	private int mUpdateDelta = 24; //hours
+	private GregorianCalendar mLastUpdate;
 	private Cursor mPodcastCursor;
 	
 	protected void onCreate(Bundle savedInstanceState) {
@@ -94,27 +99,15 @@ public class PonyExpressActivity extends ListActivity {
 		
 		//Update the Episodes list if the database has been upgraded.
 		if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
-			mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
-			if (mUpdateTask.isCancelled()){
-				Log.d(TAG, "Cancelled Update, No Connectivity");
-				mUpdateTask = null;
-			}
+			updateFeeds();
 			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
 		}
 		
-		//Hook up reload button with updateEpisodes()
-		ImageView reload_button =  (ImageButton)findViewById(R.id.view_refresh);	
-		reload_button.setOnClickListener(new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
-				if (mUpdateTask.isCancelled()){
-					Log.d(TAG, "Cancelled Update, No Connectivity");
-					mUpdateTask = null;
-				}
-			}
-		});
+		//Check the last time the database was updated and update if necessary
+		if (isTimeToUpdate()){
+			//update delta has passed and we have connectivity so update
+			updateFeeds();
+		}
 	}
 	
 	@Override
@@ -200,6 +193,28 @@ public class PonyExpressActivity extends ListActivity {
 		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
 		startActivity(intent);
 		
+	}
+	
+	private boolean isTimeToUpdate(){
+		SharedPreferences updateStatus = getSharedPreferences(UPDATEFILE, 0);
+		final long lastUpdateMillis = updateStatus.getLong(LASTUPDATE, 0);
+		mLastUpdate = new GregorianCalendar(Locale.US);
+		mLastUpdate.setTimeInMillis(lastUpdateMillis);
+		//Add on the update delta and compare with now.
+		mLastUpdate.add(Calendar.HOUR_OF_DAY, mUpdateDelta);
+		final GregorianCalendar now = new GregorianCalendar(Locale.US);
+		if (mLastUpdate.compareTo(now) < 0 && 
+				(mPonyExpressApp.getInternetHelper().checkConnectivity())){
+			return true;
+		} else return false;
+	}
+	
+	private void updateFeeds() {
+		mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
+		if (mUpdateTask.isCancelled()){
+			Log.d(TAG, "Cancelled Update, No Connectivity");
+			mUpdateTask = null;
+		}
 	}
 	
 	private void listPodcasts() {
@@ -338,7 +353,13 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			mProgDialog.hide();		
+			mProgDialog.hide();
+			//Set mLastUpdate and store in shared preferences
+			mLastUpdate = new GregorianCalendar(Locale.US);
+			SharedPreferences updateStatus = getSharedPreferences(UPDATEFILE, 0);
+			SharedPreferences.Editor editor = updateStatus.edit();
+			editor.putLong(LASTUPDATE, mLastUpdate.getTimeInMillis());
+			editor.commit();
 		}
 		
 	};

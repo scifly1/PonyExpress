@@ -20,8 +20,4 @@
 	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_below="@id/sixguntitle"
 		android:paddingTop="5dp" />
-	<ImageButton android:id="@+id/view_refresh" android:src="@drawable/view_refresh"
-		android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:tint="#ff888888" android:layout_alignParentRight="true"
-		android:layout_alignParentBottom="true" android:clickable="true" />
 </RelativeLayout>
