@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="eps_stored_key">epsStoredKey</string>
-	<string name="episodes_stored_dialog">Episdoes stored per podcast</string>
+	<string name="episodes_stored_dialog">Episodes stored per podcast</string>
 	<string name="episodes_stored_title">Episode storage</string>
 	<string name="version_key">versionKey</string>
 	<string name="app_name">Pony Express</string>
@@ -80,7 +80,7 @@
 		<item>4 episodes</item>
 		<item>6 episodes</item>
 		<item>8 episodes</item>
-		<item>10 episode</item>
+		<item>10 episodes</item>
 	</string-array>
 	<string-array name="eps_to_store_values">
 		<item>2</item>
