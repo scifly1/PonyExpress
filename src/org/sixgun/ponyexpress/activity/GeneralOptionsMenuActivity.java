@@ -18,9 +18,12 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
 import android.app.TabActivity;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,6 +35,16 @@ import android.view.MenuItem;
  */
 public class GeneralOptionsMenuActivity extends TabActivity {
 
+	private static final int SETUP_ACCOUNT = 0;
+	private PonyExpressApp mPonyExpressApp;
+	
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState){
+		super.onCreate(savedInstanceState);
+		
+		mPonyExpressApp = (PonyExpressApp) getApplication();
+	}
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
@@ -49,14 +62,17 @@ public class GeneralOptionsMenuActivity extends TabActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 	    case R.id.settings_menu:
-	        
+	        startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
 	        return true;
 	    case R.id.identica_account_settings:
-	    	
+	    	//Fire off AccountSetup screen
+			startActivityForResult(new Intent(
+					mPonyExpressApp,IdenticaAccountSetupActivity.class),
+					SETUP_ACCOUNT);
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
 		}
 	}
-
 }

@@ -48,6 +48,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.AsyncTask.Status;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -69,6 +70,7 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String TAG = "PonyExpressActivity";
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
+	private static final int SETUP_ACCOUNT = 0;
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;
 	@SuppressWarnings("unused")
@@ -76,8 +78,8 @@ public class PonyExpressActivity extends ListActivity {
 	private Bundle mSavedState;
 	private ProgressDialog mProgDialog;
 	private ProgressDialog mProgDialogDb;
-	private int mEpisodesToHold = 10;
-	private int mUpdateDelta = 24; //hours
+	private int mEpisodesToHold;
+	private int mUpdateDelta;
 	private GregorianCalendar mLastUpdate;
 	private Cursor mPodcastCursor;
 	
@@ -88,6 +90,13 @@ public class PonyExpressActivity extends ListActivity {
 		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
+		
+		//Get the update delta and number of episodes to hold from preferences
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		mUpdateDelta = Integer.parseInt(prefs.getString(getString(R.string.update_freqs_key), "24"));
+		mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
+		Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
+		Log.d(TAG,"update delta: " + mUpdateDelta);
 		
 		//Create Progress Dialogs for later use.
 		mProgDialogDb = new ProgressDialog(this);
@@ -218,10 +227,14 @@ public class PonyExpressActivity extends ListActivity {
 	        updateFeeds();
 	        return true;
 	    case R.id.settings_menu:
-	        
+	    	startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
 	        return true;
 	    case R.id.identica_account_settings:
-	    	
+	    	//Fire off AccountSetup screen
+			startActivityForResult(new Intent(
+					mPonyExpressApp,IdenticaAccountSetupActivity.class),
+					SETUP_ACCOUNT);
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);

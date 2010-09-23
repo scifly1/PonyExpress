@@ -226,29 +226,6 @@ public class IdenticaActivity extends ListActivity {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		if (requestCode == SETUP_ACCOUNT){
-			if (resultCode == RESULT_OK){
-				//Store and verify_credentials
-				final String username = data.getExtras().getString(IdenticaHandler.USERNAME);
-				final String password = data.getExtras().getString(IdenticaHandler.PASSWORD);
-				mIdenticaHandler.setCredentials(username, password);
-				Log.d(TAG,"Credentials " + username + " " + password +" set.");
-				
-				if (!mIdenticaHandler.verifyCredentials()){
-					Log.d(TAG, "Cannot verify credentials!");
-					Toast.makeText(this, R.string.credentials_not_verified, Toast.LENGTH_SHORT).show();
-					mIdenticaHandler.setCredentials("", "");
-				}
-			}
-		}
-	}
-
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)

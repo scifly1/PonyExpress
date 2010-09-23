@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+	<string name="eps_stored_key">epsStoredKey</string>
+	<string name="episodes_stored_dialog">Episdoes stored per podcast</string>
+	<string name="episodes_stored_title">Episode storage</string>
+	<string name="version_key">versionKey</string>
 	<string name="app_name">Pony Express</string>
 	<string name="Episodes_title">
 		<b>Episodes</b>
@@ -30,15 +33,60 @@
 	<string name="account_setup">Enter your Identi.ca account details.</string>
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
-<!--	The sixgun Podcasts array holds the default podcasts that are added when first installed-->
-<string-array name="Sixgun_Podcasts"><item>http://feeds.feedburner.com/linuxoutlaws-ogg</item><item>http://feeds.feedburner.com/rantofab-ogg</item></string-array>
-<!-- The Sixgun podcasts tags array holds the identi.ca tags for each podcast.  They need to be in the same order as the podcasts
-Tags for other podcasts will be added by the user when they add the feed url -->
-<string-array name="Sixgun_Podcast_Tags"><item>lo</item><item>rantofab</item></string-array>
-<!-- The Sixgun podcasts groups array holds the identi.ca groups for each podcast.  They need to be in the same order as the podcasts
-Groups for other podcasts will be added by the user when they add the feed url -->
-<string-array name="Sixgun_Podcast_Groups"><item>linuxoutlaws</item><item>rantofab</item></string-array>
-<string name="settings">Settings</string>
-<string name="identica_account_settings">Setup Identi.ca Account</string>
-<string name="updatefeeds">Refresh subscriptions</string>
+	<!--
+		The sixgun Podcasts array holds the default podcasts that are added
+		when first installed
+	-->
+	<string-array name="Sixgun_Podcasts">
+		<item>http://feeds.feedburner.com/linuxoutlaws-ogg</item>
+		<item>http://feeds.feedburner.com/rantofab-ogg</item>
+	</string-array>
+	<!--
+		The Sixgun podcasts tags array holds the identi.ca tags for each
+		podcast. They need to be in the same order as the podcasts Tags for
+		other podcasts will be added by the user when they add the feed url
+	-->
+	<string-array name="Sixgun_Podcast_Tags">
+		<item>lo</item>
+		<item>rantofab</item>
+	</string-array>
+	<!--
+		The Sixgun podcasts groups array holds the identi.ca groups for each
+		podcast. They need to be in the same order as the podcasts Groups for
+		other podcasts will be added by the user when they add the feed url
+	-->
+	<string-array name="Sixgun_Podcast_Groups">
+		<item>linuxoutlaws</item>
+		<item>rantofab</item>
+	</string-array>
+	<string name="settings">Settings</string>
+	<string name="identica_account_settings">Setup Identi.ca Account</string>
+	<string name="updatefeeds">Refresh subscriptions</string>
+	<string name="version">Pony Express Version</string>
+	<string name="update_freqs_key">updateFreqsKey</string>
+	<string name="refresh_feeds">Refresh feeds interval</string>
+	<string name="refresh_feeds_summary">Hours between feed refreshes</string>
+	<string name="refresh_dialog_title">Interval in hours</string>
+	<string-array name="update_freqs">
+		<item>2</item>
+		<item>4</item>
+		<item>6</item>
+		<item>8</item>
+		<item>12</item>
+		<item>24</item>
+	</string-array>
+	<string-array name="eps_to_store">
+		<item>2 episodes</item>
+		<item>4 episodes</item>
+		<item>6 episodes</item>
+		<item>8 episodes</item>
+		<item>10 episode</item>
+	</string-array>
+	<string-array name="eps_to_store_values">
+		<item>2</item>
+		<item>4</item>
+		<item>6</item>
+		<item>8</item>
+		<item>10</item>
+	</string-array>
 </resources>
