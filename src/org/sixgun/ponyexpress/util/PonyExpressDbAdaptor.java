@@ -2,7 +2,6 @@ package org.sixgun.ponyexpress.util;
 
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -270,24 +269,24 @@ public class PonyExpressDbAdaptor {
 	 * @param podcast_name
 	 * @return The Latest episodes date as a string.
 	 */
-	public Date getLatestEpisodeDate(String podcast_name){
-		final String table_name = getTableName(podcast_name);
-		final String[] columns = {EpisodeKeys.DATE};
-		final Cursor cursor = mDb.query(table_name, 
-				columns, null, null, null, null, EpisodeKeys.DATE +" DESC", "1");
-		final boolean result = cursor.moveToFirst();
-		//Check the cursor is at a row.
-		if (result == true){
-			final Long latest_date = cursor.getLong(0);
-			cursor.close();
-			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date.toString());
-			return new Date(latest_date);
-		}else{
-			cursor.close();
-			//return date 0 milliseconds
-			return new Date(0);
-		}
-	}
+//	public Date getLatestEpisodeDate(String podcast_name){
+//		final String table_name = getTableName(podcast_name);
+//		final String[] columns = {EpisodeKeys.DATE};
+//		final Cursor cursor = mDb.query(table_name, 
+//				columns, null, null, null, null, EpisodeKeys.DATE +" DESC", "1");
+//		final boolean result = cursor.moveToFirst();
+//		//Check the cursor is at a row.
+//		if (result == true){
+//			final Long latest_date = cursor.getLong(0);
+//			cursor.close();
+//			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date.toString());
+//			return new Date(latest_date);
+//		}else{
+//			cursor.close();
+//			//return date 0 milliseconds
+//			return new Date(0);
+//		}
+//	}
 	
 	public String getEpisodeUrl(long row_ID, String podcast_name){
 		final String table_name = getTableName(podcast_name);
@@ -465,6 +464,22 @@ public class PonyExpressDbAdaptor {
 		}
 		cursor.close();
 		return size;
+	}
+	
+	public boolean containsEpisode(String title, String podcast_name) {
+		final String table_name = getTableName(podcast_name);
+		final String quotedTitle = "\"" + title + "\"";
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
+		final Cursor cursor = mDb.query(true, table_name,
+				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
+				null, null, null, null, null);
+		if (cursor.getCount() > 0){
+			cursor.close();
+			return true;
+		} else {
+			cursor.close();
+			return false;
+		}
 	}
 	
 	/**

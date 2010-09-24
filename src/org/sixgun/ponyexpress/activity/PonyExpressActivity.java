@@ -22,7 +22,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -334,6 +333,11 @@ public class PonyExpressActivity extends ListActivity {
 		 */
 		@Override
 		protected Void doInBackground(Void... params) {
+			//Check mEpisodesToHold hasn't been changed since Activity was created.
+			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+			mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
+			Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
+			
 			//Get each podcast name then its feed url, and update each.
 			List<String> podcast_names = 
 				mPonyExpressApp.getDbHelper().listAllPodcasts();
@@ -345,17 +349,14 @@ public class PonyExpressActivity extends ListActivity {
 						podcast_url);
 				List<Episode> episodes = parser.parse();
 				
-				final Date date = 
-					mPonyExpressApp.getDbHelper().getLatestEpisodeDate(podcast);
-				
 				for (Episode episode: episodes){
-					//Add any new episodes
-					if (episode.getDate().compareTo(date) > 0) {
+					//Add any episodes not already in database
+					if (!mPonyExpressApp.getDbHelper().containsEpisode(episode.getTitle(),podcast)) {
 						mPonyExpressApp.getDbHelper().insertEpisode(episode, podcast);
 					}
 				}
 				
-				//Determine how many episodes to remove
+				//Determine how many episodes to remove to maintain mEpisodesToHold
 				final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows(podcast);
 				final int episodesToDelete = rows - mEpisodesToHold;
 				//Remove correct number of episodes from oldest episodes to maintain required number.
