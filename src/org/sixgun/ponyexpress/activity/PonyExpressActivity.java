@@ -352,26 +352,25 @@ public class PonyExpressActivity extends ListActivity {
 					//Add any new episodes
 					if (episode.getDate().compareTo(date) > 0) {
 						mPonyExpressApp.getDbHelper().insertEpisode(episode, podcast);
-					}		
-					
-					//Determine how many episodes to remove
-					final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows(podcast);
-					final int episodesToDelete = rows - mEpisodesToHold;
-					//Remove correct number of episodes from oldest episodes to maintain required number.
-					for (int i = episodesToDelete; i > 0; i--){
-						final long rowID = 
-							mPonyExpressApp.getDbHelper().getOldestEpisode(podcast);
-						if (rowID != -1){
-							if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast)){
-								//delete from SD Card
-								deleteFile(rowID, podcast);
-							}
-							//remove from database after deleting.
-							mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast);
-						} else {Log.e(TAG, "Cannot find oldest episode");}
 					}
 				}
 				
+				//Determine how many episodes to remove
+				final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows(podcast);
+				final int episodesToDelete = rows - mEpisodesToHold;
+				//Remove correct number of episodes from oldest episodes to maintain required number.
+				for (int i = episodesToDelete; i > 0; i--){
+					final long rowID = 
+						mPonyExpressApp.getDbHelper().getOldestEpisode(podcast);
+					if (rowID != -1){
+						if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast)){
+							//delete from SD Card
+							deleteFile(rowID, podcast);
+						}
+						//remove from database after deleting.
+						mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast);
+					} else {Log.e(TAG, "Cannot find oldest episode");}
+				}
 			}
 			return null;
 		}
