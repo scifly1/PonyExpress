@@ -632,4 +632,15 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return url;
 	}
+	
+	public int countUnlistened(String podcast_name){
+		final String table_name = getTableName(podcast_name);
+		final String[] columns = {PodcastKeys._ID};
+		Cursor c = mDb.query(
+				true,table_name,columns,EpisodeKeys.LISTENED + "= -1",
+				null,null,null,null,null);
+		final int count = c.getCount();
+		c.close();
+		return count;
+	}
 }

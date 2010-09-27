@@ -94,4 +94,6 @@
 <string name="mark_all_listened">Mark all listened</string>
 <string name="mark_all_not_listened">Mark all not listened</string>
 
+<string name="new_episodes"> new episodes</string>
+<string name="new_episode">new episode</string>
 </resources>

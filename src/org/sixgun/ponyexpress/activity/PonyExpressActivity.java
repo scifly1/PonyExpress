@@ -80,7 +80,6 @@ public class PonyExpressActivity extends ListActivity {
 	private int mEpisodesToHold;
 	private int mUpdateDelta;
 	private GregorianCalendar mLastUpdate;
-	private Cursor mPodcastCursor;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -263,10 +262,10 @@ public class PonyExpressActivity extends ListActivity {
 	}
 	
 	private void listPodcasts() {
-		mPodcastCursor = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
-		startManagingCursor(mPodcastCursor);
+		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
+		startManagingCursor(c);
 		//Create a CursorAdapter to map podcast title and art to the ListView.
-		PodcastCursorAdapter adapter = new PodcastCursorAdapter(mPonyExpressApp, mPodcastCursor);
+		PodcastCursorAdapter adapter = new PodcastCursorAdapter(mPonyExpressApp, c);
 		setListAdapter(adapter);
 	}
 
@@ -285,17 +284,32 @@ public class PonyExpressActivity extends ListActivity {
 		public void bindView(View view, Context context, Cursor cursor) {
 			final int nameIndex = cursor.getColumnIndex(PodcastKeys.NAME);
 			final int artUrlIndex = cursor.getColumnIndex(PodcastKeys.ALBUM_ART_URL);
+			//get the number of unlistened episodes
+			final String name = cursor.getString(nameIndex);
+			final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(name);
 			
 			TextView podcastName = (TextView) view.findViewById(R.id.podcast_text);
 			RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
-			String name = cursor.getString(nameIndex);
+			TextView unlistenedText = (TextView) view.findViewById(R.id.unlistened_eps);
+			
 			podcastName.setText(name);
 			String albumArtUrl = cursor.getString(artUrlIndex);
 			if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
         		albumArt.setRemoteURI(albumArtUrl);
         		albumArt.loadImage();
 			}
+			String unlistenedString = "";
+			switch (unlistened) {
+			case 0: //no unlistened episodes
+				break;
+			case 1:
+				unlistenedString = unlistened + " " + getString(R.string.new_episode);
+				break;
+			default: //more than 1 unlistened episode
+				unlistenedString = unlistened + " " + getString(R.string.new_episodes);
+			}
 			
+			unlistenedText.setText(unlistenedString);
 		}
 
 		@Override
@@ -406,6 +420,8 @@ public class PonyExpressActivity extends ListActivity {
 			SharedPreferences.Editor editor = updateStatus.edit();
 			editor.putLong(LASTUPDATE, mLastUpdate.getTimeInMillis());
 			editor.commit();
+			//re-list podcasts to update new episode counts
+			listPodcasts();
 		}
 		
 	};
