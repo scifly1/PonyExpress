@@ -213,7 +213,7 @@ public class PonyExpressDbAdaptor {
 	 */
 	public Cursor getAllEpisodeNames(String podcast_name){
 		final String table_name = getTableName(podcast_name);
-		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.DATE};
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.LISTENED};
 		return mDb.query(
 				true,table_name,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
 	}
@@ -236,6 +236,20 @@ public class PonyExpressDbAdaptor {
 		}
 		podcasts_cursor.close();
 		return podcast_names;
+	}
+	
+	public Cursor getAllListened(String podcast_name) {
+		final String table_name = getTableName(podcast_name);
+		final String[] columns = {EpisodeKeys._ID};
+		return mDb.query(
+				true,table_name,columns,EpisodeKeys.LISTENED + "!= -1",null,null,null,null,null);
+	}
+	
+	public Cursor getAllNotListened(String podcast_name) {
+		final String table_name = getTableName(podcast_name);
+		final String[] columns = {EpisodeKeys._ID};
+		return mDb.query(
+				true,table_name,columns,EpisodeKeys.LISTENED + "= -1",null,null,null,null,null);
 	}
 	/**
 	 * Gets all filenames of all the files that have been downloaded and should be 

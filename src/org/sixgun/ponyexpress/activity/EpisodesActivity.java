@@ -27,18 +27,31 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
 import android.app.ListActivity;
+import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextMenu;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.CursorAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 public class EpisodesActivity extends ListActivity {
 
 	private static final String TAG = "EpisodesActivity";
+	private static final int MARK_ALL_LISTENED = 0;
+	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private PonyExpressApp mPonyExpressApp;
 	private String mPodcastName;
 	private String mAlbumArtUrl; 
@@ -48,6 +61,9 @@ public class EpisodesActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.episodes);
+		
+		//enable the context menu
+		registerForContextMenu(getListView());
 		
 		//Get Podcast name and album art url from bundle.
 		//The album art url is not used by this activity but is passed to the player by intent
@@ -67,6 +83,29 @@ public class EpisodesActivity extends ListActivity {
 		listEpisodes();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		//Call super to create the general menu
+		super.onCreateOptionsMenu(menu);
+		//Add other specific menu items
+		menu.add(Menu.NONE,MARK_ALL_LISTENED,Menu.NONE,R.string.mark_all_listened);
+		menu.add(Menu.NONE,MARK_ALL_NOT_LISTENED,Menu.NONE,R.string.mark_all_not_listened);
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.episode_context, menu);		
+	}
 
 	/* (non-Javadoc)
 	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
@@ -114,24 +153,122 @@ public class EpisodesActivity extends ListActivity {
 		startActivity(intent);
 	}
 
-	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		//handle specific options
+		switch (item.getItemId()){
+		case MARK_ALL_LISTENED:
+			markAllListened();
+			listEpisodes();
+			return true;
+		case MARK_ALL_NOT_LISTENED:
+			markAllNotListened();
+			listEpisodes();
+			return true;
+		default:	
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		switch (item.getItemId()){
+		case R.id.mark_listened:
+			markListened(info.id);
+			listEpisodes();
+			return true;
+		case R.id.mark_not_listened:
+			markNotListened(info.id);
+			listEpisodes();
+			return true;
+		default:
+			return super.onContextItemSelected(item);
+		}	
+	}
+
+
+	private class EpisodeAdapter extends CursorAdapter {
+
+		public EpisodeAdapter(Context context, Cursor c) {
+			super(context, c);
+		}
+
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			final int titleIndex = cursor.getColumnIndex(EpisodeKeys.TITLE);
+			final int listenedIndex = cursor.getColumnIndex(EpisodeKeys.LISTENED);
+			TextView episodeText = (TextView) view.findViewById(R.id.episode_text);
+			String title = cursor.getString(titleIndex);
+			int listened = cursor.getInt(listenedIndex);
+			episodeText.setText(title);
+			if (listened == -1){ //not listened == -1
+				episodeText.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+			} else episodeText.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+		}
+
+		@Override
+		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View v = new View(context);
+			v = vi.inflate(R.layout.episode_row, null);
+			return v;
+		}
+		
+	}
 
 	/**
 	 * Query the database for all Episode titles to populate the ListView.
 	 */
 	private void listEpisodes(){
 		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames(mPodcastName);
-		startManagingCursor(c);
-		//Set up columns to map from, and layout to map to
-		String[] from = new String[] { EpisodeKeys.TITLE };
-		int[] to = new int[] { R.id.episode_text };
+		startManagingCursor(c);		
 		
-		SimpleCursorAdapter episodes = new SimpleCursorAdapter(
-				this, R.layout.episode_row, c, from, to);
+		EpisodeAdapter episodes = new EpisodeAdapter(this, c);
 		setListAdapter(episodes);
 		
 	}
 	
-
+	private void markListened(Long rowID) {
+		//Sets listened to 0 ie: the start of the episode
+		mPonyExpressApp.getDbHelper().update(mPodcastName, rowID, 
+				EpisodeKeys.LISTENED, 0);
+	}
+	
+	private void markAllListened() {
+		Cursor c = mPonyExpressApp.getDbHelper().getAllNotListened(mPodcastName);
+		int columnIndex = c.getColumnIndex(EpisodeKeys._ID);
+		startManagingCursor(c);
+		c.moveToFirst();
+		for (int i = 0; i < c.getCount(); i++){
+			long rowID = c.getLong(columnIndex);
+			markListened(rowID);
+			c.moveToNext();
+		}
+	}
+	
+	private void markNotListened(long rowID) {
+		//Sets listened to -1, which flags as not listened
+		mPonyExpressApp.getDbHelper().update(mPodcastName, rowID, 
+				EpisodeKeys.LISTENED, -1);
+	}
+	
+	private void markAllNotListened() {
+		Cursor c = mPonyExpressApp.getDbHelper().getAllListened(mPodcastName);
+		int columnIndex = c.getColumnIndex(EpisodeKeys._ID);
+		startManagingCursor(c);
+		c.moveToFirst();
+		for (int i = 0; i < c.getCount(); i++){
+			long rowID = c.getLong(columnIndex);
+			markNotListened(rowID);
+			c.moveToNext();
+		}
+	}
 	
 }

@@ -1,0 +1,4 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<item android:id="@+id/mark_listened" android:title="@string/mark_listened"></item>
+<item android:title="@string/mark_not_listened" android:id="@+id/mark_not_listened"></item>
+</menu>
