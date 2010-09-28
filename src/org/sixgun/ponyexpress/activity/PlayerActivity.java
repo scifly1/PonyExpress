@@ -119,8 +119,7 @@ public class PlayerActivity extends Activity {
 	
 	private void initPlayer() {
 		final long row_ID = mData.getLong(EpisodeKeys._ID);
-		final String episode_title = mData.getString(EpisodeKeys.TITLE);
-		mPodcastPlayer.initPlayer(mPodcastName, episode_title, mEpisodeFilename,mCurrentPosition,row_ID);
+		mPodcastPlayer.initPlayer(mPodcastName, mEpisodeFilename,mCurrentPosition,row_ID, mData);
 	}
 
 

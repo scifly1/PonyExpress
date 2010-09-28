@@ -73,6 +73,8 @@ public class PodcastPlayer extends Service {
 	boolean mHeadPhonesIn = false;
 	private NotificationManager mNM;
 	private String mEpisodeName;
+
+	private Bundle mData;
 	
 
 	
@@ -154,9 +156,10 @@ public class PodcastPlayer extends Service {
 	 * @param position
 	 * @param rowID
 	 */
-	public void initPlayer(String podcast_name, String ep_name, String file, int position, long rowID){
+	public void initPlayer(String podcast_name, String file, int position, long rowID, Bundle data){
 		//TODO clean this method up. Should prob take a bundle not all these params
-		mEpisodeName = ep_name;
+		mData = data;
+		mEpisodeName = mData.getString(EpisodeKeys.TITLE);
 		mPodcastNameQueued = podcast_name;
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = rowID;
@@ -365,12 +368,14 @@ public class PodcastPlayer extends Service {
 	private void showNotification() {
 		//Episode tabs launchmode is 'singletop' so only one instance can 
 		//exist when it is top of the stack. Thus starting it with this intent 
-		//we get the original activity not a new one. Therefore we don't need 
-		//to pass any data in, as it is already there.
+		//we get the original activity not a new one whenit is top of the stack.
+		//For occasions when it is not top we still need to supply the data bundle.
 		Intent notificationIntent = new Intent(this,EpisodeTabs.class);
+		notificationIntent.putExtras(mData);
+		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		
 		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
-				0, notificationIntent, 0);
+				0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 		
 		Notification notification = new Notification(
 				R.drawable.playicon, null,
