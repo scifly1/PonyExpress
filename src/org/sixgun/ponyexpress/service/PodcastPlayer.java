@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
@@ -156,13 +157,14 @@ public class PodcastPlayer extends Service {
 	 * @param position
 	 * @param rowID
 	 */
-	public void initPlayer(String podcast_name, String file, int position, long rowID, Bundle data){
-		//TODO clean this method up. Should prob take a bundle not all these params
+	public void initPlayer( int position, Bundle data){
 		mData = data;
 		mEpisodeName = mData.getString(EpisodeKeys.TITLE);
-		mPodcastNameQueued = podcast_name;
+		mPodcastNameQueued = mData.getString(PodcastKeys.NAME);
+		final String file = mData.getString(EpisodeKeys.FILENAME);
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
-		mRowIDQueued = rowID;
+		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
+	
 		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
 			//Set podcast as data source and prepare the player

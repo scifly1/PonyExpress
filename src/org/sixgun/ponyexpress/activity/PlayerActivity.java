@@ -52,8 +52,6 @@ public class PlayerActivity extends Activity {
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
-	private String mPodcastName;
-	private String mEpisodeFilename;
 	private String mAlbumArtUrl;
 	private boolean mUpdateSeekBar;
 	private ImageButton mPlayPauseButton;
@@ -118,8 +116,7 @@ public class PlayerActivity extends Activity {
 	}
 	
 	private void initPlayer() {
-		final long row_ID = mData.getLong(EpisodeKeys._ID);
-		mPodcastPlayer.initPlayer(mPodcastName, mEpisodeFilename,mCurrentPosition,row_ID, mData);
+		mPodcastPlayer.initPlayer(mCurrentPosition, mData);
 	}
 
 
@@ -145,8 +142,6 @@ public class PlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mData = getIntent().getExtras();
-		mPodcastName = mData.getString(PodcastKeys.NAME);
-		mEpisodeFilename = mData.getString(EpisodeKeys.FILENAME);
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		setContentView(R.layout.player);
