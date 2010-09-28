@@ -23,7 +23,12 @@ import java.io.IOException;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.EpisodeTabs;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -47,6 +52,8 @@ public class PodcastPlayer extends Service {
 
 	private static final String TAG = "PonyExpress PodcastPlayer";
 
+	private static final int NOTIFY_ID = 2;
+
 	private final IBinder mBinder = new PodcastPlayerBinder();
 	private PonyExpressApp mPonyExpressApp; 
 	private MediaPlayer mPlayer1;
@@ -64,6 +71,8 @@ public class PodcastPlayer extends Service {
 	private long mRowIDQueued;
 	HeadPhoneReceiver mHeadPhoneReciever;
 	boolean mHeadPhonesIn = false;
+	private NotificationManager mNM;
+	private String mEpisodeName;
 	
 
 	
@@ -93,6 +102,7 @@ public class PodcastPlayer extends Service {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
@@ -132,7 +142,7 @@ public class PodcastPlayer extends Service {
 			mPlayer.release();
 			mPlayer = null;
 		}
-		
+		mNM.cancel(NOTIFY_ID);
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
 	
@@ -144,7 +154,9 @@ public class PodcastPlayer extends Service {
 	 * @param position
 	 * @param rowID
 	 */
-	public void initPlayer(String podcast_name, String file, int position, long rowID){
+	public void initPlayer(String podcast_name, String ep_name, String file, int position, long rowID){
+		//TODO clean this method up. Should prob take a bundle not all these params
+		mEpisodeName = ep_name;
 		mPodcastNameQueued = podcast_name;
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = rowID;
@@ -206,6 +218,7 @@ public class PodcastPlayer extends Service {
 		}
 		
 		mPlayer.start();
+		showNotification();
 		mEpisodePlaying = mEpisodeQueued;
 		Log.d(TAG,"Playing " + mEpisodePlaying);
 		
@@ -217,6 +230,7 @@ public class PodcastPlayer extends Service {
 		mHeadPhoneReciever = null;
 		
 		mPlayer.pause();
+		hideNotification();
 		//Record last listened position in database
 		final int playbackPosition = mPlayer.getCurrentPosition();
 		boolean res =mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID, 
@@ -226,7 +240,6 @@ public class PodcastPlayer extends Service {
 		}
 	}
 		
-	
 	public void fastForward() {
 		final int playbackPosition = mPlayer.getCurrentPosition();
 		final int newPosition = mSeekDelta + playbackPosition;
@@ -347,6 +360,31 @@ public class PodcastPlayer extends Service {
 			}
 		}
 		
+	}
+	
+	private void showNotification() {
+		//Episode tabs launchmode is 'singletop' so only one instance can 
+		//exist when it is top of the stack. Thus starting it with this intent 
+		//we get the original activity not a new one. Therefore we don't need 
+		//to pass any data in, as it is already there.
+		Intent notificationIntent = new Intent(this,EpisodeTabs.class);
+		
+		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+				0, notificationIntent, 0);
+		
+		Notification notification = new Notification(
+				R.drawable.playicon, null,
+				System.currentTimeMillis());
+		String text = "Playing " + mEpisodeName;
+		notification.flags |= Notification.FLAG_ONGOING_EVENT;
+		notification.setLatestEventInfo(mPonyExpressApp, 
+				getText(R.string.app_name), text, intent);
+		
+		mNM.notify(NOTIFY_ID, notification);
+	}
+	
+	private void hideNotification() {
+		mNM.cancel(NOTIFY_ID);
 	}
 
 }

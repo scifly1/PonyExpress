@@ -255,6 +255,7 @@ public class Downloader extends IntentService {
 					Notification notification = new Notification(
 							icon, null,
 							System.currentTimeMillis());
+					notification.flags |= Notification.FLAG_ONGOING_EVENT;
 					notification.setLatestEventInfo(mPonyExpressApp, 
 							getText(R.string.app_name), text, intent);
 					
