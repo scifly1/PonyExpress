@@ -20,7 +20,9 @@ package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.Downloader;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
@@ -36,7 +38,9 @@ import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.SeekBar.OnSeekBarChangeListener;
@@ -64,6 +68,9 @@ public class PlayerActivity extends Activity {
 	private boolean mUserSeeking = false;
 	private Bundle mSavedState;
 	private Bundle mData;
+	protected View mDownloadButton;
+	private PonyExpressApp mPonyExpressApp;
+	private RelativeLayout mPlayerControls;
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -146,7 +153,9 @@ public class PlayerActivity extends Activity {
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		setContentView(R.layout.player);
 
+		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
+		//Set up click listeners for all player butttons and seek bar
 		OnClickListener mPlayButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -222,6 +231,20 @@ public class PlayerActivity extends Activity {
 			
 		};
 		
+		//Set up listener for download button
+		OnClickListener mDownloadButtonListener = new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Intent i = new Intent(PlayerActivity.this,Downloader.class);
+				i.putExtras(getIntent()); //pass though the Extras with the URL etc...
+				startService(i);
+				mDownloadButton.setEnabled(false);
+				
+			}
+		};
+		
+		//Link all listeners with the correct widgets
+		mPlayerControls = (RelativeLayout)findViewById(R.id.player_controls);
 		mPlayPauseButton = (ImageButton)findViewById(R.id.PlayButton);
 		mPlayPauseButton.setOnClickListener(mPlayButtonListener);
 		ImageButton rewindButton = (ImageButton)findViewById(R.id.rewind);
@@ -232,10 +255,26 @@ public class PlayerActivity extends Activity {
 		mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
 		mElapsed = (TextView)findViewById(R.id.elapsed_time);
 		mEpisodeLength = (TextView)findViewById(R.id.length);
+		mDownloadButton = (Button)findViewById(R.id.DownloadButton);
+		//Only make Download button available if we have internet connectivity.
+		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
+			mDownloadButton.setOnClickListener(mDownloadButtonListener);
+		}else{
+			mDownloadButton.setEnabled(false);
+		}
+		
+		//Check if episode is downloaded, show player buttons
+		//if it is or download button if not.
+		if (mData.containsKey(EpisodeKeys.URL)){
+			mPlayerControls.setVisibility(View.GONE);
+			mDownloadButton.setVisibility(View.VISIBLE);
+		}
+		
 		//Get Album art url and set image.
 		RemoteImageView album_art = (RemoteImageView)findViewById(R.id.album_art);
 		mAlbumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
-		if (mAlbumArtUrl!= null && !"".equals(mAlbumArtUrl) && !"null".equalsIgnoreCase(mAlbumArtUrl)){
+		if (mAlbumArtUrl!= null && !"".equals(mAlbumArtUrl) 
+				&& !"null".equalsIgnoreCase(mAlbumArtUrl) && album_art!=null){
     		album_art.setRemoteURI(mAlbumArtUrl);
     		album_art.loadImage();
 		}

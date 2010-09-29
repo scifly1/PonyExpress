@@ -136,15 +136,14 @@ public class EpisodesActivity extends ListActivity {
 		}
 		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
 		intent.putExtra(EpisodeKeys._ID, id);
+		intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
+		final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id, mPodcastName);
+		intent.putExtra(EpisodeKeys.FILENAME, filename);
+		final int listened = mPonyExpressApp.getDbHelper().getListened(id, mPodcastName);
+		intent.putExtra(EpisodeKeys.LISTENED, listened);
 		//Determine if Episode has been downloaded and add required extras.
 		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName);
-		if (downloaded){
-			intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
-			final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id, mPodcastName);
-			intent.putExtra(EpisodeKeys.FILENAME, filename);
-			final int listened = mPonyExpressApp.getDbHelper().getListened(id, mPodcastName);
-			intent.putExtra(EpisodeKeys.LISTENED, listened);
-		} else {
+		if (!downloaded){
 			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id, mPodcastName);
 			intent.putExtra(EpisodeKeys.URL, url);
 			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id, mPodcastName);

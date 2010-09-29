@@ -63,17 +63,9 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    tabHost.addTab(spec);
 	    
 	    //TODO The tabs need icons...
-	    String tabTitle = "";
-	    if (data.getExtras().containsKey(EpisodeKeys.URL)){
-	    	//File needs downloading so create intent for DownloadActivity
-	    	intent = new Intent(this,DownloadActivity.class);
-	    	tabTitle = "Get Episode!";
-	    } else {
-	    	intent = new Intent(this,PlayerActivity.class);
-	    	tabTitle = "Play Episode!";
-	    }
+	    intent = new Intent(this,PlayerActivity.class);
 	    intent.putExtras(data);
-	    spec = tabHost.newTabSpec("episode").setIndicator(tabTitle).setContent(intent);
+	    spec = tabHost.newTabSpec("episode").setIndicator("Play!").setContent(intent);
 	    tabHost.addTab(spec);
 	    
 	    //Add Identi.ca feed Activity if a tag has been set.
