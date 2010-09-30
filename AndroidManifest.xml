@@ -12,7 +12,6 @@
 			</intent-filter>
 		</activity>
 
-		<service android:name=".service.Downloader" />
 		<service android:name=".service.IdenticaHandler" />
 		<service android:name=".service.PodcastPlayer" />
 		<activity android:name=".activity.EpisodesActivity" />

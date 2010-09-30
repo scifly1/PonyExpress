@@ -18,21 +18,31 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.service.Downloader;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
@@ -53,6 +63,7 @@ public class PlayerActivity extends Activity {
 	private static final String IS_PLAYING = "is_playing";
 	private static final String TAG = "PonyExpress PlayerActivity";
 	private static final String CURRENT_POSITION = "current_position";
+	public static final String NO_MEDIA_FILE = ".nomedia";
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
@@ -71,6 +82,20 @@ public class PlayerActivity extends Activity {
 	protected View mDownloadButton;
 	private PonyExpressApp mPonyExpressApp;
 	private RelativeLayout mPlayerControls;
+	private NotificationManager mNM;
+	
+	//These are all used by the DownloadEpisode AsyncTask
+	public String mPodcastName;
+	public String mPodcastPath;
+	public URL mUrl;
+	public Long mRow_ID; //Needed to update the db
+	public int mSize;
+	private File mRoot;
+	public String mFilename;
+	public FileOutputStream mOutFile;
+	public InputStream mInFile;
+	public int mTotalDownloaded;
+	
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -93,11 +118,14 @@ public class PlayerActivity extends Activity {
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
 			mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
-			initPlayer();
-			queryPlayer();
+			if (!mData.containsKey(EpisodeKeys.URL)){
+				//Only init player if episode has been downloaded
+				initPlayer();
+				queryPlayer();
+			}
 		}
 	};
-	
+		
 	protected void doBindPodcastPlayer() {
 	    // Establish a connection with the service.  We use an explicit
 	    // class name because we want a specific service implementation that
@@ -154,6 +182,7 @@ public class PlayerActivity extends Activity {
 		setContentView(R.layout.player);
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
+		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
 		//Set up click listeners for all player butttons and seek bar
 		OnClickListener mPlayButtonListener = new OnClickListener() {
@@ -235,9 +264,7 @@ public class PlayerActivity extends Activity {
 		OnClickListener mDownloadButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Intent i = new Intent(PlayerActivity.this,Downloader.class);
-				i.putExtras(getIntent()); //pass though the Extras with the URL etc...
-				startService(i);
+				new DownloadEpisode().execute();
 				mDownloadButton.setEnabled(false);
 				
 			}
@@ -417,6 +444,168 @@ public class PlayerActivity extends Activity {
 				}	
 			}	
 		}).start();
+		
+	}
+	
+	private class DownloadEpisode extends AsyncTask <Void,Void,Void>{
+
+
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onPreExecute()
+		 */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			Log.d(TAG,"Downloader started");
+			mPodcastName = (mData.getString(PodcastKeys.NAME));
+			mPodcastPath = PonyExpressApp.PODCAST_PATH + mPodcastName;
+			mUrl = getURL(mData.getString(EpisodeKeys.URL));
+			mRow_ID = mData.getLong(EpisodeKeys._ID);
+			mSize = mData.getInt(EpisodeKeys.SIZE);
+		}
+		
+		@Override
+		protected Void doInBackground(Void... params) {
+			if (mUrl != null && isSDCardWritable()){
+				prepareForDownload();
+				createNoMediaFile();
+				if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
+					//TODO update progress and notification
+					//showNotification();
+					downloadFile();
+				} else {
+					Log.d(TAG, "No Internet Connection.");
+				}
+			}
+			return null;
+		}
+		
+		/**
+		 * Parse the url string to a URL type.
+		 * @param _url string from the Intent.
+		 * @return URL object.
+		 */
+		private URL getURL(String _url) {
+			URL url;
+			try {
+				url = new URL(_url);
+			} catch (MalformedURLException e) {
+				Log.e(TAG, "Episode URL badly formed.", e);
+				return null;
+			}
+			return url;
+		}
+		
+		/**
+		 * Checks that the SD card is mounted with read/write access and that 
+		 * we can write to the correct path. 
+		 * @return true if writable.
+		 */
+		private boolean isSDCardWritable() {
+			final String state = Environment.getExternalStorageState();
+			if (Environment.MEDIA_MOUNTED.equals(state)){
+				Log.d(TAG, "SD Card is mounted");
+				mRoot = Environment.getExternalStorageDirectory();
+				if (mRoot.canWrite()){
+					Log.d(TAG,"Can Write to SD card.");
+					return true;
+				} else {
+					Log.d(TAG, "SD Card is not writable.");	
+				}	
+			}
+			return false;
+		}
+		
+		/**
+		 * Creates the path needed to save the files.
+		 */
+		private void prepareForDownload() {
+			File path = new File(mRoot, mPodcastPath);
+			path.mkdirs();
+			
+			//Split filename from path url.
+			final String filename_path = mUrl.getFile();
+			mFilename = filename_path.substring(filename_path.lastIndexOf('/'));
+			try {
+				mOutFile = new FileOutputStream(new File(path,mFilename));
+			} catch (FileNotFoundException e) {
+				// TODO Improve Error handling.
+				Log.e(TAG, "Cannot open FileOutputStream for writing.",e);
+			}
+		}
+		
+		/**
+		 * Creates a nomedia file if it doesn't exist. This file causes 
+		 * the media scanner to ignore the podcast files. 
+		 */
+		private void createNoMediaFile() {
+			final String path = mRoot + mPodcastPath + "/";
+			File noMedia = new File(path,NO_MEDIA_FILE);
+			if (!noMedia.exists()){
+				FileOutputStream writeFile = null;
+				try {
+					writeFile = new FileOutputStream(noMedia);
+				} catch (FileNotFoundException e) {
+					Log.e(TAG, "Cannot create .nomedia file", e);
+				}
+				try {
+					writeFile.write(new byte[1]);
+				} catch (IOException e) {
+					Log.e(TAG, "Cannot create .nomedia file", e);
+				}
+			}
+			
+		}
+		
+		/**
+		 * Downloads the file mFilename to mOutFile from mUrl.
+		 */
+		private void downloadFile() {
+			try {
+				mInFile = mUrl.openStream();
+			} catch (IOException e) {
+				// TODO Improve this error handling.  Check network up etc.. 
+				throw new RuntimeException(e);
+			}
+			byte[] buffer = new byte[1024];
+			int size = 0;
+					
+			Log.d(TAG,"Writing " + mFilename);
+			try {
+				while ((size = mInFile.read(buffer)) > 0 ) {
+					mOutFile.write(buffer,0, size);
+					mTotalDownloaded  += size;
+				}
+				Log.d(TAG,"Podcast written to SD card.");
+				mPonyExpressApp.getDbHelper().update(mPodcastName, mRow_ID, EpisodeKeys.DOWNLOADED,"true");
+			} catch (IOException e) {
+				Log.e(TAG, "Error reading/writing to file.", e);
+			}
+		}
+
+		
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
+		 */
+		@Override
+		protected void onProgressUpdate(Void... values) {
+			// TODO Auto-generated method stub
+			super.onProgressUpdate(values);
+		}
+		
+		/* (non-Javadoc)
+		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
+		 */
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			//Change views in UI and init and query player.
+			initPlayer();
+			queryPlayer();
+			mDownloadButton.setVisibility(View.GONE);
+			mPlayerControls.setVisibility(View.VISIBLE);
+			
+		}
 		
 	}
 }
