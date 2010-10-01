@@ -2,6 +2,12 @@
 <RelativeLayout android:id="@+id/RelativeLayout02"
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	xmlns:android="http://schemas.android.com/apk/res/android">	
+	<ProgressBar android:id="@+id/DownloadProgressBar" android:layout_width="wrap_content"
+	android:layout_centerHorizontal="true" android:layout_height="wrap_content"
+		android:minWidth="250dp" android:layout_below="@+id/album_art" 
+		android:visibility="gone" android:max="100" android:indeterminate="false" 
+		style="?android:attr/progressBarStyleHorizontal" android:paddingTop="5dp" 
+		android:paddingBottom="5dp"/>
 	<SeekBar android:layout_width="wrap_content" android:id="@+id/PlayerSeekBar"
 		android:layout_centerHorizontal="true" android:layout_height="wrap_content"
 		android:minWidth="250dp" android:paddingTop="10dp"/>
@@ -28,6 +34,6 @@
 	<Button android:text="@string/download" android:layout_height="wrap_content"
 		android:id="@+id/DownloadButton" android:layout_width="wrap_content"
 		android:layout_centerHorizontal="true" 
-		android:layout_below="@+id/PlayerSeekBar" android:visibility="gone" />
+		android:layout_below="@+id/DownloadProgressBar" android:visibility="gone" />
 
 </RelativeLayout>

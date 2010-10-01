@@ -35,7 +35,9 @@ import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -45,11 +47,13 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.AsyncTask.Status;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -64,13 +68,14 @@ public class PlayerActivity extends Activity {
 	private static final String TAG = "PonyExpress PlayerActivity";
 	private static final String CURRENT_POSITION = "current_position";
 	public static final String NO_MEDIA_FILE = ".nomedia";
+	private static final String IS_DOWNLOADING = "is_downloading";
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private boolean mPaused = true;
 	private String mAlbumArtUrl;
 	private boolean mUpdateSeekBar;
 	private ImageButton mPlayPauseButton;
-	private SeekBar mSeekBar;
+	static private SeekBar mSeekBar;
 	private TextView mElapsed; 
 	private TextView mEpisodeLength;
 	private int mEpisodeDuration;
@@ -79,22 +84,24 @@ public class PlayerActivity extends Activity {
 	private boolean mUserSeeking = false;
 	private Bundle mSavedState;
 	private Bundle mData;
-	protected View mDownloadButton;
+	static protected View mDownloadButton;
+	static private ProgressBar mDownloadProgress;
 	private PonyExpressApp mPonyExpressApp;
-	private RelativeLayout mPlayerControls;
+	static private RelativeLayout mPlayerControls;
 	private NotificationManager mNM;
 	
 	//These are all used by the DownloadEpisode AsyncTask
-	public String mPodcastName;
-	public String mPodcastPath;
-	public URL mUrl;
-	public Long mRow_ID; //Needed to update the db
-	public int mSize;
+	private String mPodcastName;
+	private String mPodcastPath;
+	private URL mUrl;
+	private Long mRow_ID; //Needed to update the db
+	private int mSize;
 	private File mRoot;
-	public String mFilename;
-	public FileOutputStream mOutFile;
-	public InputStream mInFile;
-	public int mTotalDownloaded;
+	private String mFilename;
+	private FileOutputStream mOutFile;
+	private InputStream mInFile;
+	private int mTotalDownloaded;
+	static private boolean mIsDownloading;
 	
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
@@ -179,6 +186,8 @@ public class PlayerActivity extends Activity {
 		mData = getIntent().getExtras();
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
+		mPodcastName = (mData.getString(PodcastKeys.NAME));
+		mRow_ID = mData.getLong(EpisodeKeys._ID);
 		setContentView(R.layout.player);
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
@@ -283,6 +292,8 @@ public class PlayerActivity extends Activity {
 		mElapsed = (TextView)findViewById(R.id.elapsed_time);
 		mEpisodeLength = (TextView)findViewById(R.id.length);
 		mDownloadButton = (Button)findViewById(R.id.DownloadButton);
+		mDownloadProgress = (ProgressBar)findViewById(R.id.DownloadProgressBar);
+
 		//Only make Download button available if we have internet connectivity.
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 			mDownloadButton.setOnClickListener(mDownloadButtonListener);
@@ -290,11 +301,15 @@ public class PlayerActivity extends Activity {
 			mDownloadButton.setEnabled(false);
 		}
 		
-		//Check if episode is downloaded, show player buttons
-		//if it is or download button if not.
-		if (mData.containsKey(EpisodeKeys.URL)){
+		/**Check if episode is downloaded, show player buttons
+		*if it is or download button if not.
+		*/
+		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(mRow_ID, mPodcastName)){
 			mPlayerControls.setVisibility(View.GONE);
+			mSeekBar.setVisibility(View.GONE);
+			mDownloadProgress.setVisibility(View.VISIBLE);
 			mDownloadButton.setVisibility(View.VISIBLE);
+			
 		}
 		
 		//Get Album art url and set image.
@@ -325,7 +340,7 @@ public class PlayerActivity extends Activity {
 	protected void onResume() {
 		super.onResume();
 		if (mSavedState != null){
-			restoreSeekBar(mSavedState);	
+			restoreSeekBar(mSavedState);
 		}
 	}
 
@@ -359,6 +374,9 @@ public class PlayerActivity extends Activity {
 	protected void onRestoreInstanceState(Bundle savedInstanceState) {
 		super.onRestoreInstanceState(savedInstanceState);
 		restoreSeekBar(savedInstanceState);
+		if (savedInstanceState.getBoolean(IS_DOWNLOADING)){
+			mDownloadButton.setEnabled(false);
+		}
 		mSavedState = null;
 	}
 
@@ -394,6 +412,11 @@ public class PlayerActivity extends Activity {
 			outState.putBoolean(IS_PLAYING, false);
 		}
 		outState.putInt(CURRENT_POSITION, mCurrentPosition);
+		if (mIsDownloading){
+			outState.putBoolean(IS_DOWNLOADING, true);
+		} else {
+			outState.putBoolean(IS_DOWNLOADING, false);
+		}
 		mSavedState = outState;
 	}
 
@@ -447,8 +470,10 @@ public class PlayerActivity extends Activity {
 		
 	}
 	
-	private class DownloadEpisode extends AsyncTask <Void,Void,Void>{
+	private class DownloadEpisode extends AsyncTask <Void,Double,Void>{
 
+
+		protected static final int NOTIFY_ID = 1;
 
 		/* (non-Javadoc)
 		 * @see android.os.AsyncTask#onPreExecute()
@@ -457,21 +482,20 @@ public class PlayerActivity extends Activity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			Log.d(TAG,"Downloader started");
-			mPodcastName = (mData.getString(PodcastKeys.NAME));
 			mPodcastPath = PonyExpressApp.PODCAST_PATH + mPodcastName;
 			mUrl = getURL(mData.getString(EpisodeKeys.URL));
-			mRow_ID = mData.getLong(EpisodeKeys._ID);
 			mSize = mData.getInt(EpisodeKeys.SIZE);
 		}
 		
 		@Override
 		protected Void doInBackground(Void... params) {
+			mIsDownloading = true;
 			if (mUrl != null && isSDCardWritable()){
 				prepareForDownload();
 				createNoMediaFile();
 				if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-					//TODO update progress and notification
-					//showNotification();
+					// update progress and notification
+					showNotification();
 					downloadFile();
 				} else {
 					Log.d(TAG, "No Internet Connection.");
@@ -582,15 +606,67 @@ public class PlayerActivity extends Activity {
 				Log.e(TAG, "Error reading/writing to file.", e);
 			}
 		}
+		/**
+		 * Shows a notification in the status bar when downloading an episode
+		 * and updates the download progress bar.
+		 */
+		private void showNotification() {
+			new Thread(new Runnable() {
+				CharSequence text = "";
+				//This uses an empty intent because there is no new activity to start.
+				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+						0, new Intent(), 0);
+				
+				@Override
+				public void run() {
+					int icon = R.drawable.sixgunicon0;
+					String progress = "";
+					double percent = 0.0;
+					do {
+						percent = mTotalDownloaded/(double)mSize * 100;
+						progress = String.format("%.0f", percent);
+						text = progress + "% " + getText(R.string.downloading_episode);
+						if (percent > 15.0 && percent < 30.0) {
+							icon = R.drawable.sixgunicon1;
+						} else if (percent > 30.0 && percent < 45.0) {
+							icon = R.drawable.sixgunicon2;
+						} else if (percent > 45.0 && percent < 60.0) {
+							icon = R.drawable.sixgunicon3;
+						} else if (percent > 60.0 && percent < 75.0) {
+							icon = R.drawable.sixgunicon4;
+						} else if (percent > 75.0 && percent < 90.0) {
+							icon = R.drawable.sixgunicon5;
+						} else if (percent > 90.0) {
+							icon = R.drawable.sixgunicon6;
+						}
+						
+						Notification notification = new Notification(
+								icon, null,
+								System.currentTimeMillis());
+						notification.flags |= Notification.FLAG_ONGOING_EVENT;
+						notification.setLatestEventInfo(mPonyExpressApp, 
+								getText(R.string.app_name), text, intent);
+						
+						mNM.notify(NOTIFY_ID, notification);
+						try {
+							Thread.sleep(1000);
+						} catch (InterruptedException e) {
+							return;
+						}
+						
+						publishProgress(percent);
+					} while (mTotalDownloaded < mSize);
+				}
+			}).start();
+		}
 
 		
 		/* (non-Javadoc)
 		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
 		 */
 		@Override
-		protected void onProgressUpdate(Void... values) {
-			// TODO Auto-generated method stub
-			super.onProgressUpdate(values);
+		protected void onProgressUpdate(Double... percent) {
+			mDownloadProgress.setProgress(percent[0].intValue());
 		}
 		
 		/* (non-Javadoc)
@@ -602,7 +678,11 @@ public class PlayerActivity extends Activity {
 			//Change views in UI and init and query player.
 			initPlayer();
 			queryPlayer();
+			mNM.cancel(NOTIFY_ID);
+			mIsDownloading = false;
+			mDownloadProgress.setVisibility(View.GONE);
 			mDownloadButton.setVisibility(View.GONE);
+			mSeekBar.setVisibility(View.VISIBLE);
 			mPlayerControls.setVisibility(View.VISIBLE);
 			
 		}

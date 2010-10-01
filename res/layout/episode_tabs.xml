@@ -6,7 +6,7 @@
 		android:layout_width="fill_parent" android:layout_height="fill_parent"
 		android:padding="5dp">
 		<TextView android:id="@+id/TitleText" android:layout_width="wrap_content"
-			android:layout_height="wrap_content" android:textSize="22sp" android:textStyle="bold"
+			android:layout_height="wrap_content" android:textSize="20sp" android:textStyle="bold"
 			android:layout_centerHorizontal="true" />
 		<TabWidget android:id="@android:id/tabs"
 			android:layout_width="fill_parent" android:layout_height="wrap_content" />
