@@ -113,6 +113,7 @@ public class PodcastPlayer extends Service {
 				mp.start();
 				Log.d(TAG,"Playback re-started");
 				mp.pause();
+				hideNotification();
 				//Set Listened to 0
 				boolean res = mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
 						EpisodeKeys.LISTENED, 0);
