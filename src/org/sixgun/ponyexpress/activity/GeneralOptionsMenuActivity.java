@@ -32,6 +32,7 @@ import android.view.MenuItem;
  * This is a base class that all activities that require a basic options menu 
  * (Settings, identica account setup) can inherit from to get the menu. 
  *
+ * It extends TabActivity as it is used sub-classed by TabActivitys rather than plain Activitys. 
  */
 public class GeneralOptionsMenuActivity extends TabActivity {
 

@@ -69,7 +69,11 @@
 	<string name="refresh_feeds">Refresh feeds interval</string>
 	<string name="refresh_feeds_summary">Hours between feed refreshes</string>
 	<string name="refresh_dialog_title">Interval in hours</string>
+	<!-- List of frequencies to update the feeds.  Displayed to the user
+	from the Settings - Refresh feeds interval menu.  The first item must be the 
+	no refresh option as it is accessed from PonyExpressActivity by index. -->
 	<string-array name="update_freqs">
+		<item>Manual refresh only</item>
 		<item>2</item>
 		<item>4</item>
 		<item>6</item>

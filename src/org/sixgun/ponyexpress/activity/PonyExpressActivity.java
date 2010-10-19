@@ -42,6 +42,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -91,7 +92,13 @@ public class PonyExpressActivity extends ListActivity {
 		
 		//Get the update delta and number of episodes to hold from preferences
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		mUpdateDelta = Integer.parseInt(prefs.getString(getString(R.string.update_freqs_key), "24"));
+		final String updateDelta = prefs.getString(getString(R.string.update_freqs_key), "24");
+		final Resources res = getResources();
+		//Check if no-refresh has been set
+		if (updateDelta.equals(res.getStringArray(R.array.update_freqs)[0])){
+			mUpdateDelta = 999;
+		} else mUpdateDelta = Integer.parseInt(updateDelta);
+		
 		mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 		Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
 		Log.d(TAG,"update delta: " + mUpdateDelta);
@@ -113,8 +120,9 @@ public class PonyExpressActivity extends ListActivity {
 			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
 		}
 		
-		//Check the last time the database was updated and update if necessary
-		if (isTimeToUpdate()){
+		//If the user has set an autoupdate frequency (mUpdateDelta != 999), check the 
+		//last time the database was updated and update if necessary
+		if (mUpdateDelta != 999 && isTimeToUpdate()){
 			//update delta has passed and we have connectivity so update
 			updateFeeds();
 		}
