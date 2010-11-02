@@ -321,13 +321,14 @@ public class PodcastPlayer extends Service {
 				//Fall through
 			case TelephonyManager.CALL_STATE_OFFHOOK:
 				if (mPlayer.isPlaying()){
-					mPlayer.pause();
+					pause();
 					mResumeAfterCall  = true;
 				}
 				break;
 			case TelephonyManager.CALL_STATE_IDLE:
 				if (mResumeAfterCall){
-					mPlayer.start();
+					//Don't automatically restart playback, let user initiate it.
+					//play();
 					mResumeAfterCall = false;
 					mBeenResumedAfterCall = true;
 					break;
