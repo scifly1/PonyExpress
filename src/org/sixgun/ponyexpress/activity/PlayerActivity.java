@@ -30,6 +30,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
@@ -70,6 +71,8 @@ public class PlayerActivity extends Activity {
 	private static final String IS_DOWNLOADING = "is_downloading";
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
+	private DownloaderService mDownloader;
+	private boolean mDownloaderBound;
 	private boolean mPaused = true;
 	private String mAlbumArtUrl;
 	private boolean mUpdateSeekBar;
@@ -89,6 +92,8 @@ public class PlayerActivity extends Activity {
 	static private RelativeLayout mPlayerControls;
 	private NotificationManager mNM;
 	
+	private boolean mEpisodeDownloaded;
+	
 	//These are all used by the DownloadEpisode AsyncTask
 	private String mPodcastName;
 	private String mPodcastPath;
@@ -102,9 +107,60 @@ public class PlayerActivity extends Activity {
 	private int mTotalDownloaded;
 	static private boolean mIsDownloading;
 	
+	//This is all responsible for connecting/disconnecting to the Downloader service.
+	private ServiceConnection mDownloaderConnection = new ServiceConnection() {
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// This is called when the connection with the service has been
+	        // unexpectedly disconnected -- that is, its process crashed.
+	        // Because it is running in our same process, we should never
+	        // see this happen.
+	        mDownloader = null;
+			
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// This is called when the connection with the service has been
+	        // established, giving us the service object we can use to
+	        // interact with the service.  Because we have bound to an explicit
+	        // service that we know is running in our own process, we can
+	        // cast its IBinder to a concrete class and directly access it.
+			mDownloader = ((DownloaderService.DownloaderServiceBinder)service).getService();
+			//TODO query downloader to start/restore progress bar.
+		}
+	};
+	
+	protected void doBindDownloaderService() {
+	    // Establish a connection with the service.  We use an explicit
+	    // class name because we want a specific service implementation that
+	    // we know will be running in our own process (and thus won't be
+	    // supporting component replacement by other applications).
+		
+		//getApplicationContext().bindService() called instead of bindService(), as
+		//bindService() does not work when called from the child Activity of an ActivityGroup
+		//ie:TabActivity
+	    getApplicationContext().bindService(new Intent(this, 
+	            DownloaderService.class), mDownloaderConnection, Context.BIND_AUTO_CREATE);
+	    mDownloaderBound = true;
+	    //TODO query downloader to see if this episode is being downloaded
+	    //If so update download progress bar
+	}
+
+	protected void doUnbindDownloaderService() {
+	    if (mDownloaderBound) {
+	        // Detach our existing connection.
+	    	//Must use getApplicationContext.unbindService() as 
+	    	//getApplicationContext().bindService was used to bind initially.
+	        getApplicationContext().unbindService(mDownloaderConnection);
+	        mDownloaderBound = false;
+	    }
+	}
+	
 	
 	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
-	private ServiceConnection mConnection = new ServiceConnection() {
+	private ServiceConnection mPlayerConnection = new ServiceConnection() {
 		
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
@@ -124,11 +180,8 @@ public class PlayerActivity extends Activity {
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
 			mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
-			if (!mData.containsKey(EpisodeKeys.URL)){
-				//Only init player if episode has been downloaded
-				initPlayer();
-				queryPlayer();
-			}
+			initPlayer();
+			queryPlayer();
 		}
 	};
 		
@@ -142,7 +195,7 @@ public class PlayerActivity extends Activity {
 		//bindService() does not work when called from the child Activity of an ActivityGroup
 		//ie:TabActivity
 	    getApplicationContext().bindService(new Intent(this, 
-	            PodcastPlayer.class), mConnection, Context.BIND_AUTO_CREATE);
+	            PodcastPlayer.class), mPlayerConnection, Context.BIND_AUTO_CREATE);
 	    mPodcastPlayerBound = true;
 	}
 
@@ -151,7 +204,7 @@ public class PlayerActivity extends Activity {
 	        // Detach our existing connection.
 	    	//Must use getApplicationContext.unbindService() as 
 	    	//getApplicationContext().bindService was used to bind initially.
-	        getApplicationContext().unbindService(mConnection);
+	        getApplicationContext().unbindService(mPlayerConnection);
 	        mPodcastPlayerBound = false;
 	    }
 	}
@@ -272,7 +325,9 @@ public class PlayerActivity extends Activity {
 		OnClickListener mDownloadButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				new DownloadEpisode().execute();
+				//new DownloadEpisode().execute();
+				mDownloader.downloadEpisode(mData);
+				mIsDownloading = true;
 				mDownloadButton.setEnabled(false);
 				
 			}
@@ -303,7 +358,8 @@ public class PlayerActivity extends Activity {
 		/**Check if episode is downloaded, show player buttons
 		*if it is or download button if not.
 		*/
-		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(mRow_ID, mPodcastName)){
+		mEpisodeDownloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(mRow_ID, mPodcastName);
+		if (!mEpisodeDownloaded){
 			mPlayerControls.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.GONE);
 			mDownloadProgress.setVisibility(View.VISIBLE);
@@ -329,7 +385,9 @@ public class PlayerActivity extends Activity {
 	@Override
 	protected void onStart() {
 		super.onStart();
-		doBindPodcastPlayer();
+		if (mEpisodeDownloaded){
+			doBindPodcastPlayer();
+		} else doBindDownloaderService();
 	}
 
 	/* (non-Javadoc)
@@ -482,7 +540,7 @@ public class PlayerActivity extends Activity {
 			super.onPreExecute();
 			Log.d(TAG,"Downloader started");
 			mPodcastPath = PonyExpressApp.PODCAST_PATH + mPodcastName;
-			mUrl = getURL(mData.getString(EpisodeKeys.URL));
+			mUrl = Utils.getURL(mData.getString(EpisodeKeys.URL));
 			mSize = mData.getInt(EpisodeKeys.SIZE);
 		}
 		
@@ -501,22 +559,6 @@ public class PlayerActivity extends Activity {
 				}
 			}
 			return null;
-		}
-		
-		/**
-		 * Parse the url string to a URL type.
-		 * @param _url string from the Intent.
-		 * @return URL object.
-		 */
-		private URL getURL(String _url) {
-			URL url;
-			try {
-				url = new URL(_url);
-			} catch (MalformedURLException e) {
-				Log.e(TAG, "Episode URL badly formed.", e);
-				return null;
-			}
-			return url;
 		}
 		
 		/**
@@ -679,6 +721,8 @@ public class PlayerActivity extends Activity {
 			queryPlayer();
 			mNM.cancel(NOTIFY_ID);
 			mIsDownloading = false;
+			mEpisodeDownloaded = true;
+			doBindPodcastPlayer();
 			mDownloadProgress.setVisibility(View.GONE);
 			mDownloadButton.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.VISIBLE);

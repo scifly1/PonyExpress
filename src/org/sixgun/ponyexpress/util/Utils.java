@@ -18,12 +18,19 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import android.util.Log;
+
 /**
  * Utility class with general utility methods.
  *
  */
 public class Utils {
 	
+	private static final String TAG = "PonyExpressUtils";
+
 	/**
 	 * Formats a time in millisecods into a h:mm:ss string
 	 * @param milliseconds
@@ -42,4 +49,19 @@ public class Utils {
 		return String.format("%d:%02d:%02d", hours,minutes,seconds);
 	}
 
+	/**
+	 * Parse the url string to a URL type.
+	 * @param _url string from the Intent.
+	 * @return URL object.
+	 */
+	static public URL getURL(String _url) {
+		URL url;
+		try {
+			url = new URL(_url);
+		} catch (MalformedURLException e) {
+			Log.e(TAG, "Episode URL badly formed.", e);
+			return null;
+		}
+		return url;
+	}
 }
