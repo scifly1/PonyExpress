@@ -25,6 +25,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.sixgun.ponyexpress.util.Utils;
+
 /*
  * POJO representing an Episode of a podcast.  Holds the pubDate,
  * title and url of each episode.
@@ -83,11 +85,7 @@ public class Episode implements Comparable<Episode> {
      * Getters and Setters for each field.
      */
     public void setLink(String link) {
-        try {
-            this.mLink = new URL(link);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+        mLink = Utils.getURL(link);
     }
     
     public URL getLink() {

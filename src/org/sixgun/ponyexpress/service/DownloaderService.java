@@ -24,12 +24,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 
+import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -48,13 +49,13 @@ import android.util.Log;
 public class DownloaderService extends Service {
 
 
-    protected static final int NOTIFY_ID = 1;
     private final IBinder mBinder = new DownloaderServiceBinder();
-    private int mDownloadCounter;
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String NO_MEDIA_FILE = ".nomedia";
 	private PonyExpressApp mPonyExpressApp;
-	private Bundle mData;
+	//Do not remove episodes from mEpisodes as you'll change the index 
+	//of other episodes that may be being accessed.
+	private ArrayList<DownloadingEpisode> mEpisodes;
 	private File mRoot;
 	protected NotificationManager mNM;
 	
@@ -86,46 +87,38 @@ public class DownloaderService extends Service {
 		Log.d(TAG, "Downloader Service Started");
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		mEpisodes = new ArrayList<DownloadingEpisode>();
 	}
 
 	
 	public void downloadEpisode(final Bundle _data) {
 		final Bundle data = _data; 
-		mDownloadCounter += 1;
+		DownloadingEpisode newEpisode = new DownloadingEpisode();
 		
-		final String podcastName = data.getString(PodcastKeys.NAME);
-		final String podcastPath = PonyExpressApp.PODCAST_PATH + podcastName;
-		final URL url = Utils.getURL(mData.getString(EpisodeKeys.URL));
-		final int totalSize = mData.getInt(EpisodeKeys.SIZE);
-		final long row_ID = mData.getLong(EpisodeKeys._ID);
+		newEpisode.setRowID(data.getLong(EpisodeKeys._ID));
+		newEpisode.setPodcastName(data.getString(PodcastKeys.NAME));
+		newEpisode.setTitle(data.getString(EpisodeKeys.TITLE));
+		newEpisode.setPodcastPath(PonyExpressApp.PODCAST_PATH + newEpisode.getPodcastName());
+		newEpisode.setLink(data.getString(EpisodeKeys.URL));
+		newEpisode.setSize(data.getInt(EpisodeKeys.SIZE));
 		
-		final Handler handler = new Handler(){
-
-			/* (non-Javadoc)
-			 * @see android.os.Handler#handleMessage(android.os.Message)
-			 */
-			@Override
-			public void handleMessage(Message msg) {
-				//TODO Handle the totalDownloaded int that the message is carrying
-				//in what and assign to the correct DownloadingEpisode object via an 
-				// ArrayList of all DownloadingEpisodes.
-				
-			}
-			
-		};
+		mEpisodes.add(newEpisode);
+		//Use the index in the list as the notifyID for each episode.
+		final int notifyID = mEpisodes.indexOf(newEpisode);
 		
 		new Thread(new Runnable() {
 			
-			FileOutputStream outFile;
-			final int notifyID = mDownloadCounter;
-			
+			FileOutputStream outFile;			
+			DownloadingEpisode episode = mEpisodes.get(notifyID);
 			
 			@Override
 			public void run() {
+				final URL url = episode.getLink();
+				final String podcastPath = episode.getPodcastPath();
 				if (url != null && isSDCardWritable()){
 					outFile = prepareForDownload(podcastPath, url);
 					createNoMediaFile(podcastPath);
-					
+
 					if (mPonyExpressApp.getInternetHelper().checkConnectivity() 
 							&& outFile != null){
 						//Begin download
@@ -139,21 +132,22 @@ public class DownloaderService extends Service {
 						}
 						byte[] buffer = new byte[1024];
 						int size = 0;
-								
+
 						Log.d(TAG,"Writing " + url.getFile());
+						beginNotification(notifyID);
 						try {
 							while ((size = inFile.read(buffer)) > 0 ) {
 								outFile.write(buffer,0, size);
 								totalDownloaded  += size;
-								updateNotification(notifyID, totalDownloaded, totalSize);
-								handler.sendMessage(Message.obtain(handler, totalDownloaded));
+								mEpisodes.get(notifyID).setDownloadProgress(totalDownloaded);
 							}
 							Log.d(TAG,"Podcast written to SD card.");
-							mPonyExpressApp.getDbHelper().update(podcastName, row_ID, EpisodeKeys.DOWNLOADED,"true");
+							mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
+									episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
 						} catch (IOException e) {
 							Log.e(TAG, "Error reading/writing to file.", e);
 						}
-						
+
 					} else {
 						Log.d(TAG, "No Internet Connection or outFile error.");
 					}
@@ -225,41 +219,84 @@ public class DownloaderService extends Service {
 		
 	}
 	
-	private void updateNotification(final int notifyID, int totalDownloaded, int size) {
-		//This uses an empty intent because there is no new activity to start.
-		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
-				0, new Intent(), 0);
+	private void beginNotification(final int notifyID) {
+		new Thread(new Runnable() {
+			
+			@Override
+			public void run() {
+				//This uses an empty intent because there is no new activity to start.
+				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+						0, new Intent(), 0);
+				
+				int icon = R.drawable.sixgunicon0;
+				String progress = "";
+				double percent = 0.0;
+				CharSequence text = "";
+				
+				while (percent < 100.0){
+					percent = getProgress(notifyID);
+					progress = String.format("%.0f", percent);
+					text = progress + "% " + getText(R.string.downloading_episode);
+					if (percent > 15.0 && percent < 30.0) {
+						icon = R.drawable.sixgunicon1;
+					} else if (percent > 30.0 && percent < 45.0) {
+						icon = R.drawable.sixgunicon2;
+					} else if (percent > 45.0 && percent < 60.0) {
+						icon = R.drawable.sixgunicon3;
+					} else if (percent > 60.0 && percent < 75.0) {
+						icon = R.drawable.sixgunicon4;
+					} else if (percent > 75.0 && percent < 90.0) {
+						icon = R.drawable.sixgunicon5;
+					} else if (percent > 90.0) {
+						icon = R.drawable.sixgunicon6;
+					}
+
+					Notification notification = new Notification(
+							icon, null,
+							System.currentTimeMillis());
+					notification.flags |= Notification.FLAG_ONGOING_EVENT;
+					notification.setLatestEventInfo(mPonyExpressApp, 
+							getText(R.string.app_name), text, intent);
+
+					mNM.notify(notifyID, notification);
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						mNM.cancel(notifyID);
+						return;
+					}
+				}
+				mNM.cancel(notifyID);
+			}
+		}).start();
+	}
 		
-		int icon = R.drawable.sixgunicon0;
-		String progress = "";
-		double percent = 0.0;
-		CharSequence text = "";
+
+	public int isEpisodeDownloading(String PodcastTitle) {
+		// Iterate through the array to find podcastname and return index or -1
+		// if not downloading.
+		int index = -1;
+		if (mEpisodes.isEmpty()) return index;
 		
-		percent = totalDownloaded/(double)size * 100;
-		progress = String.format("%.0f", percent);
-		text = progress + "% " + getText(R.string.downloading_episode);
-		if (percent > 15.0 && percent < 30.0) {
-			icon = R.drawable.sixgunicon1;
-		} else if (percent > 30.0 && percent < 45.0) {
-			icon = R.drawable.sixgunicon2;
-		} else if (percent > 45.0 && percent < 60.0) {
-			icon = R.drawable.sixgunicon3;
-		} else if (percent > 60.0 && percent < 75.0) {
-			icon = R.drawable.sixgunicon4;
-		} else if (percent > 75.0 && percent < 90.0) {
-			icon = R.drawable.sixgunicon5;
-		} else if (percent > 90.0) {
-			icon = R.drawable.sixgunicon6;
+		for (DownloadingEpisode episode:mEpisodes){
+			if (episode.getTitle().equals(PodcastTitle)){
+				if (episode.getDownloadProgress() < episode.getSize()){
+					index = mEpisodes.indexOf(episode);
+				}else{
+					Log.d(TAG, "Episode: " + PodcastTitle + " not downloading!");
+				}
+			}
 		}
-		
-		Notification notification = new Notification(
-				icon, null,
-				System.currentTimeMillis());
-		notification.flags |= Notification.FLAG_ONGOING_EVENT;
-		notification.setLatestEventInfo(mPonyExpressApp, 
-				getText(R.string.app_name), text, intent);
-		
-		mNM.notify(notifyID, notification);
+		return index;
+	}
+
+	public double getProgress(final int index) {
+		// look up podcast in array and return percent progress
+		final DownloadingEpisode episode = mEpisodes.get(index);
+		final int size = episode.getSize();
+		final int progress = episode.getDownloadProgress();
+		double percent = progress/(double)size * 100; 
+		return percent;
 	}
 	
 }
