@@ -40,9 +40,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 
 
@@ -52,12 +50,15 @@ public class DownloaderService extends Service {
     private final IBinder mBinder = new DownloaderServiceBinder();
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String NO_MEDIA_FILE = ".nomedia";
+	private static final int notifyID = 1;
 	private PonyExpressApp mPonyExpressApp;
 	//Do not remove episodes from mEpisodes as you'll change the index 
 	//of other episodes that may be being accessed.
 	private ArrayList<DownloadingEpisode> mEpisodes;
 	private File mRoot;
 	protected NotificationManager mNM;
+	volatile private int mCurrentDownloads;
+	private boolean mDownloaderAwake = false;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -88,8 +89,15 @@ public class DownloaderService extends Service {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mEpisodes = new ArrayList<DownloadingEpisode>();
+		mDownloaderAwake = true;
+		beginNotifications();
 	}
 
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		mDownloaderAwake = false;
+	}
 	
 	public void downloadEpisode(final Bundle _data) {
 		final Bundle data = _data; 
@@ -103,13 +111,13 @@ public class DownloaderService extends Service {
 		newEpisode.setSize(data.getInt(EpisodeKeys.SIZE));
 		
 		mEpisodes.add(newEpisode);
-		//Use the index in the list as the notifyID for each episode.
-		final int notifyID = mEpisodes.indexOf(newEpisode);
+		
+		final int index = mEpisodes.indexOf(newEpisode);
 		
 		new Thread(new Runnable() {
 			
 			FileOutputStream outFile;			
-			DownloadingEpisode episode = mEpisodes.get(notifyID);
+			DownloadingEpisode episode = mEpisodes.get(index);
 			
 			@Override
 			public void run() {
@@ -122,6 +130,7 @@ public class DownloaderService extends Service {
 					if (mPonyExpressApp.getInternetHelper().checkConnectivity() 
 							&& outFile != null){
 						//Begin download
+						mCurrentDownloads++;
 						InputStream inFile;
 						int totalDownloaded = 0;
 						try {
@@ -134,14 +143,14 @@ public class DownloaderService extends Service {
 						int size = 0;
 
 						Log.d(TAG,"Writing " + url.getFile());
-						beginNotification(notifyID);
 						try {
 							while ((size = inFile.read(buffer)) > 0 ) {
 								outFile.write(buffer,0, size);
 								totalDownloaded  += size;
-								mEpisodes.get(notifyID).setDownloadProgress(totalDownloaded);
+								mEpisodes.get(index).setDownloadProgress(totalDownloaded);
 							}
 							Log.d(TAG,"Podcast written to SD card.");
+							mCurrentDownloads--;
 							mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
 									episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
 						} catch (IOException e) {
@@ -218,47 +227,71 @@ public class DownloaderService extends Service {
 		}
 		
 	}
-	
-	private void beginNotification(final int notifyID) {
+	/**This thread  follows mCurrentDownloads while the 
+	* service is active. It Displays notifications while > 1.  
+	*/
+	private void beginNotifications() {
 		new Thread(new Runnable() {
-			
 			@Override
 			public void run() {
 				//This uses an empty intent because there is no new activity to start.
 				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
 						0, new Intent(), 0);
 				
-				int icon = R.drawable.sixgunicon0;
-				String progress = "";
-				double percent = 0.0;
+				int icon;
 				CharSequence text = "";
+				int icon_counter = 0;
 				
-				while (percent < 100.0){
-					percent = getProgress(notifyID);
-					progress = String.format("%.0f", percent);
-					text = progress + "% " + getText(R.string.downloading_episode);
-					if (percent > 15.0 && percent < 30.0) {
-						icon = R.drawable.sixgunicon1;
-					} else if (percent > 30.0 && percent < 45.0) {
-						icon = R.drawable.sixgunicon2;
-					} else if (percent > 45.0 && percent < 60.0) {
-						icon = R.drawable.sixgunicon3;
-					} else if (percent > 60.0 && percent < 75.0) {
-						icon = R.drawable.sixgunicon4;
-					} else if (percent > 75.0 && percent < 90.0) {
-						icon = R.drawable.sixgunicon5;
-					} else if (percent > 90.0) {
-						icon = R.drawable.sixgunicon6;
+				while (mDownloaderAwake){
+					if (mCurrentDownloads > 0){ 
+						if (mCurrentDownloads == 1){
+							text = getText(R.string.downloading_episode);
+						} else {
+							text = Integer.toString(mCurrentDownloads) + " " 
+							+ getText(R.string.downloading_episodes);
+						}
+						
+						switch (icon_counter) {
+							case 0:
+								icon = R.drawable.sixgunicon0;
+								break;
+							case 1:
+								icon = R.drawable.sixgunicon1;
+								break;
+							case 2:
+								icon = R.drawable.sixgunicon2;
+								break;
+							case 3:
+								icon = R.drawable.sixgunicon3;
+								break;
+							case 4:
+								icon = R.drawable.sixgunicon4;
+								break;
+							case 5:
+								icon = R.drawable.sixgunicon5;
+								break;
+							case 6:
+								icon = R.drawable.sixgunicon6;
+								break;
+							default:
+								icon = R.drawable.sixgunicon0;
+						}
+						
+						if (icon_counter > 5){
+							icon_counter = 0;
+						} else icon_counter++;
+						
+						Notification notification = new Notification(
+								icon, null,
+								System.currentTimeMillis());
+						notification.flags |= Notification.FLAG_ONGOING_EVENT;
+						notification.setLatestEventInfo(mPonyExpressApp, 
+								getText(R.string.app_name), text, intent);
+
+						mNM.notify(notifyID, notification);
+					} else {
+						mNM.cancel(notifyID);
 					}
-
-					Notification notification = new Notification(
-							icon, null,
-							System.currentTimeMillis());
-					notification.flags |= Notification.FLAG_ONGOING_EVENT;
-					notification.setLatestEventInfo(mPonyExpressApp, 
-							getText(R.string.app_name), text, intent);
-
-					mNM.notify(notifyID, notification);
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
@@ -266,7 +299,6 @@ public class DownloaderService extends Service {
 						return;
 					}
 				}
-				mNM.cancel(notifyID);
 			}
 		}).start();
 	}

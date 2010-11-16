@@ -18,11 +18,6 @@
 */
 package org.sixgun.ponyexpress.activity;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URL;
-
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -33,7 +28,6 @@ import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
-import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -83,22 +77,12 @@ public class PlayerActivity extends Activity {
 	static private ProgressBar mDownloadProgress;
 	private PonyExpressApp mPonyExpressApp;
 	static private RelativeLayout mPlayerControls;
-	private NotificationManager mNM;
 	
 	private boolean mEpisodeDownloaded;
 	volatile private int mDownloadPercent = 0;
 	
-	//These are all used by the DownloadEpisode AsyncTask
 	private String mPodcastName;
-	private String mPodcastPath;
-	private URL mUrl;
-	private Long mRow_ID; //Needed to update the db
-	private int mSize;
-	private File mRoot;
-	private String mFilename;
-	private FileOutputStream mOutFile;
-	private InputStream mInFile;
-	private int mTotalDownloaded;
+	private Long mRow_ID;
 	static private boolean mIsDownloading;
 	
 	//This is all responsible for connecting/disconnecting to the Downloader service.
@@ -235,7 +219,6 @@ public class PlayerActivity extends Activity {
 		setContentView(R.layout.player);
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
-		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
 		//Set up click listeners for all player butttons and seek bar
 		OnClickListener mPlayButtonListener = new OnClickListener() {
@@ -582,7 +565,7 @@ public class PlayerActivity extends Activity {
 			doBindPodcastPlayer();
 			mIsDownloading = false;
 			mEpisodeDownloaded = true;
-			//TODO Do I need to unbind the downloader? or will this break something?
+			// Do I need to unbind the downloader? or will this break something?
 			
 			mDownloadProgress.setVisibility(View.GONE);
 			mDownloadButton.setVisibility(View.GONE);
@@ -593,208 +576,3 @@ public class PlayerActivity extends Activity {
 	};
 }
 	
-//	private class DownloadEpisode extends AsyncTask <Void,Double,Void>{
-//
-//
-//		protected static final int NOTIFY_ID = 1;
-//
-//		/* (non-Javadoc)
-//		 * @see android.os.AsyncTask#onPreExecute()
-//		 */
-//		@Override
-//		protected void onPreExecute() {
-//			super.onPreExecute();
-//			Log.d(TAG,"Downloader started");
-//			mPodcastPath = PonyExpressApp.PODCAST_PATH + mPodcastName;
-//			mUrl = Utils.getURL(mData.getString(EpisodeKeys.URL));
-//			mSize = mData.getInt(EpisodeKeys.SIZE);
-//		}
-//		
-//		@Override
-//		protected Void doInBackground(Void... params) {
-//			mIsDownloading = true;
-//			if (mUrl != null && isSDCardWritable()){
-//				prepareForDownload();
-//				createNoMediaFile();
-//				if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-//					// update progress and notification
-//					showNotification();
-//					downloadFile();
-//				} else {
-//					Log.d(TAG, "No Internet Connection.");
-//				}
-//			}
-//			return null;
-//		}
-//		
-//		/**
-//		 * Checks that the SD card is mounted with read/write access and that 
-//		 * we can write to the correct path. 
-//		 * @return true if writable.
-//		 */
-//		private boolean isSDCardWritable() {
-//			final String state = Environment.getExternalStorageState();
-//			if (Environment.MEDIA_MOUNTED.equals(state)){
-//				Log.d(TAG, "SD Card is mounted");
-//				mRoot = Environment.getExternalStorageDirectory();
-//				if (mRoot.canWrite()){
-//					Log.d(TAG,"Can Write to SD card.");
-//					return true;
-//				} else {
-//					Log.d(TAG, "SD Card is not writable.");	
-//				}	
-//			}
-//			return false;
-//		}
-//		
-//		/**
-//		 * Creates the path needed to save the files.
-//		 */
-//		private void prepareForDownload() {
-//			File path = new File(mRoot, mPodcastPath);
-//			path.mkdirs();
-//			
-//			//Split filename from path url.
-//			final String filename_path = mUrl.getFile();
-//			mFilename = filename_path.substring(filename_path.lastIndexOf('/'));
-//			try {
-//				mOutFile = new FileOutputStream(new File(path,mFilename));
-//			} catch (FileNotFoundException e) {
-//				// TODO Improve Error handling.
-//				Log.e(TAG, "Cannot open FileOutputStream for writing.",e);
-//			}
-//		}
-//		
-//		/**
-//		 * Creates a nomedia file if it doesn't exist. This file causes 
-//		 * the media scanner to ignore the podcast files. 
-//		 */
-//		private void createNoMediaFile() {
-//			final String path = mRoot + mPodcastPath + "/";
-//			File noMedia = new File(path,NO_MEDIA_FILE);
-//			if (!noMedia.exists()){
-//				FileOutputStream writeFile = null;
-//				try {
-//					writeFile = new FileOutputStream(noMedia);
-//				} catch (FileNotFoundException e) {
-//					Log.e(TAG, "Cannot create .nomedia file", e);
-//				}
-//				try {
-//					writeFile.write(new byte[1]);
-//				} catch (IOException e) {
-//					Log.e(TAG, "Cannot create .nomedia file", e);
-//				}
-//			}
-//			
-//		}
-//		
-//		/**
-//		 * Downloads the file mFilename to mOutFile from mUrl.
-//		 */
-//		private void downloadFile() {
-//			try {
-//				mInFile = mUrl.openStream();
-//			} catch (IOException e) {
-//				// TODO Improve this error handling.  Check network up etc.. 
-//				throw new RuntimeException(e);
-//			}
-//			byte[] buffer = new byte[1024];
-//			int size = 0;
-//					
-//			Log.d(TAG,"Writing " + mFilename);
-//			try {
-//				while ((size = mInFile.read(buffer)) > 0 ) {
-//					mOutFile.write(buffer,0, size);
-//					mTotalDownloaded  += size;
-//				}
-//				Log.d(TAG,"Podcast written to SD card.");
-//				mPonyExpressApp.getDbHelper().update(mPodcastName, mRow_ID, EpisodeKeys.DOWNLOADED,"true");
-//			} catch (IOException e) {
-//				Log.e(TAG, "Error reading/writing to file.", e);
-//			}
-//		}
-//		/**
-//		 * Shows a notification in the status bar when downloading an episode
-//		 * and updates the download progress bar.
-//		 */
-//		private void showNotification() {
-//			new Thread(new Runnable() {
-//				CharSequence text = "";
-//				//This uses an empty intent because there is no new activity to start.
-//				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
-//						0, new Intent(), 0);
-//				
-//				@Override
-//				public void run() {
-//					int icon = R.drawable.sixgunicon0;
-//					String progress = "";
-//					double percent = 0.0;
-//					do {
-//						percent = mTotalDownloaded/(double)mSize * 100;
-//						progress = String.format("%.0f", percent);
-//						text = progress + "% " + getText(R.string.downloading_episode);
-//						if (percent > 15.0 && percent < 30.0) {
-//							icon = R.drawable.sixgunicon1;
-//						} else if (percent > 30.0 && percent < 45.0) {
-//							icon = R.drawable.sixgunicon2;
-//						} else if (percent > 45.0 && percent < 60.0) {
-//							icon = R.drawable.sixgunicon3;
-//						} else if (percent > 60.0 && percent < 75.0) {
-//							icon = R.drawable.sixgunicon4;
-//						} else if (percent > 75.0 && percent < 90.0) {
-//							icon = R.drawable.sixgunicon5;
-//						} else if (percent > 90.0) {
-//							icon = R.drawable.sixgunicon6;
-//						}
-//						
-//						Notification notification = new Notification(
-//								icon, null,
-//								System.currentTimeMillis());
-//						notification.flags |= Notification.FLAG_ONGOING_EVENT;
-//						notification.setLatestEventInfo(mPonyExpressApp, 
-//								getText(R.string.app_name), text, intent);
-//						
-//						mNM.notify(NOTIFY_ID, notification);
-//						try {
-//							Thread.sleep(1000);
-//						} catch (InterruptedException e) {
-//							return;
-//						}
-//						
-//						publishProgress(percent);
-//					} while (mTotalDownloaded < mSize);
-//				}
-//			}).start();
-//		}
-//
-//		
-//		/* (non-Javadoc)
-//		 * @see android.os.AsyncTask#onProgressUpdate(Progress[])
-//		 */
-//		@Override
-//		protected void onProgressUpdate(Double... percent) {
-//			mDownloadProgress.setProgress(percent[0].intValue());
-//		}
-//		
-//		/* (non-Javadoc)
-//		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-//		 */
-//		@Override
-//		protected void onPostExecute(Void result) {
-//			super.onPostExecute(result);
-//			//Change views in UI and init and query player.
-//			initPlayer();
-//			queryPlayer();
-//			mNM.cancel(NOTIFY_ID);
-//			mIsDownloading = false;
-//			mEpisodeDownloaded = true;
-//			doBindPodcastPlayer();
-//			mDownloadProgress.setVisibility(View.GONE);
-//			mDownloadButton.setVisibility(View.GONE);
-//			mSeekBar.setVisibility(View.VISIBLE);
-//			mPlayerControls.setVisibility(View.VISIBLE);
-//			
-//		}
-//		
-//	}
-//}

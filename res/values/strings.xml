@@ -16,7 +16,8 @@
 	<string name="download">Download</string>
 	<string name="listen">Listen</string>
 	<string name="dent">Dent about this episode..</string>
-	<string name="downloading_episode">Downloaded.</string>
+	<string name="downloading_episode">1 Podcast downloading.</string>
+	<string name="downloading_episodes">Podcasts downloading.</string>
 	<string name="searching_dents">Searching for dents..."</string>
 	<string name="no_dents">No dents for this episode yet! Go on, be the first!
 	</string>
