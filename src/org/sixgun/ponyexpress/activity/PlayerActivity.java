@@ -36,6 +36,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -64,6 +65,8 @@ public class PlayerActivity extends Activity {
 	private String mAlbumArtUrl;
 	private boolean mUpdateSeekBar;
 	private ImageButton mPlayPauseButton;
+	private ImageButton mRewindButton;
+	private ImageButton mFastForwardButton;
 	static private SeekBar mSeekBar;
 	private TextView mElapsed; 
 	private TextView mEpisodeLength;
@@ -221,7 +224,7 @@ public class PlayerActivity extends Activity {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
 		//Set up click listeners for all player butttons and seek bar
-		OnClickListener mPlayButtonListener = new OnClickListener() {
+		OnClickListener playButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				if (!mPaused){
@@ -242,7 +245,7 @@ public class PlayerActivity extends Activity {
 			}
 		};
 		
-		OnClickListener mRewindButtonListener = new OnClickListener() {
+		OnClickListener rewindButtonListener = new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -253,7 +256,7 @@ public class PlayerActivity extends Activity {
 			}
 		};
 		
-		OnClickListener mFastForwardButtonListener = new OnClickListener() {
+		OnClickListener fastForwardButtonListener = new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
@@ -264,7 +267,7 @@ public class PlayerActivity extends Activity {
 			}
 		};
 		
-		OnSeekBarChangeListener mSeekBarListener = new OnSeekBarChangeListener(){
+		OnSeekBarChangeListener seekBarListener = new OnSeekBarChangeListener(){
 
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -297,7 +300,7 @@ public class PlayerActivity extends Activity {
 		};
 		
 		//Set up listener for download button
-		OnClickListener mDownloadButtonListener = new OnClickListener() {
+		OnClickListener downloadButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
 				//new DownloadEpisode().execute();
@@ -312,13 +315,13 @@ public class PlayerActivity extends Activity {
 		//Link all listeners with the correct widgets
 		mPlayerControls = (RelativeLayout)findViewById(R.id.player_controls);
 		mPlayPauseButton = (ImageButton)findViewById(R.id.PlayButton);
-		mPlayPauseButton.setOnClickListener(mPlayButtonListener);
-		ImageButton rewindButton = (ImageButton)findViewById(R.id.rewind);
-		rewindButton.setOnClickListener(mRewindButtonListener);
-		ImageButton fastForwardButton = (ImageButton)findViewById(R.id.fastforward);
-		fastForwardButton.setOnClickListener(mFastForwardButtonListener);
+		mPlayPauseButton.setOnClickListener(playButtonListener);
+		mRewindButton = (ImageButton)findViewById(R.id.rewind);
+		mRewindButton.setOnClickListener(rewindButtonListener);
+		mFastForwardButton = (ImageButton)findViewById(R.id.fastforward);
+		mFastForwardButton.setOnClickListener(fastForwardButtonListener);
 		mSeekBar = (SeekBar)findViewById(R.id.PlayerSeekBar);	
-		mSeekBar.setOnSeekBarChangeListener(mSeekBarListener);
+		mSeekBar.setOnSeekBarChangeListener(seekBarListener);
 		mElapsed = (TextView)findViewById(R.id.elapsed_time);
 		mEpisodeLength = (TextView)findViewById(R.id.length);
 		mDownloadButton = (Button)findViewById(R.id.DownloadButton);
@@ -326,10 +329,11 @@ public class PlayerActivity extends Activity {
 
 		//Only make Download button available if we have internet connectivity.
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-			mDownloadButton.setOnClickListener(mDownloadButtonListener);
+			mDownloadButton.setOnClickListener(downloadButtonListener);
 		}else{
 			mDownloadButton.setEnabled(false);
 		}
+		
 		
 		/**Check if episode is downloaded, show player buttons
 		*if it is or download button if not.
@@ -350,9 +354,36 @@ public class PlayerActivity extends Activity {
 				&& !"null".equalsIgnoreCase(mAlbumArtUrl) && album_art!=null){
     		album_art.setRemoteURI(mAlbumArtUrl);
     		album_art.loadImage();
+		}		
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onKeyDown(int, android.view.KeyEvent)
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		//Detect media button presses when activity has focus.
+		switch (keyCode){
+		// **BUGWATCH** Different headsets may use different button codes,
+		case KeyEvent.KEYCODE_MEDIA_REWIND:
+			//Fallthrough
+		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+			mRewindButton.performClick();
+			return true;
+		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+			//Fallthrough
+		case KeyEvent.KEYCODE_HEADSETHOOK:
+			mPlayPauseButton.performClick();
+			return true;
+		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+			//Fallthrough
+		case KeyEvent.KEYCODE_MEDIA_NEXT:
+			mFastForwardButton.performClick();
+			return true;
+		default:
+			Log.w(TAG, "Button keycode: " + String.valueOf(keyCode) +" pressed and has no function.");
 		}
-		
-				
+		return false;
 	}
 
 	/* (non-Javadoc)

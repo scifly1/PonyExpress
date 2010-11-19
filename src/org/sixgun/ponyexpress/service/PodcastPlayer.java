@@ -44,6 +44,7 @@ import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.KeyEvent;
 
 /**
  * PodcastPlayer is a service that handles all interactions with the media player.
@@ -76,6 +77,9 @@ public class PodcastPlayer extends Service {
 	private String mEpisodeName;
 
 	private Bundle mData;
+
+	private RemoteControlReceiver mMediaButtonReceiver;
+	private IntentFilter mMediaButtonFilter;
 	
 
 	
@@ -126,6 +130,11 @@ public class PodcastPlayer extends Service {
 		mPlayer.setOnCompletionListener(onCompletionListener);
 		mFreePlayer.setOnCompletionListener(onCompletionListener);
 		
+		mMediaButtonReceiver = new RemoteControlReceiver();
+		mMediaButtonFilter = new IntentFilter(Intent.ACTION_MEDIA_BUTTON);
+		mMediaButtonFilter.setPriority(12000);
+		registerReceiver(mMediaButtonReceiver, mMediaButtonFilter);
+		
 		Log.d(TAG, "PodcastPlayer started");
 	}
 	
@@ -137,6 +146,8 @@ public class PodcastPlayer extends Service {
 		super.onDestroy();
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
+		
+		unregisterReceiver(mMediaButtonReceiver);
 		
 		if (mFreePlayer != null){
 			mFreePlayer.release();
@@ -315,6 +326,7 @@ public class PodcastPlayer extends Service {
 		 */
 		@Override
 		public void onCallStateChanged(int state, String incomingNumber) {
+			//TODO Do the media buttons work properly when a call comes in??
 			switch (state)
 			{
 			case TelephonyManager.CALL_STATE_RINGING:
@@ -324,11 +336,13 @@ public class PodcastPlayer extends Service {
 					pause();
 					mResumeAfterCall  = true;
 				}
+				unregisterReceiver(mMediaButtonReceiver);
 				break;
 			case TelephonyManager.CALL_STATE_IDLE:
 				if (mResumeAfterCall){
 					//Don't automatically restart playback, let user initiate it.
 					//play();
+					registerReceiver(mMediaButtonReceiver,mMediaButtonFilter);
 					mResumeAfterCall = false;
 					mBeenResumedAfterCall = true;
 					break;
@@ -395,5 +409,56 @@ public class PodcastPlayer extends Service {
 	private void hideNotification() {
 		mNM.cancel(NOTIFY_ID);
 	}
+	
+	private class RemoteControlReceiver extends BroadcastReceiver {
+		
+		/* (non-Javadoc)
+		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
+		 */
+		@Override
+		public void onReceive(Context ctx, Intent intent) {
+			if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
+				abortBroadcast();
+				KeyEvent button = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
+				//Each press sends two intents, one for button down, one for up.  
+				//So we need to just select one of them.
+				if (KeyEvent.ACTION_DOWN == button.getAction()){
+					switch (button.getKeyCode()){
+					//TODO **BUGWATCH** Different headsets may use different button codes,
+					case KeyEvent.KEYCODE_MEDIA_REWIND:
+						//Fallthrough
+					case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+						if (isPlaying()){
+							rewind();
+							Log.d(TAG,"Rewind pressed");
+						}
+						break;
+					case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+						//Fallthrough
+					case KeyEvent.KEYCODE_HEADSETHOOK:
+						Log.d(TAG,"Play/Pause received");
+						if (isPlaying()){
+							pause();
+						} else {
+							play();
+						}
+						break;
+					case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+						//Fallthrough
+					case KeyEvent.KEYCODE_MEDIA_NEXT:
+						if (isPlaying()){
+							fastForward();
+							Log.d(TAG,"Fast forward pressed");
+						}
+						break;
+					default:
+						Log.d(TAG, String.valueOf(button.getKeyCode()));
+					}
+				}
+	        }
+		}
+
+	}
+
 
 }
