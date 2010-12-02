@@ -26,6 +26,11 @@
 			android:windowSoftInputMode="adjustPan" />
 		<activity android:name=".activity.IdenticaAccountSetupActivity" />
 		<activity android:name=".activity.PreferencesActivity" />
+		<receiver android:name=".receiver.RemoteControlReceiver">
+    		<intent-filter >
+        		<action android:name="android.intent.action.MEDIA_BUTTON" />
+    		</intent-filter>
+</receiver>
 		
 	
 </application>

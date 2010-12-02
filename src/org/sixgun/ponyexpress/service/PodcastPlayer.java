@@ -20,21 +20,26 @@ package org.sixgun.ponyexpress.service;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
+import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Binder;
@@ -44,7 +49,6 @@ import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.KeyEvent;
 
 /**
  * PodcastPlayer is a service that handles all interactions with the media player.
@@ -53,8 +57,19 @@ import android.view.KeyEvent;
 public class PodcastPlayer extends Service {
 
 	private static final String TAG = "PonyExpress PodcastPlayer";
+	
+	//Some constants that define the requested Player action.
+	public static final int REWIND = -1;
+	public static final int PLAY_PAUSE = 0;
+	public static final int FASTFORWARD = 1;
+	public static final int INIT_PLAYER = 2;
 
 	private static final int NOTIFY_ID = 2;
+	//These method are used if Android 2.2 is available, via reflection.
+	private static Method mRegisterMediaButtonEventReceiver;
+    private static Method mUnregisterMediaButtonEventReceiver;
+    private AudioManager mAudioManager;
+    private ComponentName mRemoteControlReceiver;
 
 	private final IBinder mBinder = new PodcastPlayerBinder();
 	private PonyExpressApp mPonyExpressApp; 
@@ -78,9 +93,7 @@ public class PodcastPlayer extends Service {
 
 	private Bundle mData;
 
-	private RemoteControlReceiver mMediaButtonReceiver;
-	private IntentFilter mMediaButtonFilter;
-	
+	private boolean mIsInitialised;
 
 	
 	
@@ -99,6 +112,32 @@ public class PodcastPlayer extends Service {
 	public IBinder onBind(Intent intent) {
 		return mBinder;
 	}
+	//This static method initialises out custom media button registration methods
+	//if on android 2.2 or greater.
+	private static void initializeRemoteControlRegistrationMethods() {
+		   try {
+		      if (mRegisterMediaButtonEventReceiver == null) {
+		         mRegisterMediaButtonEventReceiver = AudioManager.class.getMethod(
+		               "registerMediaButtonEventReceiver",
+		               new Class[] { ComponentName.class } );
+		      }
+		      if (mUnregisterMediaButtonEventReceiver == null) {
+		         mUnregisterMediaButtonEventReceiver = AudioManager.class.getMethod(
+		               "unregisterMediaButtonEventReceiver",
+		               new Class[] { ComponentName.class } );
+		      }
+		      /* success, this device will take advantage of better remote */
+		      /* control event handling in Android 2.2                                    */
+		   } catch (NoSuchMethodException nsme) {
+		      /* failure, still using the legacy behavior, but this app    */
+		      /* is future-proof!                                          */
+		   }
+		}
+	
+	static {
+        initializeRemoteControlRegistrationMethods();
+    }
+	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -130,12 +169,66 @@ public class PodcastPlayer extends Service {
 		mPlayer.setOnCompletionListener(onCompletionListener);
 		mFreePlayer.setOnCompletionListener(onCompletionListener);
 		
-		mMediaButtonReceiver = new RemoteControlReceiver();
-		mMediaButtonFilter = new IntentFilter(Intent.ACTION_MEDIA_BUTTON);
-		mMediaButtonFilter.setPriority(12000);
-		registerReceiver(mMediaButtonReceiver, mMediaButtonFilter);
+		//Create MediaButton Broadcast reciever for Android2.2
+		mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
+	    mRemoteControlReceiver = new ComponentName(getPackageName(),
+	                RemoteControlReceiver.class.getName());
+		
 		
 		Log.d(TAG, "PodcastPlayer started");
+	}
+	
+	// This is the old onStart method that will be called on the pre-2.0
+	// platform.  On 2.0 or later we override onStartCommand() so this
+	// method will not be called.
+	@Override
+	public void onStart(Intent intent, int startId) {
+	    handleCommand(intent);
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+	    handleCommand(intent);
+	    return START_NOT_STICKY;
+	}
+	
+	private void handleCommand(Intent intent){
+		int action = intent.getIntExtra("action", -2);
+		switch (action){
+		case INIT_PLAYER:
+			initPlayer(intent.getExtras());
+			mIsInitialised = true;
+			break;
+		case REWIND:
+			if (isPlaying()){
+				rewind();
+			}
+			break;
+		case PLAY_PAUSE:
+			if (isPlaying()){
+				pause();
+			} else if (mIsInitialised) {
+				play();
+			}
+			break;
+		case FASTFORWARD:
+			if (isPlaying()){
+				fastForward();
+			}
+			break;
+		case -2:
+			Log.e(TAG, "no action received from RemoteControlReceiver!");
+			break;
+		default:
+			Log.e(TAG, "unknown action received from RemoteControlReceiver: " + action);
+			break;
+		}
+		//The receiver may restart the service if media buttons are pressed after
+		//the service has been stopped.  It will not be init at that point so should 
+		//be stopped again.
+		if (!mIsInitialised){
+			stopSelf();
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -147,8 +240,6 @@ public class PodcastPlayer extends Service {
 		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
 		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
 		
-		unregisterReceiver(mMediaButtonReceiver);
-		
 		if (mFreePlayer != null){
 			mFreePlayer.release();
 			mFreePlayer = null;
@@ -158,10 +249,11 @@ public class PodcastPlayer extends Service {
 			mPlayer = null;
 		}
 		mNM.cancel(NOTIFY_ID);
+		
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
 	
-	/** Initilises a the free Media Player with the correct title and sets 
+	/** Initilises the free Media Player with the correct title and sets 
 	 * it up for playback.
 	 * The rowID is used to update the position
 	 * that has been listened to in the database.
@@ -169,13 +261,16 @@ public class PodcastPlayer extends Service {
 	 * @param position
 	 * @param rowID
 	 */
-	public void initPlayer( int position, Bundle data){
+	public void initPlayer(Bundle data){
+		registerRemoteControl();
+		
 		mData = data;
 		mEpisodeName = mData.getString(EpisodeKeys.TITLE);
 		mPodcastNameQueued = mData.getString(PodcastKeys.NAME);
 		final String file = mData.getString(EpisodeKeys.FILENAME);
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
+		int position = mData.getInt(EpisodeKeys.LISTENED);
 	
 		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
@@ -204,6 +299,7 @@ public class PodcastPlayer extends Service {
 			}
 			mEpisodeQueued = file;
 		}
+		mIsInitialised = true;
 	}
 	
 	/**
@@ -216,6 +312,7 @@ public class PodcastPlayer extends Service {
 		mHeadPhoneReciever = new HeadPhoneReceiver();
 		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
 		registerReceiver(mHeadPhoneReciever, filter);
+		registerRemoteControl();
 		
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//We want to play a different episode so stop any currently playing
@@ -255,6 +352,8 @@ public class PodcastPlayer extends Service {
 		if (res){
 			Log.d(TAG, "Updated listened to position to " + playbackPosition);
 		}
+		
+		stopSelf();
 	}
 		
 	public void fastForward() {
@@ -326,7 +425,8 @@ public class PodcastPlayer extends Service {
 		 */
 		@Override
 		public void onCallStateChanged(int state, String incomingNumber) {
-			//TODO Do the media buttons work properly when a call comes in??
+			//TODO The media buttons still work the player when a call arrives, 
+			//you can't pick up with the pickup key
 			switch (state)
 			{
 			case TelephonyManager.CALL_STATE_RINGING:
@@ -336,13 +436,14 @@ public class PodcastPlayer extends Service {
 					pause();
 					mResumeAfterCall  = true;
 				}
-				unregisterReceiver(mMediaButtonReceiver);
+				//Not sure if this is necessary.. ?
+				unregisterRemoteControl();
 				break;
 			case TelephonyManager.CALL_STATE_IDLE:
 				if (mResumeAfterCall){
 					//Don't automatically restart playback, let user initiate it.
 					//play();
-					registerReceiver(mMediaButtonReceiver,mMediaButtonFilter);
+					registerRemoteControl();
 					mResumeAfterCall = false;
 					mBeenResumedAfterCall = true;
 					break;
@@ -410,55 +511,58 @@ public class PodcastPlayer extends Service {
 		mNM.cancel(NOTIFY_ID);
 	}
 	
-	private class RemoteControlReceiver extends BroadcastReceiver {
-		
-		/* (non-Javadoc)
-		 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
-		 */
-		@Override
-		public void onReceive(Context ctx, Intent intent) {
-			if (Intent.ACTION_MEDIA_BUTTON.equals(intent.getAction())) {
-				abortBroadcast();
-				KeyEvent button = (KeyEvent)intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
-				//Each press sends two intents, one for button down, one for up.  
-				//So we need to just select one of them.
-				if (KeyEvent.ACTION_DOWN == button.getAction()){
-					switch (button.getKeyCode()){
-					//TODO **BUGWATCH** Different headsets may use different button codes,
-					case KeyEvent.KEYCODE_MEDIA_REWIND:
-						//Fallthrough
-					case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-						if (isPlaying()){
-							rewind();
-							Log.d(TAG,"Rewind pressed");
-						}
-						break;
-					case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-						//Fallthrough
-					case KeyEvent.KEYCODE_HEADSETHOOK:
-						Log.d(TAG,"Play/Pause received");
-						if (isPlaying()){
-							pause();
-						} else {
-							play();
-						}
-						break;
-					case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-						//Fallthrough
-					case KeyEvent.KEYCODE_MEDIA_NEXT:
-						if (isPlaying()){
-							fastForward();
-							Log.d(TAG,"Fast forward pressed");
-						}
-						break;
-					default:
-						Log.d(TAG, String.valueOf(button.getKeyCode()));
-					}
-				}
-	        }
-		}
-
-	}
+	private void registerRemoteControl() {
+        try {
+            if (mRegisterMediaButtonEventReceiver == null) {
+            	//Running on < android2.2
+            	Log.d(TAG,"register media button receiver < 2.2");
+                return;
+            }
+            //Running on > android 2.2
+            Log.d(TAG,"register media button receiver => 2.2");
+            mRegisterMediaButtonEventReceiver.invoke(mAudioManager,
+                    mRemoteControlReceiver);
+        } catch (InvocationTargetException ite) {
+            /* unpack original exception when possible */
+            Throwable cause = ite.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            } else if (cause instanceof Error) {
+                throw (Error) cause;
+            } else {
+                /* unexpected checked exception; wrap and re-throw */
+                throw new RuntimeException(ite);
+            }
+        } catch (IllegalAccessException ie) {
+            Log.e(TAG, "unexpected " + ie);
+        }
+    }
+    
+    private void unregisterRemoteControl() {
+        try {
+            if (mUnregisterMediaButtonEventReceiver == null) {
+            	//Running on < android2.2
+                return;
+            }
+            //Running on > android 2.2
+            mUnregisterMediaButtonEventReceiver.invoke(mAudioManager,
+                    mRemoteControlReceiver);
+        } catch (InvocationTargetException ite) {
+            /* unpack original exception when possible */
+            Throwable cause = ite.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            } else if (cause instanceof Error) {
+                throw (Error) cause;
+            } else {
+                /* unexpected checked exception; wrap and re-throw */
+                throw new RuntimeException(ite);
+            }
+        } catch (IllegalAccessException ie) {
+            System.err.println("unexpected " + ie);  
+        }
+    }
+	
 
 
 }

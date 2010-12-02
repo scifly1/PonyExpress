@@ -22,6 +22,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
@@ -80,6 +81,7 @@ public class PlayerActivity extends Activity {
 	static private ProgressBar mDownloadProgress;
 	private PonyExpressApp mPonyExpressApp;
 	static private RelativeLayout mPlayerControls;
+	private Intent mPlayerIntent;
 	
 	private boolean mEpisodeDownloaded;
 	volatile private int mDownloadPercent = 0;
@@ -159,7 +161,6 @@ public class PlayerActivity extends Activity {
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
 			mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
-			initPlayer();
 			queryPlayer();
 		}
 	};
@@ -189,7 +190,10 @@ public class PlayerActivity extends Activity {
 	}
 	
 	private void initPlayer() {
-		mPodcastPlayer.initPlayer(mCurrentPosition, mData);
+		Intent intent = new Intent(this,PodcastPlayer.class);
+		intent.putExtras(mData);
+		intent.putExtra("action", PodcastPlayer.INIT_PLAYER);
+		startService(intent);
 	}
 
 
@@ -234,7 +238,7 @@ public class PlayerActivity extends Activity {
 					
 				} else {
 					// Play episdode
-					mPodcastPlayer.play();
+					startService(mPlayerIntent);
 					mPaused = false;
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
 					mSeekBar.setMax(mPodcastPlayer.getEpisodeLength());
@@ -344,7 +348,8 @@ public class PlayerActivity extends Activity {
 			mSeekBar.setVisibility(View.GONE);
 			mDownloadProgress.setVisibility(View.VISIBLE);
 			mDownloadButton.setVisibility(View.VISIBLE);
-			
+		} else {
+			initPlayer();
 		}
 		
 		//Get Album art url and set image.
@@ -354,7 +359,14 @@ public class PlayerActivity extends Activity {
 				&& !"null".equalsIgnoreCase(mAlbumArtUrl) && album_art!=null){
     		album_art.setRemoteURI(mAlbumArtUrl);
     		album_art.loadImage();
-		}		
+		}
+		
+		//Create an Intent to use to start playback.
+		mPlayerIntent = new Intent(mPonyExpressApp,PodcastPlayer.class);
+		mPlayerIntent.putExtra(RemoteControlReceiver.ACTION, 
+				PodcastPlayer.PLAY_PAUSE);
+		
+		
 	}
 
 	/* (non-Javadoc)
@@ -362,26 +374,28 @@ public class PlayerActivity extends Activity {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		//Detect media button presses when activity has focus.
-		switch (keyCode){
-		// **BUGWATCH** Different headsets may use different button codes,
-		case KeyEvent.KEYCODE_MEDIA_REWIND:
-			//Fallthrough
-		case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-			mRewindButton.performClick();
-			return true;
-		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-			//Fallthrough
-		case KeyEvent.KEYCODE_HEADSETHOOK:
-			mPlayPauseButton.performClick();
-			return true;
-		case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-			//Fallthrough
-		case KeyEvent.KEYCODE_MEDIA_NEXT:
-			mFastForwardButton.performClick();
-			return true;
-		default:
-			Log.w(TAG, "Button keycode: " + String.valueOf(keyCode) +" pressed and has no function.");
+		//Detect media button presses when activity has focus and playercontrols are visible.
+		if (mPlayerControls.getVisibility() != View.GONE){
+			switch (keyCode){
+			// **BUGWATCH** Different headsets may use different button codes,
+			case KeyEvent.KEYCODE_MEDIA_REWIND:
+				//Fallthrough
+			case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
+				mRewindButton.performClick();
+				return true;
+			case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+				//Fallthrough
+			case KeyEvent.KEYCODE_HEADSETHOOK:
+				mPlayPauseButton.performClick();
+				return true;
+			case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+				//Fallthrough
+			case KeyEvent.KEYCODE_MEDIA_NEXT:
+				mFastForwardButton.performClick();
+				return true;
+			default:
+				return false;
+			}
 		}
 		return false;
 	}
@@ -393,6 +407,8 @@ public class PlayerActivity extends Activity {
 	protected void onStart() {
 		super.onStart();
 		if (mEpisodeDownloaded){
+			//we also bind the player now as well as starting it in initPlayer.
+			//This allows us to unbind it when destroying the activity and have it still play.
 			doBindPodcastPlayer();
 		} else doBindDownloaderService();
 	}
@@ -419,6 +435,15 @@ public class PlayerActivity extends Activity {
 		//to die when the activity is no longer visable.
 		mUpdateSeekBar = false;
 		mIsDownloading = false;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onDestroy()
+	 */
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		doUnbindPodcastPlayer();
 	}
 
 	/* (non-Javadoc)
@@ -593,15 +618,18 @@ public class PlayerActivity extends Activity {
 		@Override
 		public void run() {
 			//Change views in UI and bind player.
-			doBindPodcastPlayer();
 			mIsDownloading = false;
 			mEpisodeDownloaded = true;
-			// Do I need to unbind the downloader? or will this break something?
+			doUnbindDownloaderService();
 			
 			mDownloadProgress.setVisibility(View.GONE);
 			mDownloadButton.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.VISIBLE);
 			mPlayerControls.setVisibility(View.VISIBLE);
+			initPlayer();
+			//we also bind the player now as well as starting it in initPlayer.
+			//This allows us to unbind it when destroying the activity and have it still play.
+			doBindPodcastPlayer();
 			
 		}
 	};
