@@ -588,8 +588,13 @@ public class PlayerActivity extends Activity {
 					mHandler.post(disableDownloadButton);
 										
 					mDownloadProgress.setMax(100);
+					boolean downloadError = false;
 					while (mIsDownloading && mDownloadPercent < 100 ){
 						try {
+							downloadError = mDownloader.checkForDownloadError(index);
+							if (downloadError){
+								mIsDownloading = false;
+							}
 							mDownloadPercent = (int) mDownloader.getProgress(index);
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
@@ -598,9 +603,16 @@ public class PlayerActivity extends Activity {
 						//Post progress to mHandler in UI thread
 						mHandler.post(setProgress);
 					}
+					//Download completed
 					if (mDownloadPercent == 100){
 						//Post download completion runnable to mHandler in UI thread
 						mHandler.post(downloadCompleted);
+					}
+					//Download failed
+					if (mDownloadPercent < 100){
+						//Post downloadFailed runnable to mHandler to reset UI
+						mHandler.post(downloadFailed);
+						mDownloader.resetDownloadError(index);
 					}
 				}
 			}	
@@ -644,8 +656,15 @@ public class PlayerActivity extends Activity {
 		}
 	};
 	
-	//TODO need to be able to handle failed downloads due to connection loss etc..
-	//Add a check to downloaders getProgress to see if size is increasing.
-	//If not then cancel everything and get out nicely.
+	Runnable downloadFailed = new Runnable() {
+
+		@Override
+		public void run() {
+			//Reenable the download button and zero the progress bar
+			mDownloadButton.setEnabled(true);
+			mDownloadProgress.setProgress(0);
+		}
+		
+	};
 }
 	

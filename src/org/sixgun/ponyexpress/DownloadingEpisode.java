@@ -29,6 +29,7 @@ public class DownloadingEpisode extends Episode {
 	private int mSize; // This differs to Episode mLength in that mLength is a string 
 	// representation of the int mSize.
 	private long mRowID;
+	private boolean mDownloadFailed = false;
 	
 	public DownloadingEpisode(){
 		mDownloadProgress = 0;
@@ -106,6 +107,20 @@ public class DownloadingEpisode extends Episode {
 	 */
 	public long getRowID() {
 		return mRowID;
+	}
+
+	public void setDownloadFailed() {
+		this.mDownloadFailed  = true;		
+	}
+
+	public boolean getDownloadFailed() {
+		return this.mDownloadFailed;
+		
+	}
+
+	public void resetDownloadFailed() {
+		this.mDownloadFailed = false;
+		
 	}
 	
 	

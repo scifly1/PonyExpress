@@ -151,11 +151,16 @@ public class DownloaderService extends Service {
 								mEpisodes.get(index).setDownloadProgress(totalDownloaded);
 							}
 							Log.d(TAG,"Podcast written to SD card.");
+							//Decrease mCurrentDownloads which will kill 
+							//the notifications of it getes to <1
 							mCurrentDownloads--;
 							mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
 									episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
 						} catch (IOException e) {
+							//Error downloading so reset the Activity
 							Log.e(TAG, "Error reading/writing to file.", e);
+							mEpisodes.get(index).setDownloadFailed();
+							mCurrentDownloads--;
 						}
 
 					} else {
@@ -330,6 +335,15 @@ public class DownloaderService extends Service {
 		final int progress = episode.getDownloadProgress();
 		double percent = progress/(double)size * 100; 
 		return percent;
+	}
+
+	public boolean checkForDownloadError(int index) {
+		return mEpisodes.get(index).getDownloadFailed();
+	}
+
+	public void resetDownloadError(int index) {
+		mEpisodes.get(index).resetDownloadFailed();
+		
 	}
 	
 }
