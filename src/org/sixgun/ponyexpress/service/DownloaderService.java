@@ -100,6 +100,7 @@ public class DownloaderService extends Service {
 	}
 	
 	public void downloadEpisode(final Bundle _data) {
+		//Get all the data needed for the download.
 		final Bundle data = _data; 
 		DownloadingEpisode newEpisode = new DownloadingEpisode();
 		
@@ -113,7 +114,7 @@ public class DownloaderService extends Service {
 		mEpisodes.add(newEpisode);
 		
 		final int index = mEpisodes.indexOf(newEpisode);
-		
+		//A new thread carrieds out each download.
 		new Thread(new Runnable() {
 			
 			FileOutputStream outFile;			

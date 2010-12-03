@@ -49,4 +49,16 @@ public class InternetHelper {
 			 return false;
 		} else return true;	
 	}
+	
+	/** Get the type of network connection currently active.
+	 * @return Either TYPE_WIFI or TYPE_MOBILE, or -1 if no connection.
+	 */
+	public final int getConnectivityType(){
+		mInfo = mConnectivity.getActiveNetworkInfo();
+		if (mInfo != null){
+			return mInfo.getType();
+		} else {
+			return -1;
+		}
+	}
 }

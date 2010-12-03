@@ -33,9 +33,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -46,6 +49,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
@@ -307,12 +311,18 @@ public class PlayerActivity extends Activity {
 		OnClickListener downloadButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				//new DownloadEpisode().execute();
-				mDownloader.downloadEpisode(mData);
-				mIsDownloading = true;
-				mDownloadButton.setEnabled(false);
-				startDownloadProgressBar();
-				
+				//Check user wants to download on the current network type
+				final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
+				final boolean onlyOnWiFi = prefs.getBoolean(getString(R.string.wifi_only_key), true);
+				if (onlyOnWiFi && mPonyExpressApp.getInternetHelper().getConnectivityType() 
+						== ConnectivityManager.TYPE_MOBILE){
+					Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
+				} else {
+					mDownloader.downloadEpisode(mData);
+					mIsDownloading = true;
+					mDownloadButton.setEnabled(false);
+					startDownloadProgressBar();
+				}				
 			}
 		};
 		
@@ -633,5 +643,9 @@ public class PlayerActivity extends Activity {
 			
 		}
 	};
+	
+	//TODO need to be able to handle failed downloads due to connection loss etc..
+	//Add a check to downloaders getProgress to see if size is increasing.
+	//If not then cancel everything and get out nicely.
 }
 	

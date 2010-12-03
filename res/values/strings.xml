@@ -101,4 +101,8 @@
 
 <string name="new_episodes"> new episodes</string>
 <string name="new_episode">new episode</string>
+<string name="only_on_wifi">Only on Wi-Fi</string>
+<string name="only_on_wifi_summary">Download only when connected with Wi-Fi</string>
+<string name="wifi_only_key">OnlyOnWiFiKey</string>
+<string name="wrong_network_type">You are on a mobile network and have disabled downloads unless on WiFi. Check the settings.</string>
 </resources>
