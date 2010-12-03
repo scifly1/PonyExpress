@@ -663,6 +663,8 @@ public class PlayerActivity extends Activity {
 			//Reenable the download button and zero the progress bar
 			mDownloadButton.setEnabled(true);
 			mDownloadProgress.setProgress(0);
+			//TODO Send a notification to the user telling them of the failure
+			
 		}
 		
 	};

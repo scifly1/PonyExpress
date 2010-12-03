@@ -291,9 +291,10 @@ public class DownloaderService extends Service {
 								icon, null,
 								System.currentTimeMillis());
 						notification.flags |= Notification.FLAG_ONGOING_EVENT;
+						notification.number = mCurrentDownloads;
 						notification.setLatestEventInfo(mPonyExpressApp, 
 								getText(R.string.app_name), text, intent);
-
+						//FIXME should this use a handler to notify the UI thread?
 						mNM.notify(notifyID, notification);
 					} else {
 						mNM.cancel(notifyID);
