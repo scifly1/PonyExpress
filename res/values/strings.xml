@@ -105,4 +105,5 @@
 <string name="only_on_wifi_summary">Download only when connected with Wi-Fi</string>
 <string name="wifi_only_key">OnlyOnWiFiKey</string>
 <string name="wrong_network_type">You are on a mobile network and have disabled downloads unless on WiFi. Check the settings.</string>
+<string name="download_failed">Sorry, there was an error during download.</string>
 </resources>

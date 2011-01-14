@@ -29,6 +29,9 @@ import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -62,6 +65,7 @@ public class PlayerActivity extends Activity {
 	private static final String CURRENT_POSITION = "current_position";
 	public static final String NO_MEDIA_FILE = ".nomedia";
 	private static final String IS_DOWNLOADING = "is_downloading";
+	private static final int NOTIFY_ID = 3;
 	private PodcastPlayer mPodcastPlayer;
 	private boolean mPodcastPlayerBound;
 	private DownloaderService mDownloader;
@@ -598,7 +602,7 @@ public class PlayerActivity extends Activity {
 							mDownloadPercent = (int) mDownloader.getProgress(index);
 							Thread.sleep(1000);
 						} catch (InterruptedException e) {
-							return;
+							Log.d(TAG, "Download thread interupted while sleeping!", e);
 						}
 						//Post progress to mHandler in UI thread
 						mHandler.post(setProgress);
@@ -607,9 +611,8 @@ public class PlayerActivity extends Activity {
 					if (mDownloadPercent == 100){
 						//Post download completion runnable to mHandler in UI thread
 						mHandler.post(downloadCompleted);
-					}
-					//Download failed
-					if (mDownloadPercent < 100){
+					}//Download failed
+					else if (downloadError){
 						//Post downloadFailed runnable to mHandler to reset UI
 						mHandler.post(downloadFailed);
 						mDownloader.resetDownloadError(index);
@@ -663,8 +666,20 @@ public class PlayerActivity extends Activity {
 			//Reenable the download button and zero the progress bar
 			mDownloadButton.setEnabled(true);
 			mDownloadProgress.setProgress(0);
-			//TODO Send a notification to the user telling them of the failure
-			
+			//Send a notification to the user telling them of the failure
+			//This uses an empty intent because there is no new activity to start.
+			PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+					0, new Intent(), 0);
+			NotificationManager notifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+			int icon = R.drawable.stat_notify_error;
+			CharSequence text = getText(R.string.download_failed);
+			Notification notification = new Notification(
+					icon, null,
+					System.currentTimeMillis());
+			notification.flags |= Notification.FLAG_AUTO_CANCEL;
+			notification.setLatestEventInfo(mPonyExpressApp, 
+					getText(R.string.app_name), text, intent);
+			notifyManager.notify(NOTIFY_ID,notification);
 		}
 		
 	};

@@ -40,8 +40,10 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.widget.Toast;
 
 
 public class DownloaderService extends Service {
@@ -50,7 +52,7 @@ public class DownloaderService extends Service {
     private final IBinder mBinder = new DownloaderServiceBinder();
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String NO_MEDIA_FILE = ".nomedia";
-	private static final int notifyID = 1;
+	private static final int NOTIFY_ID = 1;
 	private PonyExpressApp mPonyExpressApp;
 	//Do not remove episodes from mEpisodes as you'll change the index 
 	//of other episodes that may be being accessed.
@@ -59,6 +61,7 @@ public class DownloaderService extends Service {
 	protected NotificationManager mNM;
 	volatile private int mCurrentDownloads;
 	private boolean mDownloaderAwake = false;
+	private Handler mHandler = new Handler();
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -159,16 +162,35 @@ public class DownloaderService extends Service {
 						} catch (IOException e) {
 							//Error downloading so reset the Activity
 							Log.e(TAG, "Error reading/writing to file.", e);
-							mEpisodes.get(index).setDownloadFailed();
-							mCurrentDownloads--;
+							setDownloadFailed(index);
 						}
 
 					} else {
 						Log.d(TAG, "No Internet Connection or outFile error.");
+						setDownloadFailed(index);
+						mHandler.post(new Runnable(){
+
+							@Override
+							public void run() {
+								Toast.makeText(getApplicationContext(), R.string.no_internet_connection,
+										Toast.LENGTH_SHORT).show();
+								
+							}
+							
+						});
 					}
 				}
 			}			
 		}).start();		
+	}
+	
+	/**
+	 * If the download fails due to no connectivity or some other error calling 
+	 * this allows the PlayerActivity to react to the error and rest the UI.
+	 */
+	private void setDownloadFailed(int index){
+		mEpisodes.get(index).setDownloadFailed();
+		mCurrentDownloads--;
 	}
 
 	/**
@@ -295,14 +317,14 @@ public class DownloaderService extends Service {
 						notification.setLatestEventInfo(mPonyExpressApp, 
 								getText(R.string.app_name), text, intent);
 						//FIXME should this use a handler to notify the UI thread?
-						mNM.notify(notifyID, notification);
+						mNM.notify(NOTIFY_ID, notification);
 					} else {
-						mNM.cancel(notifyID);
+						mNM.cancel(NOTIFY_ID);
 					}
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						mNM.cancel(notifyID);
+						mNM.cancel(NOTIFY_ID);
 						return;
 					}
 				}
@@ -338,13 +360,12 @@ public class DownloaderService extends Service {
 		return percent;
 	}
 
-	public boolean checkForDownloadError(int index) {
+	public boolean checkForDownloadError(final int index) {
 		return mEpisodes.get(index).getDownloadFailed();
 	}
 
-	public void resetDownloadError(int index) {
-		mEpisodes.get(index).resetDownloadFailed();
-		
+	public void resetDownloadError(final int index) {
+		mEpisodes.get(index).resetDownloadFailed();	
 	}
-	
+
 }
