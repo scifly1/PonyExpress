@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-	package="org.sixgun.ponyexpress" android:versionName="0.4"
-	android:versionCode="4">
+	package="org.sixgun.ponyexpress" android:versionName="0.4.1"
+	android:versionCode="5">
 	<application android:icon="@drawable/pony_icon"
-		android:label="@string/app_name" android:name="PonyExpressApp"
-		android:debuggable="true">
+		android:label="@string/app_name" android:name="PonyExpressApp" android:debuggable="true">
 		<activity android:name=".activity.PonyExpressActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
