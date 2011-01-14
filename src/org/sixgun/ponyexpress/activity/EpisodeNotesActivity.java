@@ -40,6 +40,8 @@ public class EpisodeNotesActivity extends Activity {
 		
 		WebView description = (WebView) findViewById(R.id.Description);
 		String descriptionText = data.getString(EpisodeKeys.DESCRIPTION);
-		description.loadData(descriptionText, "text/html", "UTF-8");
+		//We use loadDataWithBaseURL here with no URL so that it expects URL encoding.
+		//loadData does not handle the encoding correctly..
+		description.loadDataWithBaseURL(null, descriptionText, "text/html", "UTF-8", null);
 	}
 }
