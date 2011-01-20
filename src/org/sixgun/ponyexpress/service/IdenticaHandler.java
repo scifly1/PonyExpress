@@ -107,8 +107,7 @@ public class IdenticaHandler extends Service {
 		
 		SharedPreferences loginDetails = getSharedPreferences(LOGINFILE,0);
 		mUserName = loginDetails.getString(USERNAME, "");
-		mPassword = loginDetails.getString(PASSWORD, "");
-		
+		mPassword = loginDetails.getString(PASSWORD, "");		
 	}
 	
 	/* (non-Javadoc)
@@ -153,7 +152,11 @@ public class IdenticaHandler extends Service {
 		
 	}
 	
-	
+	public boolean credentialsSet(){
+		if (mUserName.equals("")) {
+			return false;
+		} else return true;
+	}
 	
 	public ArrayList<Dent> queryIdentica(String query){
 		String url = new String(TAG_TIMELINE_API + query);

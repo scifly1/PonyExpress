@@ -143,31 +143,24 @@ public class IdenticaActivity extends ListActivity {
 			
 			@Override
 			public void onClick(View v) {
-				boolean dentSent = false;
-				if (mDentText.getText().length() != 0) {
-					 AsyncTask<String, Void, Boolean> sendDent = mIdenticaHandler.new PostDent().execute(mDentText.getText().toString());
-					 
-					 try {
-						dentSent = sendDent.get();
-					} catch (InterruptedException e) {
-						Log.e(TAG, "Error: Thread interuppted while getting dents.",e);
-					} catch (ExecutionException e) {
-						Log.e(TAG, "Error: Could not get Dents.", e);
+				if (mIdenticaHandler.credentialsSet()){
+					if (mDentText.getText().length() != 0) {
+						Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
+								 Toast.LENGTH_SHORT).show();
+						mIdenticaHandler.new PostDent().execute(mDentText.getText()
+								.toString());
+						mDentText.setText(mTagText);
+						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
+						new GetLatestDents().execute();
 					}
-				}
-				if (!dentSent) {
+				} else {
 					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
 							Toast.LENGTH_LONG).show();
 					//Fire off AccountSetup screen
 					startActivityForResult(new Intent(
 							IdenticaActivity.this,IdenticaAccountSetupActivity.class),
 							SETUP_ACCOUNT);
-				} else {
-					mDentText.setText(mTagText);
-					mDentText.setSelection(mDentText.length()); //Moves cursor to the end
-					new GetLatestDents().execute();
-				}
-				
+				}				
 			}
 		};
 		//Check connectivity first and inactivate button if no connection
