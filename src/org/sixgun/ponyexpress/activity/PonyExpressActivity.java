@@ -72,12 +72,9 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String LASTUPDATE = "lastupdate";
 	private static final int SETUP_ACCOUNT = 0;
 	private PonyExpressApp mPonyExpressApp; 
-	private UpdateEpisodes mUpdateTask;
-	@SuppressWarnings("unused")
-	private DatabaseCheck mDataCheck;  
+	private UpdateEpisodes mUpdateTask;  
 	private Bundle mSavedState;
 	private ProgressDialog mProgDialog;
-	private ProgressDialog mProgDialogDb;
 	private int mEpisodesToHold;
 	private int mUpdateDelta;
 	private GregorianCalendar mLastUpdate;
@@ -104,15 +101,11 @@ public class PonyExpressActivity extends ListActivity {
 		Log.d(TAG,"update delta: " + mUpdateDelta);
 		
 		//Create Progress Dialogs for later use.
-		mProgDialogDb = new ProgressDialog(this);
-		mProgDialogDb.setMessage("Checking database consistency...");
 		mProgDialog = new ProgressDialog(this);
 		mProgDialog.setMessage("Checking for new Episodes. Please wait...");
 		
 		//Check SDCard contents and database match.
-		//FIXME This does not handle activity lifecycle changes, but it's fairly quick
-		//so should not be a problem.
-		mDataCheck = (DatabaseCheck) new DatabaseCheck().execute();
+		new DatabaseCheck().execute();
 		
 		//Update the Episodes list if the database has been upgraded.
 		if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
@@ -436,16 +429,6 @@ public class PonyExpressActivity extends ListActivity {
 	
 	private class DatabaseCheck extends AsyncTask<Void, Void, Void> {
 		
-
-		/* (non-Javadoc)
-		 * @see android.os.AsyncTask#onPreExecute()
-		 */
-		@Override
-		protected void onPreExecute() {
-			super.onPreExecute();
-			mProgDialogDb.show();
-		}
-
 		@Override
 		protected Void doInBackground(Void... params) {
 			//Get a List of the file names that are on the SD Card for each podcast.
@@ -476,15 +459,6 @@ public class PonyExpressActivity extends ListActivity {
 				}
 			}
 			return null;
-		}
-		
-		/* (non-Javadoc)
-		 * @see android.os.AsyncTask#onPostExecute(java.lang.Object)
-		 */
-		@Override
-		protected void onPostExecute(Void result) {
-			super.onPostExecute(result);
-			mProgDialogDb.dismiss();
 		}
 	}
 }
