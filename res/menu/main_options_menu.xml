@@ -3,4 +3,5 @@
 	<item android:title="@string/updatefeeds" android:id="@+id/update_feeds" /> 
 	<item android:title="@string/settings" android:id="@+id/settings_menu" />
 	<item android:title="@string/identica_account_settings" android:id="@+id/identica_account_settings"/>
+<item android:title="@string/about" android:id="@+id/about"></item>
 </menu>

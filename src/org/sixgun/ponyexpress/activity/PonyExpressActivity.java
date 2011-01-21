@@ -37,6 +37,8 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -71,6 +73,7 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
 	private static final int SETUP_ACCOUNT = 0;
+	private static final int ABOUT_DIALOG = 4;
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask;  
 	private Bundle mSavedState;
@@ -206,6 +209,24 @@ public class PonyExpressActivity extends ListActivity {
 		
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int, android.os.Bundle)
+	 */
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+		switch (id){
+		case ABOUT_DIALOG:
+			dialog = AboutDialog.create(this);
+			break;
+		default:
+			dialog = null;
+			break;
+		}
+		return dialog;
+	}
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
@@ -234,6 +255,9 @@ public class PonyExpressActivity extends ListActivity {
 			startActivityForResult(new Intent(
 					mPonyExpressApp,IdenticaAccountSetupActivity.class),
 					SETUP_ACCOUNT);
+	    	return true;
+	    case R.id.about:
+	    	showDialog(ABOUT_DIALOG);
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
