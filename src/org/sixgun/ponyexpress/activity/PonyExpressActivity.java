@@ -85,7 +85,6 @@ public class PonyExpressActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		setTitle(R.string.Sixgun_title);
 		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
