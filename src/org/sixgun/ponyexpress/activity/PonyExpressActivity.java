@@ -37,7 +37,6 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -58,8 +57,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.CursorAdapter;
-import android.widget.ListView;
+import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -191,12 +191,13 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
+
+	/**
+	 * Starts the PodcastTabs activity with the selected podcast
+	 * @param v
+	 * @param id row_id of the podcast in the database
 	 */
-	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
-		super.onListItemClick(l, v, position, id);
+	private void selectPodcast(View v, long id){
 		//Get the podcast name and album art url.
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
@@ -205,7 +206,23 @@ public class PonyExpressActivity extends ListActivity {
 		intent.putExtra(PodcastKeys.NAME, name);
 		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
 		startActivity(intent);
-		
+	}
+	
+	/**
+	 * Bring up the Settings (preferences) menu via a button click.
+	 * @param v, a reference to the button that was clicked to call this.
+	 */
+	public void showSettings(View v){
+		startActivity(new Intent(
+        		mPonyExpressApp,PreferencesActivity.class));
+	}
+	
+	/**
+	 * Bring up the About dialog via a button click.
+	 * @param v, a reference to the button that was clicked to call this.
+	 */
+	public void showAbout(View v){
+		showDialog(ABOUT_DIALOG);
 	}
 	
 	
@@ -278,7 +295,11 @@ public class PonyExpressActivity extends ListActivity {
 	}
 	
 	private void updateFeeds() {
-		mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
+		updateFeed("");
+	}
+	
+	private void updateFeed(String podcastName){
+		mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
 		if (mUpdateTask.isCancelled()){
 			Log.d(TAG, "Cancelled Update, No Connectivity");
 			mUpdateTask = null;
@@ -309,9 +330,14 @@ public class PonyExpressActivity extends ListActivity {
 			final int nameIndex = cursor.getColumnIndex(PodcastKeys.NAME);
 			final int artUrlIndex = cursor.getColumnIndex(PodcastKeys.ALBUM_ART_URL);
 			//get the number of unlistened episodes
-			final String name = cursor.getString(nameIndex);
+			String name = cursor.getString(nameIndex);
+			final String fullName = name;
 			final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(name);
 			
+			//Remove the words ogg and feed if present at the end.
+			if (name.endsWith("Ogg Feed")){
+				name = name.replace("Ogg Feed","");
+			}
 			TextView podcastName = (TextView) view.findViewById(R.id.podcast_text);
 			RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
 			TextView unlistenedText = (TextView) view.findViewById(R.id.unlistened_eps);
@@ -334,6 +360,26 @@ public class PonyExpressActivity extends ListActivity {
 			}
 			
 			unlistenedText.setText(unlistenedString);
+			
+			//Add Click listener's for each row.
+			final int id_index = cursor.getColumnIndex(PodcastKeys._ID);
+			final long id = cursor.getLong(id_index);
+			view.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					selectPodcast(v,id);
+					
+				}
+			});
+			ImageButton refresh = (ImageButton) view.findViewById(R.id.refresh_button);
+			refresh.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					updateFeed(fullName);
+				}
+			});
 		}
 
 		@Override
@@ -350,7 +396,7 @@ public class PonyExpressActivity extends ListActivity {
 	 * Parse the RSS feed and update the database with new episodes in a background thread.
 	 * 
 	 */
-	private class UpdateEpisodes extends AsyncTask <Void,Void,Void>{
+	private class UpdateEpisodes extends AsyncTask <String,Void,Void>{
 		
 		/*
 		 * This is carried out in the UI thread before the background tasks are started.
@@ -370,15 +416,25 @@ public class PonyExpressActivity extends ListActivity {
 		 * This is done in a new thread,
 		 */
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Void doInBackground(String... name) {
+			boolean checkAll = true;
+			if (!name[0].equals("")){
+				checkAll = false;
+			}
 			//Check mEpisodesToHold hasn't been changed since Activity was created.
 			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 			Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
 			
-			//Get each podcast name then its feed url, and update each.
-			List<String> podcast_names = 
-				mPonyExpressApp.getDbHelper().listAllPodcasts();
+			//Get each podcast name if not updating a specific feed,
+			//then its feed url, and update each.
+			List<String> podcast_names;
+			if (checkAll){
+				podcast_names = 
+					mPonyExpressApp.getDbHelper().listAllPodcasts();
+			} else {
+				podcast_names = new ArrayList<String>(Arrays.asList(name));
+			}
 			
 			for (String podcast: podcast_names){
 				String podcast_url = 

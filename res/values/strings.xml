@@ -10,6 +10,9 @@
 	<string name="Episodes_title">
 		<b>Episodes</b>
 	</string>
+	<string name="sixgun_shows">Sixgun Production\'s Shows</string>
+	<string name="footer">Pony Express is free software:\n Tap here for more information.\n
+	\n<b>New media. New Rules.</b></string>
 	<string name="no_internet_connection">Cannot connect to the Internet. Check your
 		connectivity.</string>
 	<string name="download">Download</string>

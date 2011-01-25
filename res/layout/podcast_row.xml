@@ -5,7 +5,8 @@
 		android:id="@+id/album_art" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_alignParentLeft="true"
 		android:adjustViewBounds="true" android:paddingRight="3dp"
-		android:paddingTop="1dp" android:paddingBottom="2dp" android:maxWidth="70dp" android:maxHeight="70dp"
+		android:paddingTop="1dp" android:paddingBottom="2dp" android:maxWidth="115dp" 
+		android:maxHeight="115dp"
 		android:scaleType="fitCenter" />
 
 	<TextView android:id="@+id/podcast_text" android:layout_width="wrap_content"
@@ -17,4 +18,9 @@
 		android:layout_height="wrap_content" android:layout_toRightOf="@+id/album_art"
 		android:layout_below="@+id/podcast_text" android:paddingLeft="10dp"
 		 android:textSize="14sp" />
+	<ImageButton android:id="@+id/refresh_button" 
+		android:layout_below="@id/unlistened_eps" android:layout_centerHorizontal="true"
+		 android:src="@drawable/refresh_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:background="#ff231b00" />
 </RelativeLayout>

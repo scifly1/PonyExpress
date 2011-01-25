@@ -1,23 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent">
-	<ImageView android:id="@+id/sixgunlogo"
-     	android:layout_width="wrap_content"
-     	android:layout_height="wrap_content"
-     	android:layout_alignParentLeft="true"
-     	android:layout_alignParentTop="true"
-     	android:src="@drawable/sixgunlogo"
-     	android:paddingRight="3dp"
-     	android:maxWidth="55dp"
-     	android:maxHeight="55dp"
-     	android:adjustViewBounds="true" />
-	<TextView android:id="@+id/sixguntitle" android:layout_width="wrap_content"
+	android:layout_height="fill_parent" android:background="#ff231b00">
+	<RelativeLayout android:id="@+id/pony_header"
+		android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:background="#ff231b00">
+		
+		<TextView android:id="@+id/app_name" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="@string/app_name"
-		android:textStyle="bold" android:padding="10dp" 
-		android:textSize="25sp" android:layout_toRightOf="@+id/sixgunlogo"/>
+		android:textStyle="bold" android:paddingLeft="10dp" android:paddingTop="10dp"
+		android:textSize="28sp" android:background="#FF000000"/>
+		<TextView android:id="@+id/sixgun_subtitle" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:text="@string/sixgun_shows"
+		 android:paddingLeft="10dp"  android:textSize="18sp"
+		 android:layout_below="@id/app_name" android:background="#FF000000"/>
+		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
+		android:layout_width="fill_parent" android:layout_below="@id/sixgun_subtitle"/>
+		 
+		<ImageButton android:id="@+id/settings_button" android:layout_centerVertical="true"
+		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:background="#ff000000" android:onClick="showSettings"/>
+	</RelativeLayout>
+	
 
 	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_below="@id/sixguntitle"
-		android:paddingTop="5dp" />
+		android:layout_height="wrap_content" android:layout_below="@id/pony_header"
+		android:paddingTop="5dp" android:background="#ff231b00" 
+		android:cacheColorHint="#ff231b00" android:divider="#00000000"
+		android:dividerHeight="2dp"/>
+	
+	<Button android:id="@+id/pony_footer" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+		android:text="@string/footer" android:textSize="18sp" android:textColor="#ffcccccc"
+		android:background="#ff231b00" android:onClick="showAbout"
+		/>
+	
 </RelativeLayout>
