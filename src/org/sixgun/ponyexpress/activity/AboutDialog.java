@@ -43,7 +43,7 @@ public class AboutDialog {
 		builder.setView(view);
 		builder.setCancelable(true);
 		builder.setTitle(R.string.about_title);
-		builder.setPositiveButton(R.string.cancel, new DialogInterface.OnClickListener() {
+		builder.setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.cancel();
 	           }
