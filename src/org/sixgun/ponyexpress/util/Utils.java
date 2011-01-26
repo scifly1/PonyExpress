@@ -64,4 +64,18 @@ public class Utils {
 		}
 		return url;
 	}
+	
+	/**
+	 * Strips words from the end of strings eg: "Ogg Feed"
+	 * @param string String to strip from.
+	 * @param to_strip string to strip.
+	 */
+	static public String stripper(String string, String to_strip){
+		if (string.endsWith(to_strip)){
+			String stripped = string.replace(to_strip,"");
+			return stripped;
+		}else {
+			return string;
+		}
+	}
 }

@@ -35,6 +35,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
+import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Dialog;
@@ -334,10 +335,9 @@ public class PonyExpressActivity extends ListActivity {
 			final String fullName = name;
 			final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(name);
 			
-			//Remove the words ogg and feed if present at the end.
-			if (name.endsWith("Ogg Feed")){
-				name = name.replace("Ogg Feed","");
-			}
+			//Remove the words "ogg feed" if present at the end.
+			name = Utils.stripper(name, "Ogg Feed");
+			
 			TextView podcastName = (TextView) view.findViewById(R.id.podcast_text);
 			RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
 			TextView unlistenedText = (TextView) view.findViewById(R.id.unlistened_eps);
