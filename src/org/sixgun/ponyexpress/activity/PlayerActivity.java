@@ -32,9 +32,11 @@ import android.app.Activity;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
@@ -97,6 +99,8 @@ public class PlayerActivity extends Activity {
 	private String mPodcastName;
 	private Long mRow_ID;
 	static private boolean mIsDownloading;
+	private int mIndex;
+	private DownloadStarted mDownloadReciever;
 	
 	//This is all responsible for connecting/disconnecting to the Downloader service.
 	private ServiceConnection mDownloaderConnection = new ServiceConnection() {
@@ -119,7 +123,11 @@ public class PlayerActivity extends Activity {
 	        // service that we know is running in our own process, we can
 	        // cast its IBinder to a concrete class and directly access it.
 			mDownloader = ((DownloaderService.DownloaderServiceBinder)service).getService();
-			startDownloadProgressBar();
+			mIndex = queryDownloader();
+			if (mIndex != -1){
+				mIsDownloading = true;
+				startDownloadProgressBar(mIndex);
+			}
 		}
 	};
 	
@@ -223,6 +231,11 @@ public class PlayerActivity extends Activity {
 		mEpisodeLength.setText(Utils.milliToTime(mEpisodeDuration));
 	}
 	
+	private int queryDownloader(){
+		final int index = mDownloader.isEpisodeDownloading(mData.getString(EpisodeKeys.TITLE));
+		return index;
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -234,6 +247,8 @@ public class PlayerActivity extends Activity {
 		setContentView(R.layout.player);
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
+		
+		mDownloadReciever = new DownloadStarted();
 		
 		//Set up click listeners for all player butttons and seek bar
 		OnClickListener playButtonListener = new OnClickListener() {
@@ -322,10 +337,9 @@ public class PlayerActivity extends Activity {
 						== ConnectivityManager.TYPE_MOBILE){
 					Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
 				} else {
-					mDownloader.downloadEpisode(mData);
 					mIsDownloading = true;
 					mDownloadButton.setEnabled(false);
-					startDownloadProgressBar();
+					startDownload();
 				}				
 			}
 		};
@@ -435,9 +449,25 @@ public class PlayerActivity extends Activity {
 		super.onResume();
 		if (mSavedState != null){
 			restoreSeekBar(mSavedState);
+			mIsDownloading = mSavedState.getBoolean(IS_DOWNLOADING);
+		}
+		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
+		registerReceiver(mDownloadReciever,filter);
+		
+		if(mIsDownloading){
+			startDownloadProgressBar(mIndex);
 		}
 	}
 
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(mDownloadReciever);
+	}
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onStop()
@@ -446,7 +476,7 @@ public class PlayerActivity extends Activity {
 	protected void onStop() {
 		super.onStop();
 		//This allows the SeekBar or Download ProgressBar threads 
-		//to die when the activity is no longer visable.
+		//to die when the activity is no longer visible.
 		mUpdateSeekBar = false;
 		mIsDownloading = false;
 	}
@@ -458,6 +488,7 @@ public class PlayerActivity extends Activity {
 	protected void onDestroy() {
 		super.onDestroy();
 		doUnbindPodcastPlayer();
+		doUnbindDownloaderService();
 	}
 
 	/* (non-Javadoc)
@@ -577,48 +608,64 @@ public class PlayerActivity extends Activity {
 	}
 	
 	/**
+	 * Starts the downloaderService and then starts the downloadprogress bar.
+	 */
+	private void startDownload(){
+		Intent intent = new Intent(this,DownloaderService.class);
+		intent.putExtras(mData);
+		intent.putExtra("action", DownloaderService.DOWNLOAD);
+		startService(intent);
+	}
+	
+	public class DownloadStarted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			mIndex  = intent.getExtras().getInt("index");
+			startDownloadProgressBar(mIndex);
+		}
+		
+	}
+	
+	/**
 	 * Starts a thread to poll the episodes download progress and updates the seek bar
 	 * via a handler. 
 	 */
-	private void startDownloadProgressBar(){
+	private void startDownloadProgressBar(final int index){
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-				final int index = mDownloader.isEpisodeDownloading(mData.getString(EpisodeKeys.TITLE));
-				if (index > -1){
-					//Set IsDownloading to true, because it must be true if here and isn't
-					//set true if getting here from onServiceConnected().
-					mIsDownloading = true;
-					mHandler.post(disableDownloadButton);
-										
-					mDownloadProgress.setMax(100);
-					boolean downloadError = false;
-					while (mIsDownloading && mDownloadPercent < 100 ){
-						try {
-							downloadError = mDownloader.checkForDownloadError(index);
-							if (downloadError){
-								mIsDownloading = false;
-							}
-							mDownloadPercent = (int) mDownloader.getProgress(index);
-							Thread.sleep(1000);
-						} catch (InterruptedException e) {
-							Log.d(TAG, "Download thread interupted while sleeping!", e);
+
+				mHandler.post(disableDownloadButton);
+
+				mDownloadProgress.setMax(100);
+				boolean downloadError = false;
+				while (mIsDownloading && mDownloadPercent < 100 ){
+					try {
+						downloadError = mDownloader.checkForDownloadError(index);
+						if (downloadError){
+							mIsDownloading = false;
 						}
-						//Post progress to mHandler in UI thread
-						mHandler.post(setProgress);
+						mDownloadPercent = (int) mDownloader.getProgress(index);
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						Log.d(TAG, "Download thread interupted while sleeping!", e);
 					}
-					//Download completed
-					if (mDownloadPercent == 100){
-						//Post download completion runnable to mHandler in UI thread
-						mHandler.post(downloadCompleted);
-					}//Download failed
-					else if (downloadError){
-						//Post downloadFailed runnable to mHandler to reset UI
-						mHandler.post(downloadFailed);
-						mDownloader.resetDownloadError(index);
-					}
+					//Post progress to mHandler in UI thread
+					mHandler.post(setProgress);
 				}
-			}	
+				//Download completed
+				if (mDownloadPercent == 100){
+					//Post download completion runnable to mHandler in UI thread
+					mHandler.post(downloadCompleted);
+				}//Download failed
+				else if (downloadError){
+					//Post downloadFailed runnable to mHandler to reset UI
+					mHandler.post(downloadFailed);
+					mDownloader.resetDownloadError(index);
+
+				}
+			}
 		}).start();
 	}
 	
@@ -645,8 +692,7 @@ public class PlayerActivity extends Activity {
 			//Change views in UI and bind player.
 			mIsDownloading = false;
 			mEpisodeDownloaded = true;
-			doUnbindDownloaderService();
-			
+						
 			mDownloadProgress.setVisibility(View.GONE);
 			mDownloadButton.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.VISIBLE);

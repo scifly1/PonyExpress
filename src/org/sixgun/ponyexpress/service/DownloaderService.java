@@ -31,6 +31,8 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.PlayerActivity;
+import org.sixgun.ponyexpress.activity.PlayerActivity.DownloadStarted;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -53,6 +55,8 @@ public class DownloaderService extends Service {
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String NO_MEDIA_FILE = ".nomedia";
 	private static final int NOTIFY_ID = 1;
+	public static final int DOWNLOAD = 0;
+	public static final int INIT = DOWNLOAD + 1 ;
 	private PonyExpressApp mPonyExpressApp;
 	//Do not remove episodes from mEpisodes as you'll change the index 
 	//of other episodes that may be being accessed.
@@ -99,10 +103,43 @@ public class DownloaderService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
+		Log.d(TAG, "Downloader Service Killed/Stopped");
 		mDownloaderAwake = false;
 	}
+	// This is the old onStart method that will be called on the pre-2.0
+	// platform.  On 2.0 or later we override onStartCommand() so this
+	// method will not be called.
+	@Override
+	public void onStart(Intent intent, int startId) {
+	    handleCommand(intent);
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+	    handleCommand(intent);
+	    return START_STICKY;
+	}
 	
-	public void downloadEpisode(final Bundle _data) {
+	private void handleCommand(Intent intent){
+		int action = intent.getIntExtra("action", -1);
+		switch (action){
+		case DOWNLOAD:
+			final int index = initDownload(intent.getExtras());
+			downloadEpisode(index);
+			notifyPlayerActivityOfStart(index);
+			break;
+		default:
+			Log.e(TAG, "unknown action received by DownloaderService: " + action);
+			break;
+		}
+	}
+	
+	/**
+	 * Inititiase the DownloadService with the episode to be downloaded.
+	 * @param _data the Bundle with the URL, name etc in.
+	 * @return The index in the downloadServices array that the episode is in.
+	 */
+	private int initDownload(Bundle _data){
 		//Get all the data needed for the download.
 		final Bundle data = _data; 
 		DownloadingEpisode newEpisode = new DownloadingEpisode();
@@ -117,6 +154,16 @@ public class DownloaderService extends Service {
 		mEpisodes.add(newEpisode);
 		
 		final int index = mEpisodes.indexOf(newEpisode);
+		return index;
+	}
+	
+	/**
+	 * Starts a new thread to download the episode specified.
+	 * @param index the index in the DownloadServices array that holds the 
+	 * particular DownloadingEpisode.
+	 */
+	public void downloadEpisode(final int index) {
+		
 		//A new thread carrieds out each download.
 		new Thread(new Runnable() {
 			
@@ -182,6 +229,18 @@ public class DownloaderService extends Service {
 				}
 			}			
 		}).start();		
+	}
+	
+	/**
+	 * Notify the PlayerActivity that the download has commenced and that it can start 
+	 * displaying the progress.
+	 * @param index the index in the DownloadServices array that holds the 
+	 * particular DownloadingEpisode.
+	 */
+	private void notifyPlayerActivityOfStart(final int index){
+		Intent intent = new Intent("org.sixgun.ponyexpress.DOWNLOADING");
+		intent.putExtra("index", index);
+		sendBroadcast(intent);
 	}
 	
 	/**
@@ -320,6 +379,7 @@ public class DownloaderService extends Service {
 						mNM.notify(NOTIFY_ID, notification);
 					} else {
 						mNM.cancel(NOTIFY_ID);
+						stopSelf();
 					}
 					try {
 						Thread.sleep(1000);
