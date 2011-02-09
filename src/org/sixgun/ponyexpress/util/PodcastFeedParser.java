@@ -23,6 +23,7 @@ import java.io.InputStream;
 import org.sixgun.ponyexpress.Podcast;
 import org.xml.sax.Attributes;
 
+import android.content.Context;
 import android.sax.Element;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
@@ -42,13 +43,11 @@ public class PodcastFeedParser extends BaseFeedParser {
     static final String NAME = "title";
     static final String ALBUM_ART_URL = "thumbnail";
 	private static final String TAG = "Pony/PodcastFeedParser";
-    private String mFeedUrl;
+   
     
     
-	protected PodcastFeedParser(String feedUrl) {
-		super(feedUrl);
-		mFeedUrl = feedUrl;
-		Log.d(TAG, "Feed is from: " + feedUrl);
+	protected PodcastFeedParser(Context ctx, String feedUrl) {
+		super(ctx, feedUrl);
 		
 	}
 	
@@ -59,6 +58,9 @@ public class PodcastFeedParser extends BaseFeedParser {
 	 */
 	public Podcast parse() {
 		final Podcast new_podcast = new Podcast();
+		if (mFeedUrl == null){
+			return null;
+		}
 				
 		//Set up the required elements.
 		RootElement root = new RootElement("rss");
@@ -69,7 +71,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 		 */
 		
 		//Store the Feed URL
-		new_podcast.setFeed_Url(mFeedUrl);
+		new_podcast.setFeedUrl(mFeedUrl);
 		
 		//This listener catches the name.
 		channel.getChild(NAME).setEndTextElementListener(new EndTextElementListener() {
@@ -99,7 +101,8 @@ public class PodcastFeedParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				NotifyError();
+				return null;
 			}
 		}			
 		return new_podcast;

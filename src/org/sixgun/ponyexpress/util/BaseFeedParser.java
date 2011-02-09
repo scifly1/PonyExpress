@@ -27,7 +27,13 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import org.apache.http.HttpStatus;
+import org.sixgun.ponyexpress.R;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 
 /*
@@ -38,20 +44,25 @@ import android.util.Log;
 public abstract class BaseFeedParser {
     
     private static final String TAG = "BaseFeedParser";
-	final URL feedUrl;
+	private static final int NOTIFY_ID = 6;
+    protected Context mCtx;
+	protected URL mFeedUrl;
 	
     /**
      * Constructor - takes the URL of the RSS feed to be parsed.
      * @param feedUrl
      */
-    protected BaseFeedParser(String feedUrl){
-        try {
-            this.feedUrl = new URL(feedUrl);
+    protected BaseFeedParser(Context ctx, String feedUrl){
+    	try {
+            mFeedUrl = new URL(feedUrl);
         } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
+            NotifyError();
+            mFeedUrl = null;
         }
+        mCtx = ctx;
     }
-    /**
+    
+	/**
      * Opens a connection to feedUrl.
      * 
      * @return an InputStream from the feedUrl
@@ -80,7 +91,7 @@ public abstract class BaseFeedParser {
     private HttpURLConnection openConnection(){
     	HttpURLConnection conn;
 		try {
-			conn = (HttpURLConnection) feedUrl.openConnection();
+			conn = (HttpURLConnection) mFeedUrl.openConnection();
 			Log.d(TAG,"Response code: " + conn.getResponseCode());
 			//Check that the server responds properly
 			if (conn.getResponseCode() != HttpStatus.SC_OK){
@@ -92,4 +103,22 @@ public abstract class BaseFeedParser {
 		return conn;
     }
 
+    protected void NotifyError() {
+    	//Send a notification to the user telling them of the error
+		//This uses an empty intent because there is no new activity to start.
+		PendingIntent intent = PendingIntent.getActivity(mCtx.getApplicationContext(), 
+				0, new Intent(), 0);
+		NotificationManager notifyManager = 
+			(NotificationManager) mCtx.getSystemService(Context.NOTIFICATION_SERVICE);
+		int icon = R.drawable.stat_notify_error;
+		CharSequence text = mCtx.getText(R.string.feed_error);
+		Notification notification = new Notification(
+				icon, null,
+				System.currentTimeMillis());
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		notification.setLatestEventInfo(mCtx.getApplicationContext(), 
+				mCtx.getText(R.string.app_name), text, intent);
+		notifyManager.notify(NOTIFY_ID,notification);
+		
+	}
 }

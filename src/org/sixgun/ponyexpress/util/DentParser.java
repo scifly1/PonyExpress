@@ -39,8 +39,6 @@ import android.util.Xml;
  */
 public class DentParser extends BaseFeedParser {
 
-	//The context is only needed for using the debug testfeeds.
-	private Context mCtx;
 	// names of the XML tags
 	static final String STATUS = "status";
 	static final String TEXT = "text";
@@ -53,8 +51,7 @@ public class DentParser extends BaseFeedParser {
 	
 	
 	public DentParser(Context ctx, String feedUrl) {
-		super(feedUrl);
-		mCtx = ctx;
+		super(ctx,feedUrl);
 	}
 	
 	/**
@@ -133,7 +130,7 @@ public class DentParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				NotifyError();
 			}
 		} else {
 			//If connection errors tell user

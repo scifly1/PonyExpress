@@ -27,6 +27,7 @@
 	<string name="dent_ok">Dent!</string>
 	<string name="conn_err_query_failed">Connection error! Cannot get dents.</string>
 	<string name="error_generic">Sorry, something has gone wrong..</string>
+	<string name="feed_error">There was an error getting a feed..</string>
 	<string name="sending_dent">Sending message, please wait.</string>
 	<string name="login_failed">Identi.ca login failed! Have you set up your
 		account?</string>

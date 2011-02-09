@@ -40,9 +40,7 @@ import android.util.Xml;
  * or attributes from them using ElementListeners.
  */
 public class EpisodeFeedParser extends BaseFeedParser{
-	//The context is only needed for using the debug testfeeds.
-	@SuppressWarnings("unused")
-	private Context mCtx;
+	
 	// names of the XML tags
     static final String PUB_DATE = "pubDate";
     static final String CONTENT = "enclosure";
@@ -53,11 +51,11 @@ public class EpisodeFeedParser extends BaseFeedParser{
     
     /**
      * Constructor - Takes a feedUrl and passes it to the SuperClass.
+     * @param ctx
      * @param feedUrl
      */
 	public EpisodeFeedParser(Context ctx, String feedUrl) {
-		super(feedUrl);
-		mCtx = ctx;
+		super(ctx, feedUrl);
 	}
 	/**
 	 * Parses the RSS feed from the InputStream and extracts text elements and 
@@ -131,7 +129,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				NotifyError();
 			}
 		}
 		return episodes;

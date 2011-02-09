@@ -511,14 +511,16 @@ public class PonyExpressDbAdaptor {
 			throw new RuntimeException("Number of Sixgun Podcast feed does not equal the number of tags/groups.");			
 		}
 		for (int i = 0; i < feeds; ++i) {
-			PodcastFeedParser parser = new PodcastFeedParser(feed_urls[i]);
+			PodcastFeedParser parser = new PodcastFeedParser(mCtx,feed_urls[i]);
 			Podcast podcast = parser.parse();
-			podcast.setIdenticaTag(identica_tags[i]);
-			podcast.setIdenticaGroup(identica_groups[i]);
-			insertPodcast(podcast);
-			//Create table for this podcast's episodes
-			String tableName = getTableName(podcast.getName());
-			mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);	
+			if (podcast != null){
+				podcast.setIdenticaTag(identica_tags[i]);
+				podcast.setIdenticaGroup(identica_groups[i]);
+				insertPodcast(podcast);
+				//Create table for this podcast's episodes
+				String tableName = getTableName(podcast.getName());
+				mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
+			}
 		}
 	}
 	

@@ -79,14 +79,10 @@ public class Podcast {
 	/**
 	 * @param mFeed_Url the mFeed_Url to set
 	 */
-	public void setFeed_Url(String mFeed_Url) {
-		try {
-            this.mFeed_Url = new URL(mFeed_Url);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-            //TODO Handle incorrect urls better as they will be entered by hand
-        }
+	public void setFeedUrl(URL feed_url){
+		mFeed_Url = feed_url;
 	}
+	
 	/**
 	 * @return the mFeed_Url
 	 */
