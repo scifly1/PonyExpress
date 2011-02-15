@@ -25,6 +25,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.ListActivity;
 import android.content.Context;
@@ -55,7 +56,9 @@ public class EpisodesActivity extends ListActivity {
 	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private PonyExpressApp mPonyExpressApp;
 	private String mPodcastName;
-	private String mAlbumArtUrl; 
+	private String mUnlistened;
+	private String mAlbumArtUrl;
+	private String mPodcastNameStripped; 
 
 	
 	@Override
@@ -63,16 +66,28 @@ public class EpisodesActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.episodes);
 		
+		TextView title = (TextView)findViewById(R.id.title);
+		TextView unlistened = (TextView)findViewById(R.id.unlistened_eps);
+		
 		//enable the context menu
 		registerForContextMenu(getListView());
 		
 		//Get Podcast name and album art url from bundle.
-		//The album art url is not used by this activity but is passed to the player by intent
 		final Bundle data = getIntent().getExtras();
 		mPodcastName = data.getString(PodcastKeys.NAME);
+		mPodcastNameStripped = Utils.stripper(mPodcastName, "Ogg Feed");
+		mUnlistened = data.getString(PodcastKeys.UNLISTENED);
 		mAlbumArtUrl = data.getString(PodcastKeys.ALBUM_ART_URL);
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
+		
+		//Set title and unlistened text.
+		title.setText(mPodcastNameStripped);
+		//FIXME The unlistened string should be recalculated so it updates when an episode is listened
+		unlistened.setText(mUnlistened);
+		
+		//FIXME The album art for the background is statically stored in res/drawable
+		//It should be downloaded and then stored.
 	}
 
 	/** 
@@ -306,6 +321,19 @@ public class EpisodesActivity extends ListActivity {
 			markNotListened(rowID);
 			c.moveToNext();
 		}
+	}
+	
+	/**
+	 * Start the identica activity from the edit button.
+	 * @param v the calling View
+	 */
+	public void startIdenticaActivity(View v){
+		final String identicagroup = mPonyExpressApp.getDbHelper().getIdenticaGroup(mPodcastName);
+	    final String identicatag = mPonyExpressApp.getDbHelper().getIdenticaTag(mPodcastName);
+	    Intent intent = new Intent(this,IdenticaActivity.class);
+	    intent.putExtra(PodcastKeys.GROUP, identicagroup);
+	    intent.putExtra(PodcastKeys.TAG, identicatag);
+	    startActivity(intent);
 	}
 	
 }

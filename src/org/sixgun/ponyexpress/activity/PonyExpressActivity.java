@@ -236,12 +236,16 @@ public class PonyExpressActivity extends ListActivity {
 	 * Starts the PodcastTabs activity with the selected podcast
 	 * @param id row_id of the podcast in the database
 	 */
-	private void selectPodcast(long id){
-		//Get the podcast name and album art url.
+	private void selectPodcast(long id) {
+		//Get the podcast name and album art url and number of unlistened episodes.
+
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
+		final TextView unlistenedText = (TextView)v.findViewById(R.id.unlistened_eps);
+		final String unlistened = (String) unlistenedText.getText();
 		//Store in an intent and send to EpisodesActivity
-		Intent intent = new Intent(this,PodcastTabs.class);
+		Intent intent = new Intent(this,EpisodesActivity.class);
+		intent.putExtra(PodcastKeys.UNLISTENED, unlistened);
 		intent.putExtra(PodcastKeys.NAME, name);
 		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
 		startActivity(intent);
