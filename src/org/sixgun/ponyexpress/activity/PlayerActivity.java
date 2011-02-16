@@ -257,7 +257,7 @@ public class PlayerActivity extends Activity {
 				if (!mPaused){
 					mPodcastPlayer.pause();
 					mPaused = true;
-					setCurrentPosition(mPodcastPlayer.getEpisodePosition());
+					mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
 					
 				} else {
