@@ -270,7 +270,7 @@ public class PodcastPlayer extends Service {
 		final String file = mData.getString(EpisodeKeys.FILENAME);
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
-		int position = mData.getInt(EpisodeKeys.LISTENED);
+		int position = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
 	
 		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
