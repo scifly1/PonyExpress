@@ -41,6 +41,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -104,7 +105,33 @@ public class EpisodesActivity extends ListActivity {
 			ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
 		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.episode_context, menu);		
+		inflater.inflate(R.menu.episode_context, menu);
+		
+		//Set the title of the menu
+		AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
+		TextView episodeText = (TextView) item.targetView.findViewById(R.id.episode_text);
+		menu.setHeaderTitle(episodeText.getText());
+		//Gather data to determine which menu items to show
+		boolean listened = true;
+		if (mPonyExpressApp.getDbHelper().getListened(item.id, mPodcastName) == -1){
+			listened = false;
+		}
+		boolean downloaded = false;
+		if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(item.id, mPodcastName)){
+			downloaded = true;
+		}
+		//Hide unneeded items
+		if (listened){
+			menu.removeItem(R.id.mark_listened);
+		} else {
+			menu.removeItem(R.id.mark_not_listened);
+		}
+		if (downloaded){
+			menu.removeItem(R.id.download);
+		} else {
+			menu.removeItem(R.id.re_download);
+			menu.removeItem(R.id.listen);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -186,6 +213,15 @@ public class EpisodesActivity extends ListActivity {
 		case R.id.mark_not_listened:
 			markNotListened(info.id);
 			listEpisodes();
+			return true;
+		case R.id.download:
+			//Fallthrough: onListItemClick determines if can listen or download
+		case R.id.listen:
+			onListItemClick(getListView(), info.targetView, info.position, info.id);
+			return true;
+		case R.id.re_download:
+			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
+			onListItemClick(getListView(), info.targetView, info.position, info.id);
 			return true;
 		default:
 			return super.onContextItemSelected(item);
