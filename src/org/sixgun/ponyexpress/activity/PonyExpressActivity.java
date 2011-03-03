@@ -70,18 +70,21 @@ import android.widget.Toast;
 public class PonyExpressActivity extends ListActivity {
 
 	private static final String UPDATE_IN_PROGRESS = "ponyexpress.update.inprogress";
+	private static final String PODCAST_BEING_UPDATED = "ponyexpress.podcast.being.updated";
 	private static final String TAG = "PonyExpressActivity";
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
 	private static final int SETUP_ACCOUNT = 0;
 	private static final int ABOUT_DIALOG = 4;
 	private PonyExpressApp mPonyExpressApp; 
-	private UpdateEpisodes mUpdateTask;  
+	private UpdateEpisodes mUpdateTask; 
+	private String mPodcastBeingUpdated;
 	private Bundle mSavedState;
 	private ProgressDialog mProgDialog;
 	private int mEpisodesToHold;
 	private int mUpdateDelta;
 	private GregorianCalendar mLastUpdate;
+	
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -157,7 +160,11 @@ public class PonyExpressActivity extends ListActivity {
 
 	private void restoreLocalState(Bundle state) {
 		if (state.getBoolean(UPDATE_IN_PROGRESS)){
-			mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute();
+			String podcast_name = state.getString(PODCAST_BEING_UPDATED);
+			if (podcast_name == null){
+				podcast_name = "";
+			}
+			mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute(podcast_name);
 		}
 	}
 
@@ -175,6 +182,7 @@ public class PonyExpressActivity extends ListActivity {
 		if (task != null && task.getStatus() != Status.FINISHED){
 			task.cancel(true);
 			outState.putBoolean(UPDATE_IN_PROGRESS, true);
+			outState.putString(PODCAST_BEING_UPDATED, mPodcastBeingUpdated);
 		} else {
 			outState.putBoolean(UPDATE_IN_PROGRESS, false);
 		}
@@ -420,6 +428,7 @@ public class PonyExpressActivity extends ListActivity {
 			boolean checkAll = true;
 			if (!name[0].equals("")){
 				checkAll = false;
+				mPodcastBeingUpdated = name[0];
 			}
 			//Check mEpisodesToHold hasn't been changed since Activity was created.
 			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -433,7 +442,7 @@ public class PonyExpressActivity extends ListActivity {
 				podcast_names = 
 					mPonyExpressApp.getDbHelper().listAllPodcasts();
 			} else {
-				podcast_names = new ArrayList<String>(Arrays.asList(name));
+				podcast_names = new ArrayList<String>(Arrays.asList(mPodcastBeingUpdated));
 			}
 			
 			for (String podcast: podcast_names){
