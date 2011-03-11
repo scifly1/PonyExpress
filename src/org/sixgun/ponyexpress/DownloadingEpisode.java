@@ -30,6 +30,7 @@ public class DownloadingEpisode extends Episode {
 	// representation of the int mSize.
 	private long mRowID;
 	private boolean mDownloadFailed = false;
+	private boolean mDownloadCancelled = false;
 	
 	public DownloadingEpisode(){
 		mDownloadProgress = 0;
@@ -123,5 +124,16 @@ public class DownloadingEpisode extends Episode {
 		
 	}
 	
+	public void setDownloadCancelled(){
+		this.mDownloadCancelled = true;
+	}
+
+	public boolean downloadCancelled() {
+		return mDownloadCancelled;
+	}
 	
+	public void resetDownloadCancelled() {
+		this.mDownloadCancelled = false;
+		
+	}
 }

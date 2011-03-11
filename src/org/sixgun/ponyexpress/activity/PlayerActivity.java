@@ -87,7 +87,9 @@ public class PlayerActivity extends Activity {
 	private boolean mUserSeeking = false;
 	private Bundle mSavedState;
 	private Bundle mData;
-	static protected View mDownloadButton;
+	static protected Button mDownloadButton;
+	static private Button mCancelButton;
+	private boolean mCancelDownload;
 	static private ProgressBar mDownloadProgress;
 	private PonyExpressApp mPonyExpressApp;
 	static private RelativeLayout mPlayerControls;
@@ -126,6 +128,7 @@ public class PlayerActivity extends Activity {
 			mIndex = queryDownloader();
 			if (mIndex != -1){
 				mIsDownloading = true;
+				activateDownloadCancelButton();
 				startDownloadProgressBar(mIndex);
 			}
 		}
@@ -180,6 +183,7 @@ public class PlayerActivity extends Activity {
 			queryPlayer();
 		}
 	};
+
 		
 	protected void doBindPodcastPlayer() {
 	    // Establish a connection with the service.  We use an explicit
@@ -327,6 +331,14 @@ public class PlayerActivity extends Activity {
 			
 		};
 		
+		OnClickListener cancelDownloadButtonListener = new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				mCancelDownload = true;
+			}
+			
+		};
+		
 		//Set up listener for download button
 		OnClickListener downloadButtonListener = new OnClickListener() {
 			@Override
@@ -339,11 +351,12 @@ public class PlayerActivity extends Activity {
 					Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
 				} else {
 					mIsDownloading = true;
-					mDownloadButton.setEnabled(false);
+					activateDownloadCancelButton();
 					startDownload();
 				}				
 			}
 		};
+		
 		
 		//Link all listeners with the correct widgets
 		mPlayerControls = (RelativeLayout)findViewById(R.id.player_controls);
@@ -358,11 +371,13 @@ public class PlayerActivity extends Activity {
 		mElapsed = (TextView)findViewById(R.id.elapsed_time);
 		mEpisodeLength = (TextView)findViewById(R.id.length);
 		mDownloadButton = (Button)findViewById(R.id.DownloadButton);
+		mCancelButton = (Button)findViewById(R.id.CancelButton);
 		mDownloadProgress = (ProgressBar)findViewById(R.id.DownloadProgressBar);
 
 		//Only make Download button available if we have internet connectivity.
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
 			mDownloadButton.setOnClickListener(downloadButtonListener);
+			mCancelButton.setOnClickListener(cancelDownloadButtonListener);
 		}else{
 			mDownloadButton.setEnabled(false);
 		}
@@ -456,6 +471,8 @@ public class PlayerActivity extends Activity {
 		registerReceiver(mDownloadReciever,filter);
 		
 		if(mIsDownloading){
+			activateDownloadCancelButton();
+			Log.d(TAG, "Player resuming..");
 			startDownloadProgressBar(mIndex);
 		}
 	}
@@ -512,7 +529,7 @@ public class PlayerActivity extends Activity {
 		super.onRestoreInstanceState(savedInstanceState);
 		restoreSeekBar(savedInstanceState);
 		if (savedInstanceState.getBoolean(IS_DOWNLOADING)){
-			mDownloadButton.setEnabled(false);
+			activateDownloadCancelButton();
 			mIsDownloading = true;
 		}
 		mSavedState = null;
@@ -558,7 +575,15 @@ public class PlayerActivity extends Activity {
 		mSavedState = outState;
 	}
 
-
+	/**
+	 * Deactivates the download button and replaces it with the cancel download button.
+	 */
+	private void activateDownloadCancelButton() {
+		mDownloadButton.setVisibility(View.GONE);
+		mCancelButton.setVisibility(View.VISIBLE);
+		mCancelButton.setEnabled(true);
+	}
+			
 	/**
 	 * Starts a thread to poll the episodes progress and updates the seek bar
 	 * via a handler. 
@@ -643,11 +668,25 @@ public class PlayerActivity extends Activity {
 				boolean downloadError = false;
 				while (mIsDownloading && mDownloadPercent < 100 ){
 					try {
-						downloadError = mDownloader.checkForDownloadError(index);
-						if (downloadError){
-							mIsDownloading = false;
+						//When resuming the activity, the Downloader needs to be 
+						// rebound.  So sleep before trying to access it.
+						while (mDownloader == null){
+							try {
+								Log.d(TAG, "Sleeping while Downloader rebinds");
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+								Log.e(TAG, 
+										"DownloadProgressBar thread failed to sleep while waiting for podcast player to bind", e);
+							}
 						}
 						mDownloadPercent = (int) mDownloader.getProgress(index);
+						
+						downloadError = mDownloader.checkForDownloadError(index);
+						if (downloadError || mCancelDownload){
+							mIsDownloading = false;
+							mDownloadPercent= 0;
+						}
+						
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						Log.d(TAG, "Download thread interupted while sleeping!", e);
@@ -662,9 +701,16 @@ public class PlayerActivity extends Activity {
 				}//Download failed
 				else if (downloadError){
 					//Post downloadFailed runnable to mHandler to reset UI
-					mHandler.post(downloadFailed);
+					mHandler.post(downloadCancelled); //Reenable button and zero progress
+					mHandler.post(downloadFailed); //Post notification
 					mDownloader.resetDownloadError(index);
 
+				}
+				//download cancelled
+				else if (mCancelDownload){
+					mDownloader.cancelDownload(index);
+					mHandler.post(downloadCancelled);
+					mCancelDownload = false;
 				}
 			}
 		}).start();
@@ -695,7 +741,7 @@ public class PlayerActivity extends Activity {
 			mEpisodeDownloaded = true;
 						
 			mDownloadProgress.setVisibility(View.GONE);
-			mDownloadButton.setVisibility(View.GONE);
+			mCancelButton.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.VISIBLE);
 			mPlayerControls.setVisibility(View.VISIBLE);
 			initPlayer();
@@ -710,9 +756,6 @@ public class PlayerActivity extends Activity {
 
 		@Override
 		public void run() {
-			//Reenable the download button and zero the progress bar
-			mDownloadButton.setEnabled(true);
-			mDownloadProgress.setProgress(0);
 			//Send a notification to the user telling them of the failure
 			//This uses an empty intent because there is no new activity to start.
 			PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
@@ -727,6 +770,21 @@ public class PlayerActivity extends Activity {
 			notification.setLatestEventInfo(mPonyExpressApp, 
 					getText(R.string.app_name), text, intent);
 			notifyManager.notify(NOTIFY_ID,notification);
+		}
+		
+	};
+	
+	Runnable downloadCancelled = new Runnable() {
+		@Override
+		public void run() {
+			//Reenable the download button and zero the progress bar
+			mCancelButton.setVisibility(View.GONE);
+			mCancelButton.setEnabled(false);
+			mDownloadButton.setVisibility(View.VISIBLE);
+			mDownloadButton.setEnabled(true);
+			mDownloadProgress.setProgress(0);
+			
+			//FIXME The partial download is not deleted, not a problem but takes up space. 
 		}
 		
 	};
