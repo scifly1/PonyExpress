@@ -498,27 +498,46 @@ public class PonyExpressDbAdaptor {
 	
 	/**
 	 * Loads the Sixgun productions podcast titles and urls into the database
-	 * when first created.
+	 * when first created. If no podcasts are found (sixgun.org might be down)
+	 * it just adds LO from the strings file.
 	 */
 	private void loadSixgunPodcasts() {
-		String[] feed_urls =  mCtx.getResources().getStringArray(R.array.Sixgun_Podcasts);
-		String[] identica_tags = mCtx.getResources().getStringArray(R.array.Sixgun_Podcast_Tags); 
-		String[] identica_groups = mCtx.getResources().getStringArray(R.array.Sixgun_Podcast_Groups);
-		final int feeds = feed_urls.length;
-		final int tags = identica_tags.length;
-		final int groups = identica_groups.length;
-		if (feeds != tags || groups != feeds){
-			throw new RuntimeException("Number of Sixgun Podcast feed does not equal the number of tags/groups.");			
-		}
-		for (int i = 0; i < feeds; ++i) {
-			PodcastFeedParser parser = new PodcastFeedParser(mCtx,feed_urls[i]);
-			Podcast podcast = parser.parse();
-			if (podcast != null){
-				podcast.setIdenticaTag(identica_tags[i]);
-				podcast.setIdenticaGroup(identica_groups[i]);
-				insertPodcast(podcast);
+		SixgunPodcastsParser parser = 
+			new SixgunPodcastsParser(mCtx, mCtx.getString(R.string.sixgun_feeds));
+		List<Podcast> podcasts = parser.parse();
+		if (podcasts.isEmpty()){
+			Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
+			//Sixgun.org cannot be contacted
+			String[] default_feed =  mCtx.getResources().getStringArray(R.array.default_lo_feed);
+			PodcastFeedParser default_parser = new PodcastFeedParser(mCtx, default_feed[0]);
+			Podcast default_podcast = default_parser.parse();
+			if (default_podcast != null){
+				default_podcast.setIdenticaTag(default_feed[1]);
+				default_podcast.setIdenticaGroup(default_feed[2]);
+				insertPodcast(default_podcast);
 				//Create table for this podcast's episodes
-				String tableName = getTableName(podcast.getName());
+				String tableName = getTableName(default_podcast.getName());
+				mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
+			}
+		}
+		addNewPodcasts(podcasts);
+	}
+	/**
+	 * Takes a list of podcasts (with feed url, and identi.ca info in) and gets the 
+	 * rest of the infomation from the feed. ie: podcast title and album art url and adds
+	 * it them to the Db.
+	 * @param podcasts a list of Podscasts.
+	 */			
+	public void addNewPodcasts(List<Podcast> podcasts){
+		for (Podcast podcast:podcasts) {
+			PodcastFeedParser parser = new PodcastFeedParser(mCtx,podcast.getFeed_Url().toString());
+			Podcast new_podcast = parser.parse();
+			if (new_podcast != null){
+				new_podcast.setIdenticaTag(podcast.getIdenticaTag());
+				new_podcast.setIdenticaGroup(podcast.getIdenticaGroup());
+				insertPodcast(new_podcast);
+				//Create table for this podcast's episodes
+				String tableName = getTableName(new_podcast.getName());
 				mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
 			}
 		}
@@ -644,5 +663,33 @@ public class PonyExpressDbAdaptor {
 		final int count = c.getCount();
 		c.close();
 		return count;
+	}
+	
+	/**
+	 * Returns a List of all current podcasts (with feed_urls and identica details).
+	 * Useed to update the sixgun podcasts in PonyExpressActivity.
+	 * @return list of podcasts
+	 */
+	public ArrayList<Podcast> getCurrentPodcasts(){
+		ArrayList<Podcast> podcasts = new ArrayList<Podcast> ();
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.FEED_URL, PodcastKeys.GROUP, PodcastKeys.TAG};
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, null ,
+				null, null, null, null, null);
+		if (cursor != null){
+			int rows = cursor.getCount();
+			cursor.moveToFirst();
+			for (int i = 0; i < rows; i++)
+			{
+				Podcast podcast = new Podcast();
+				podcast.setFeedUrl(Utils.getURL(cursor.getString(1)));
+				podcast.setIdenticaGroup(cursor.getString(2));
+				podcast.setIdenticaTag(cursor.getString(3));
+				podcasts.add(new Podcast(podcast));
+				cursor.moveToNext();
+			}
+		}
+		cursor.close();
+		return podcasts;
 	}
 }

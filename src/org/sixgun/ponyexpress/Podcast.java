@@ -45,7 +45,7 @@ public class Podcast {
      * @param episode to copy.
      */
     public Podcast(Podcast newPodcast) {
-    	this(newPodcast.mName,newPodcast.mFeed_Url,newPodcast.mArt_Url,newPodcast.mIdenticaTag);
+    	this(newPodcast.mName,newPodcast.mFeed_Url,newPodcast.mArt_Url,newPodcast.mIdenticaTag, newPodcast.mIdenticaGroup);
 	}
     
     /**
@@ -54,11 +54,12 @@ public class Podcast {
      * @param _link
      * @param _title
      */
-    private Podcast(String _name, URL _feed, URL _art, String _tag){
+    private Podcast(String _name, URL _feed, URL _art, String _tag, String _group){
     	this.mName = _name;
     	this.mFeed_Url = _feed;
     	this.mArt_Url = _art;
     	this.mIdenticaTag = _tag;
+    	this.mIdenticaGroup = _group;
     }
     
 	/*
@@ -131,8 +132,60 @@ public class Podcast {
 	 * @return the mIdenticaGroup
 	 */
 	public String getIdenticaGroup() {
-		if (mIdenticaGroup.equals(null)){
+		if (mIdenticaGroup == null){
 			return mIdenticaTag;
 		}else return mIdenticaGroup;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result
+				+ ((mFeed_Url == null) ? 0 : mFeed_Url.hashCode());
+		result = prime * result
+				+ ((mIdenticaGroup == null) ? 0 : mIdenticaGroup.hashCode());
+		result = prime * result
+				+ ((mIdenticaTag == null) ? 0 : mIdenticaTag.hashCode());
+		result = prime * result + ((mName == null) ? 0 : mName.hashCode());
+		return result;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Podcast other = (Podcast) obj;
+		if (mFeed_Url == null) {
+			if (other.mFeed_Url != null)
+				return false;
+		} else if (!mFeed_Url.equals(other.mFeed_Url))
+			return false;
+		if (mIdenticaGroup == null) {
+			if (other.mIdenticaGroup != null)
+				return false;
+		} else if (!mIdenticaGroup.equals(other.mIdenticaGroup))
+			return false;
+		if (mIdenticaTag == null) {
+			if (other.mIdenticaTag != null)
+				return false;
+		} else if (!mIdenticaTag.equals(other.mIdenticaTag))
+			return false;
+		if (mName == null) {
+			if (other.mName != null)
+				return false;
+		} else if (!mName.equals(other.mName))
+			return false;
+		return true;
 	}
 }

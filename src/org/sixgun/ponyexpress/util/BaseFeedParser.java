@@ -121,4 +121,6 @@ public abstract class BaseFeedParser {
 		notifyManager.notify(NOTIFY_ID,notification);
 		
 	}
+    
+    abstract public Object parse();
 }

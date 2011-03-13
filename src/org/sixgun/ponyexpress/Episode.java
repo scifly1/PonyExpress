@@ -26,6 +26,8 @@ import java.util.Locale;
 
 import org.sixgun.ponyexpress.util.Utils;
 
+import android.util.Log;
+
 /*
  * POJO representing an Episode of a podcast.  Holds the pubDate,
  * title and url of each episode.
@@ -33,6 +35,7 @@ import org.sixgun.ponyexpress.util.Utils;
 
 public class Episode implements Comparable<Episode> {
 
+	private static final String TAG = "PonyExpress Episode";
 	static SimpleDateFormat FORMATTER = 
         new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
     private String mTitle;
@@ -99,7 +102,7 @@ public class Episode implements Comparable<Episode> {
         try {
             this.mDate = FORMATTER.parse(date.trim());
         } catch (ParseException e) {
-            throw new RuntimeException(e);
+            Log.e(TAG,"Error parsing the date from the feed!",e);
         }
     }
     
