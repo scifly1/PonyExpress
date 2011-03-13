@@ -102,32 +102,20 @@ Pony Express is a podcatcher and player for Android brought to you by Sixgun Pro
 	<string name="eps_stored_key">epsStoredKey</string>
 	<string name="version_key">versionKey</string>
 	<string name="update_freqs_key">updateFreqsKey</string>
-	<!--
-		The sixgun Podcasts array holds the default podcasts that are added
-		when first installed
+	
+	<!-- The sixgun podcasts feedlist is found at this url.  It lists all current sixgun
+	feeds and associated tags and groups 
 	-->
-	<string-array name="Sixgun_Podcasts">
+	<string name="sixgun_feeds">http://sixgun.org/services/ponyexpress/feedlist.xml</string>
+	
+	<!-- If the sixgun feeds url is unavailable at install then use this feed to get lo
+	onto pony, rather than have no podcasts available at install -->
+	<string-array name="default_lo_feed">
 		<item>http://feeds.feedburner.com/linuxoutlaws-ogg</item>
-		<item>http://feeds.feedburner.com/rantofab-ogg</item>
-	</string-array>
-	<!--
-		The Sixgun podcasts tags array holds the identi.ca tags for each
-		podcast. They need to be in the same order as the podcasts. Tags for
-		other podcasts will be added by the user when they add the feed url
-	-->
-	<string-array name="Sixgun_Podcast_Tags">
 		<item>lo</item>
-		<item>rantofab</item>
-	</string-array>
-	<!--
-		The Sixgun podcasts groups array holds the identi.ca groups for each
-		podcast. They need to be in the same order as the podcasts. Groups for
-		other podcasts will be added by the user when they add the feed url
-	-->
-	<string-array name="Sixgun_Podcast_Groups">
 		<item>linuxoutlaws</item>
-		<item>rantofab</item>
 	</string-array>
+	
 	<!--
 		List of frequencies to update the feeds. Displayed to the user from
 		the Settings - Refresh feeds interval menu. The first item must be the

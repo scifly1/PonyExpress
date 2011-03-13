@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<podcast_feeds>
+<!-- Each Sixgun podcast must have a podcast tag with child tags for the feed url, the identi.ca tag
+(without the '#') and the identi.ca group (without the '!')-->
+<podcast>
+	<podcast_url>http://feeds.feedburner.com/linuxoutlaws-ogg</podcast_url>
+	<identica_tag>lo</identica_tag>
+	<identica_group>linuxoutlaws</identica_group>
+</podcast>
+
+<podcast>
+	<podcast_url>http://www.softwarefreedom.org/feeds/podcast-ogg/</podcast_url>
+	<identica_tag>faif</identica_tag>
+	<identica_group>faif</identica_group>
+</podcast>
+</podcast_feeds>
+
