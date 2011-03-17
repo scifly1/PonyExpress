@@ -31,10 +31,12 @@ import java.util.Map.Entry;
 
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
+import org.sixgun.ponyexpress.util.SixgunPodcastsParser;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
@@ -425,6 +427,10 @@ public class PonyExpressActivity extends ListActivity {
 		 */
 		@Override
 		protected Void doInBackground(String... name) {
+			//FIXME this method is too long, break it up into smaller chuncks.
+			//Check for new sixgun podcasts.
+			CheckForNewPodcasts();
+			
 			boolean checkAll = true;
 			if (!name[0].equals("")){
 				checkAll = false;
@@ -477,6 +483,24 @@ public class PonyExpressActivity extends ListActivity {
 				}
 			}
 			return null;
+		}
+		private void CheckForNewPodcasts() {
+			//Get current podcasts
+			Log.d(TAG,"Checking for new Sixgun podcasts");
+			final ArrayList<Podcast> current_sixgun_podcasts = mPonyExpressApp.getDbHelper().getCurrentPodcasts();
+			//Get server list of sixgun podcasts and create list of urls
+			final Context ctx = mPonyExpressApp.getApplicationContext();
+			SixgunPodcastsParser parser = 
+				new SixgunPodcastsParser(ctx, getString(R.string.sixgun_feeds));
+			ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
+			//Compare the two arraylists and remove any that exist in both
+			sixgun_podcasts.removeAll(current_sixgun_podcasts);
+			//Add any new podcasts to the podcasts table
+			if (!sixgun_podcasts.isEmpty()){
+				Log.d(TAG, "Adding new Podcasts!");
+				mPonyExpressApp.getDbHelper().addNewPodcasts(sixgun_podcasts);
+			}
+			
 		}
 		/** Deletes a file from the SD Card.
 		 * 

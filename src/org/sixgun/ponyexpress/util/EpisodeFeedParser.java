@@ -37,7 +37,8 @@ import android.util.Xml;
 /**
  * EpisodeFeedPArser implements a basic Android SAX parser.  It finds the XML tags in the RSS
  * feed that is returned by getInputStream() and extracts the text elements
- * or attributes from them using ElementListeners.
+ * or attributes from them using ElementListeners.  This gets the pub_date, descripotion, and title
+ * length and url of each individual episode. 
  */
 public class EpisodeFeedParser extends BaseFeedParser{
 	
