@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sixgun.ponyexpress.Podcast;
-import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
 import android.sax.Element;

@@ -19,7 +19,6 @@
 package org.sixgun.ponyexpress.activity;
 
 import java.util.ArrayList;
-import java.util.concurrent.ExecutionException;
 
 import org.sixgun.ponyexpress.Dent;
 import org.sixgun.ponyexpress.EpisodeKeys;
