@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+<!--Make sure that any views added here are also added to the landscape version if needed.-->
+
 <RelativeLayout android:id="@+id/RelativeLayout01"
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	xmlns:android="http://schemas.android.com/apk/res/android">
@@ -42,6 +45,11 @@
 	</RelativeLayout>
 	<Button android:text="@string/download" android:layout_height="wrap_content"
 		android:id="@+id/DownloadButton" android:layout_width="wrap_content"
+		android:layout_centerHorizontal="true" android:layout_below="@+id/DownloadProgressBar"
+		android:visibility="gone" />
+		
+	<Button android:text="@string/cancel" android:layout_height="wrap_content"
+		android:id="@+id/CancelButton" android:layout_width="wrap_content"
 		android:layout_centerHorizontal="true" android:layout_below="@+id/DownloadProgressBar"
 		android:visibility="gone" />
 

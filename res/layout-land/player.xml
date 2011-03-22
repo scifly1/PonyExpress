@@ -35,5 +35,10 @@
 		android:id="@+id/DownloadButton" android:layout_width="wrap_content"
 		android:layout_centerHorizontal="true" 
 		android:layout_below="@+id/DownloadProgressBar" android:visibility="gone" />
+		
+	<Button android:text="@string/cancel" android:layout_height="wrap_content"
+		android:id="@+id/CancelButton" android:layout_width="wrap_content"
+		android:layout_centerHorizontal="true" android:layout_below="@+id/DownloadProgressBar"
+		android:visibility="gone" />
 
 </RelativeLayout>

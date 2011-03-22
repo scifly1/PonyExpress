@@ -31,8 +31,6 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.PlayerActivity;
-import org.sixgun.ponyexpress.activity.PlayerActivity.DownloadStarted;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -83,8 +81,20 @@ public class DownloaderService extends Service {
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
+		Log.d(TAG, "Downloader bound.");
 		return mBinder;
 	}
+	
+
+	/* (non-Javadoc)
+	 * @see android.app.Service#onUnbind(android.content.Intent)
+	 */
+	@Override
+	public boolean onUnbind(Intent intent) {
+		Log.d(TAG, "Downloader unbound.");
+		return super.onUnbind(intent);
+	}
+
 
 	/* (non-Javadoc)
 	 * @see android.app.Service#onCreate()
@@ -195,17 +205,24 @@ public class DownloaderService extends Service {
 
 						Log.d(TAG,"Writing " + url.getFile());
 						try {
-							while ((size = inFile.read(buffer)) > 0 ) {
+							while ((size = inFile.read(buffer)) > 0 && !episode.downloadCancelled()) {
 								outFile.write(buffer,0, size);
 								totalDownloaded  += size;
 								mEpisodes.get(index).setDownloadProgress(totalDownloaded);
 							}
-							Log.d(TAG,"Podcast written to SD card.");
+							if (episode.downloadCancelled()){
+								Log.d(TAG, "Podcast download cancelled.");
+							}
+							else {
+								Log.d(TAG,"Podcast written to SD card.");
+								mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
+										episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
+							}
+							episode.resetDownloadCancelled();
 							//Decrease mCurrentDownloads which will kill 
 							//the notifications of it getes to <1
 							mCurrentDownloads--;
-							mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
-									episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
+							
 						} catch (IOException e) {
 							//Error downloading so reset the Activity
 							Log.e(TAG, "Error reading/writing to file.", e);
@@ -390,6 +407,10 @@ public class DownloaderService extends Service {
 				}
 			}
 		}).start();
+	}
+	
+	public void cancelDownload(int index) {
+		mEpisodes.get(index).setDownloadCancelled();
 	}
 		
 
