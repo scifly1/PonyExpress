@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Paul Elms
+ * Copyright 2010-2011 Paul Elms
  *
  *  This file is part of PonyExpress.
  *
@@ -58,6 +58,7 @@ public class IdenticaActivity extends ListActivity {
 	
 	private static final String TAG = "PonyExpress IdenticaActivity";
 	private static final int SETUP_ACCOUNT = 0;
+	protected static final int ADD_FEED = 1;
 	private PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
 	private boolean mIdenticaHandlerBound;
@@ -144,10 +145,18 @@ public class IdenticaActivity extends ListActivity {
 			public void onClick(View v) {
 				if (mIdenticaHandler.credentialsSet()){
 					if (mDentText.getText().length() != 0) {
-						Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
-								 Toast.LENGTH_SHORT).show();
-						mIdenticaHandler.new PostDent().execute(mDentText.getText()
-								.toString());
+						//Easter egg for the observant :)
+						String text = mDentText.getText().toString();
+						if (text.equals("alloneword")){
+							//TODO Get this to unlock the Addfeed activity rather than just activate it.
+							startActivity(new Intent(
+									IdenticaActivity.this, AddNewPodcastFeedActivity.class));
+						} else {
+							//TODO Get a dent sent to !pony when easter egg is used
+							Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
+									 Toast.LENGTH_SHORT).show();
+							mIdenticaHandler.new PostDent().execute(text);
+						}
 						mDentText.setText(mTagText);
 						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
 						new GetLatestDents().execute();

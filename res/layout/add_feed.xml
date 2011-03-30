@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical" android:layout_width="fill_parent"
+	android:layout_height="fill_parent" android:background="#ff231b00">
+	<RelativeLayout android:id="@+id/pony_header"
+		android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:background="#ff231b00">
+		
+		<TextView android:id="@+id/app_name" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:text="@string/app_name"
+		android:textStyle="bold" android:paddingLeft="10dp" android:paddingTop="10dp"
+		android:textSize="28sp" android:background="#FF000000"/>
+		<TextView android:id="@+id/sixgun_subtitle" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:text="@string/Add_feeds"
+		 android:paddingLeft="10dp"  android:textSize="18sp"
+		 android:layout_below="@id/app_name" android:background="#FF000000"/>
+		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
+		android:layout_width="fill_parent" android:layout_below="@id/sixgun_subtitle"/>
+		 
+		<ImageButton android:id="@+id/settings_button" android:layout_centerVertical="true"
+		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:background="#ff000000" android:onClick="showSettings"/>
+	</RelativeLayout>
+	<TextView
+        android:id="@+id/feed_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pony_header"
+        android:text="@string/Feed_uri" />
+    <EditText
+        android:id="@+id/feed_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textUri"
+        android:text="@string/http"
+        android:background="@android:drawable/editbox_background"
+        android:layout_below="@id/feed_label"/>
+    <TextView
+        android:id="@+id/group_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Enter_group"
+        android:layout_below="@id/feed_entry"
+        android:layout_marginTop="10dp"/>
+    <EditText
+        android:id="@+id/group_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:text="@string/exclamation"
+        android:layout_below="@id/feed_entry"
+        android:layout_toRightOf="@id/group_label"/>
+     <TextView
+        android:id="@+id/tag_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/Enter_tag"
+        android:layout_below="@id/group_entry"
+        android:layout_marginTop="10dp"/>
+    <EditText
+        android:id="@+id/tag_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:drawable/editbox_background"
+        android:text="@string/hash"
+        android:layout_below="@id/group_entry"
+        android:layout_toRightOf="@id/tag_label"/>   
+    <Button
+        android:id="@+id/ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tag_entry"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="5dip"
+        android:text="@string/ok" />
+    <Button
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tag_entry"
+        android:layout_toLeftOf="@id/ok"
+        android:text="@string/cancel" />
+	
+</RelativeLayout>

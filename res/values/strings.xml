@@ -11,6 +11,7 @@
 		<b>Episodes</b>
 	</string>
 	<string name="sixgun_shows">Sixgun Productions\' Shows</string>
+	<string name="Add_feeds">Add other podcasts.</string>
 	<string name="footer">Pony Express is free software:\n Tap here for more information.\n
 	\n<b>New media. New rules.</b></string>
 	<string name="no_internet_connection">Cannot connect to the Internet. Check your
@@ -49,6 +50,12 @@
 	<string name="refresh_feeds">Refresh feeds interval</string>
 	<string name="refresh_feeds_summary">Hours between feed refreshes</string>
 	<string name="refresh_dialog_title">Interval in hours</string>
+	<string name="Feed_uri" >Feed URL:</string>
+	<string name="Enter_tag">Identi.ca tag:</string>
+	<string name="Enter_group">Identi.ca group:</string>
+	<string name="http">http://</string>
+	<string name="exclamation">!</string>
+	<string name="hash">#</string>
 	<!--
 		Do not change these numbers without also changing the corresponding
 		numbers in the "eps_to_store!" string array!!

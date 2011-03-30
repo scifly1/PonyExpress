@@ -530,18 +530,29 @@ public class PonyExpressDbAdaptor {
 	 */			
 	public void addNewPodcasts(List<Podcast> podcasts){
 		for (Podcast podcast:podcasts) {
-			PodcastFeedParser parser = new PodcastFeedParser(mCtx,podcast.getFeed_Url().toString());
-			Podcast new_podcast = parser.parse();
-			if (new_podcast != null){
-				new_podcast.setIdenticaTag(podcast.getIdenticaTag());
-				new_podcast.setIdenticaGroup(podcast.getIdenticaGroup());
-				insertPodcast(new_podcast);
-				//Create table for this podcast's episodes
-				String tableName = getTableName(new_podcast.getName());
-				mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
-			}
+			addNewPodcast(podcast);
 		}
 	}
+	
+	/** 
+	 * Takes a Podcast instance (with feed url, and identi.ca info) and gets rest of info from
+	 * the feed. ie: podcast title and album art url and adds
+	 * it them to the Db.
+	 *  @param podcast
+	 */
+	public void addNewPodcast(Podcast podcast){
+		PodcastFeedParser parser = new PodcastFeedParser(mCtx,podcast.getFeed_Url().toString());
+		Podcast new_podcast = parser.parse();
+		if (new_podcast != null){
+			new_podcast.setIdenticaTag(podcast.getIdenticaTag());
+			new_podcast.setIdenticaGroup(podcast.getIdenticaGroup());
+			insertPodcast(new_podcast);
+			//Create table for this podcast's episodes
+			String tableName = getTableName(new_podcast.getName());
+			mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
+		}
+	}
+	
 	
 	/**
     * Adds each podcast to the database.
