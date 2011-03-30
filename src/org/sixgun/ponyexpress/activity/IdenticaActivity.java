@@ -34,9 +34,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -148,9 +150,11 @@ public class IdenticaActivity extends ListActivity {
 						//Easter egg for the observant :)
 						String text = mDentText.getText().toString();
 						if (text.equals("alloneword")){
-							//TODO Get this to unlock the Addfeed activity rather than just activate it.
-							startActivity(new Intent(
-									IdenticaActivity.this, AddNewPodcastFeedActivity.class));
+							SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
+							SharedPreferences.Editor editor = prefs.edit();
+							editor.putBoolean(getString(R.string.add_podcasts), true);
+							editor.commit();
+							Log.d(TAG,"Easter egg activated");
 						} else {
 							//TODO Get a dent sent to !pony when easter egg is used
 							Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 

@@ -18,8 +18,10 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -50,13 +52,21 @@ public class AddNewPodcastFeedActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				final String username = mFeedText.getText().toString();
-				final String password = mGroupText.getText().toString();
+				final String feed = mFeedText.getText().toString();
+				final String group = mGroupText.getText().toString();
 				final String tag = mTagText.getText().toString();
 				
-				//TODO Check feed valid, check tag and group
-				//TODO create a new Podcast, and send to db.AddnewPodcast()
-				//TODO Lookup feed and add details to db.
+				Podcast podcast = new Podcast();
+				//TODO check feed returns Response 200 before setting it.
+				podcast.setFeedUrl(Utils.getURL(feed));
+				//TODO Check identica group exists, (query identica).
+				if (!group.equals("") && !group.equals("!")){
+					//Remove the leading '!' and store.
+					podcast.setIdenticaGroup(group.substring(1));
+				}
+				podcast.setIdenticaTag(tag.substring(1));
+				
+				mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
 				
 				finish();
 			}

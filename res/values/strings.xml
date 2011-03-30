@@ -109,6 +109,7 @@ Pony Express is a podcatcher and player for Android brought to you by Sixgun Pro
 	<string name="eps_stored_key">epsStoredKey</string>
 	<string name="version_key">versionKey</string>
 	<string name="update_freqs_key">updateFreqsKey</string>
+	<string name="add_podcasts">ADD_PODCASTS</string>
 	
 	<!-- The sixgun podcasts feedlist is found at this url.  It lists all current sixgun
 	feeds and associated tags and groups 

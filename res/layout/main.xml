@@ -12,8 +12,8 @@
 		android:textSize="28sp" android:background="#FF000000"/>
 		<TextView android:id="@+id/sixgun_subtitle" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="@string/sixgun_shows"
-		 android:paddingLeft="10dp"  android:textSize="18sp"
-		 android:layout_below="@id/app_name" android:background="#FF000000"/>
+		 android:paddingLeft="10dp"  android:textSize="17sp"
+		 android:layout_below="@id/app_name"  android:background="#FF000000"/>
 		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
 		android:layout_width="fill_parent" android:layout_below="@id/sixgun_subtitle"/>
 		 
@@ -21,6 +21,11 @@
 		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
 		android:layout_width="wrap_content" android:layout_height="wrap_content" 
 		android:background="#ff000000" android:onClick="showSettings"/>
+		<ImageButton android:id="@+id/add_podcasts_button" android:layout_centerVertical="true"
+		android:layout_toLeftOf="@+id/settings_button" android:src="@drawable/add_podcasts_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:background="#ff000000" android:onClick="addPodcast"
+		android:visibility="gone"/>
 	</RelativeLayout>
 	
 	<Button android:id="@+id/pony_footer" android:layout_width="fill_parent"

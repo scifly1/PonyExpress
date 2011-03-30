@@ -703,4 +703,8 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return podcasts;
 	}
+	
+	public void removePodcast(long rowID){
+		//TODO Fill out stub
+	}
 }

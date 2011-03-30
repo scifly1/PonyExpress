@@ -86,6 +86,7 @@ public class PonyExpressActivity extends ListActivity {
 	private int mEpisodesToHold;
 	private int mUpdateDelta;
 	private GregorianCalendar mLastUpdate;
+	private boolean mAdditionalPodcasts;
 	
 	
 	protected void onCreate(Bundle savedInstanceState) {
@@ -107,6 +108,13 @@ public class PonyExpressActivity extends ListActivity {
 		mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 		Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
 		Log.d(TAG,"update delta: " + mUpdateDelta);
+		
+		//Check if additional podcasts are activated
+		mAdditionalPodcasts = prefs.getBoolean(getString(R.string.add_podcasts), false);
+		if (mAdditionalPodcasts){
+			ImageButton addPodcastsButton = (ImageButton) findViewById(R.id.add_podcasts_button);
+			addPodcastsButton.setVisibility(View.VISIBLE);
+		}
 		
 		//Create Progress Dialogs for later use.
 		mProgDialog = new ProgressDialog(this);
@@ -234,6 +242,15 @@ public class PonyExpressActivity extends ListActivity {
 	 */
 	public void showAbout(View v){
 		showDialog(ABOUT_DIALOG);
+	}
+	
+	/**
+	 * Bring up the add Podcasts activity.
+	 * @param v
+	 */
+	public void addPodcast(View v) {
+		startActivity(new Intent(
+				mPonyExpressApp, AddNewPodcastFeedActivity.class));
 	}
 	
 	
