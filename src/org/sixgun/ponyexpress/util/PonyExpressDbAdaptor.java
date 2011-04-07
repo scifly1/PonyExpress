@@ -91,6 +91,10 @@ public class PonyExpressDbAdaptor {
     	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     		Log.w("PonyExpress", "Upgrading database from version " + oldVersion + " to "
                     + newVersion);
+    		
+    		//TODO DROP all episode tables that are empty and not listed in the
+    		//podcast table.
+    		
     		// Copy old data across to new table
     		switch (newVersion) {
 //			case 12:
@@ -546,6 +550,7 @@ public class PonyExpressDbAdaptor {
 		if (new_podcast != null){
 			new_podcast.setIdenticaTag(podcast.getIdenticaTag());
 			new_podcast.setIdenticaGroup(podcast.getIdenticaGroup());
+			//Insert Podcast into Podcast table
 			insertPodcast(new_podcast);
 			//Create table for this podcast's episodes
 			String tableName = getTableName(new_podcast.getName());
@@ -560,7 +565,7 @@ public class PonyExpressDbAdaptor {
     * @return The row ID of the inserted row or -1 if an error occurred. 
     */
 	private boolean insertPodcast(Podcast podcast) {
-		//FIXME Check if episode is already in the database first?.
+		//FIXME Check if podcast is already in the database first?.
         ContentValues podcastValues = new ContentValues();
         String name = podcast.getName();
         podcastValues.put(PodcastKeys.NAME, name);
@@ -705,6 +710,13 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	public void removePodcast(long rowID){
-		//TODO Fill out stub
+		//TODO delete episodes from SD card.
+		
+		//TODO Delete episodes from podcast episode table
+		final String podcast_name =  getPodcastName(rowID);
+		String table_name = getTableName(podcast_name);
+		
+		
+		//TODO Remove entry from Podcasts table
 	}
 }

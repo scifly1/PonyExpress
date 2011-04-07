@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-	<!-- These strings are visible to the user. -->
+<!-- These strings are visible to the user. -->
+
+    <string name="refresh_feed">Check for new episodes</string>
+    <string name="view_eps">View episodes</string>
+    <string name="remove_podcast">Remove Podcast</string>
 	<string name="app_name">Pony Express</string>
 	<string name="mark_listened">Mark as listened</string>
 	<string name="mark_not_listened">Mark as not listened</string>

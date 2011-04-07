@@ -54,17 +54,22 @@ import android.os.Environment;
 import android.os.AsyncTask.Status;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 /**
  * Launch Activity for PonyExpress.
@@ -213,10 +218,9 @@ public class PonyExpressActivity extends ListActivity {
 
 	/**
 	 * Starts the PodcastTabs activity with the selected podcast
-	 * @param v
 	 * @param id row_id of the podcast in the database
 	 */
-	private void selectPodcast(View v, long id){
+	private void selectPodcast(long id){
 		//Get the podcast name and album art url.
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
@@ -340,6 +344,7 @@ public class PonyExpressActivity extends ListActivity {
 		//Create a CursorAdapter to map podcast title and art to the ListView.
 		PodcastCursorAdapter adapter = new PodcastCursorAdapter(mPonyExpressApp, c);
 		setListAdapter(adapter);
+		registerForContextMenu(getListView());
 	}
 
 	/**
@@ -395,8 +400,16 @@ public class PonyExpressActivity extends ListActivity {
 				
 				@Override
 				public void onClick(View v) {
-					selectPodcast(v,id);
+					selectPodcast(id);
 					
+				}
+			});
+			view.setOnLongClickListener(new OnLongClickListener() {
+				
+				@Override
+				public boolean onLongClick(View v) {
+					openContextMenu(v);
+					return true;
 				}
 			});
 			ImageButton refresh = (ImageButton) view.findViewById(R.id.refresh_button);
@@ -407,18 +420,62 @@ public class PonyExpressActivity extends ListActivity {
 					updateFeed(fullName);
 				}
 			});
+			
+			
 		}
 
 		@Override
 		public View newView(Context context, Cursor cursor, ViewGroup parent) {
 			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View v = new View(context);
-			v = vi.inflate(R.layout.podcast_row, null);
+			v = vi.inflate(R.layout.podcast_row, parent, false);
 			return v;
 		}
 		
 	}
 	
+	
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 */
+	@Override
+	public void onCreateContextMenu(ContextMenu menu, View v,
+			ContextMenuInfo menuInfo) {
+		super.onCreateContextMenu(menu, v, menuInfo);
+		
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.podcast_context, menu);
+		Log.d(TAG,"Creating context menu");
+		
+		//Set the title of the menu
+		AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
+		TextView podcast_name = (TextView) item.targetView.findViewById(R.id.podcast_text);
+		menu.setHeaderTitle(podcast_name.getText());
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onContextItemSelected(MenuItem item) {
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		switch (item.getItemId()){
+		case R.id.view_eps:
+			selectPodcast(info.id);
+			return true;
+		case R.id.refresh_feeds:
+			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastName(info.id);
+			updateFeed(podcast_name);
+			return true;
+		case R.id.remove_podcast:
+			mPonyExpressApp.getDbHelper().removePodcast(info.id);
+			return true;			
+		default:
+			return super.onContextItemSelected(item);
+		}
+	}
+
 	/**
 	 * Parse the RSS feed and update the database with new episodes in a background thread.
 	 * 
