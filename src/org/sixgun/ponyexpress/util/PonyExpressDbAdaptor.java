@@ -570,7 +570,13 @@ public class PonyExpressDbAdaptor {
         String name = podcast.getName();
         podcastValues.put(PodcastKeys.NAME, name);
         podcastValues.put(PodcastKeys.FEED_URL, podcast.getFeed_Url().toString());
-        podcastValues.put(PodcastKeys.ALBUM_ART_URL, podcast.getArt_Url().toString());
+        if (podcast.getArt_Url() != null){
+        	podcastValues.put(PodcastKeys.ALBUM_ART_URL, 
+        			podcast.getArt_Url().toString());
+        } else {
+        	podcastValues.putNull(PodcastKeys.ALBUM_ART_URL);
+        }
+        
         podcastValues.put(PodcastKeys.TAG, podcast.getIdenticaTag());
         podcastValues.put(PodcastKeys.GROUP, podcast.getIdenticaGroup());
         podcastValues.putNull(PodcastKeys.TABLE_NAME);

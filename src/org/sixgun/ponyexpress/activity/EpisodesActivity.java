@@ -150,10 +150,12 @@ public class EpisodesActivity extends ListActivity {
 		//If cannot be determined don't do ep specific dents, only group dents
 		Pattern digits = Pattern.compile("[0-9]+");
 		Matcher m = digits.matcher(title);
-		m.find();
-		String epNumber = m.group(); 
-		Log.d(TAG, "Episode number: " + epNumber);
-
+		String epNumber = "";
+		if (m.find()){
+			epNumber = m.group(); 
+			Log.d(TAG, "Episode number: " + epNumber);
+		} 
+		
 		Intent intent = new Intent(this,EpisodeTabs.class);
 		intent.putExtra(PodcastKeys.NAME, mPodcastName);
 		intent.putExtra(EpisodeKeys.TITLE, title);
