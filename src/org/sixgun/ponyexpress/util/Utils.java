@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -78,4 +79,23 @@ public class Utils {
 			return string;
 		}
 	}
+	
+	/**
+	 * Deletes a directory recursively.
+	 * @param the direcory to delete.
+	 */
+	static public boolean deleteDir(File path){
+		if (path.exists()){
+			File[] files = path.listFiles();
+			for (File file:files){
+				if (file.isDirectory()){
+					deleteDir(file);
+				} else {
+					file.delete();
+				}
+			}
+		}
+		return path.delete();
+	}
+	
 }

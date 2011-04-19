@@ -1,6 +1,7 @@
 package org.sixgun.ponyexpress.util;
 
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,14 +11,17 @@ import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Environment;
 import android.util.Log;
 
 /*
@@ -715,14 +719,29 @@ public class PonyExpressDbAdaptor {
 		return podcasts;
 	}
 	
-	public void removePodcast(long rowID){
-		//TODO delete episodes from SD card.
-		
-		//TODO Delete episodes from podcast episode table
+	public boolean removePodcast(long rowID){
 		final String podcast_name =  getPodcastName(rowID);
-		String table_name = getTableName(podcast_name);
-		
-		
-		//TODO Remove entry from Podcasts table
+		// Podcast path is Path + podcast name.
+		File rootPath = Environment.getExternalStorageDirectory();
+		//Check rootpath accessible
+		final String state = Environment.getExternalStorageState();
+		boolean deleted = false;
+		if (Environment.MEDIA_MOUNTED.equals(state)){
+			final String path = PonyExpressApp.PODCAST_PATH + podcast_name;
+			Log.d(TAG, "Deleting " + path + "from SD Card");
+			File podcast_path = new File(rootPath + path);
+			deleted = Utils.deleteDir(podcast_path);
+			//Delete episodes from podcast episode table
+			String table_name = getTableName(podcast_name);
+			mDb.delete(table_name, null, null);
+			Log.d(TAG, "Removing episodes from database");
+			//Remove entry from Podcasts table
+			mDb.delete(PODCAST_TABLE, PodcastKeys._ID + "=" + rowID, null);
+			Log.d(TAG, "Removing podcast from database");
+		}
+		//Send broadcast to inform app that database changed and can now update view.
+		Intent intent = new Intent("org.sixgun.ponyexpress.PODCAST_DELETED");
+		mCtx.sendBroadcast(intent);
+		return deleted;
 	}
 }

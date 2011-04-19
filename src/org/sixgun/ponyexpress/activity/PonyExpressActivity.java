@@ -43,8 +43,10 @@ import org.sixgun.ponyexpress.view.RemoteImageView;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -92,6 +94,7 @@ public class PonyExpressActivity extends ListActivity {
 	private int mUpdateDelta;
 	private GregorianCalendar mLastUpdate;
 	private boolean mAdditionalPodcasts;
+	private BroadcastReceiver mPodcastDeletedReceiver;
 	
 	
 	protected void onCreate(Bundle savedInstanceState) {
@@ -140,15 +143,28 @@ public class PonyExpressActivity extends ListActivity {
 			//update delta has passed and we have connectivity so update
 			updateFeeds();
 		}
+		
+		mPodcastDeletedReceiver = new PodcastDeleted();
 	}
 	
 	@Override
 	protected void onResume() {
 		super.onResume();
+		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PODCAST_DELETED");
+		registerReceiver(mPodcastDeletedReceiver, filter);
 		listPodcasts();
 		if (mSavedState != null){
 			restoreLocalState(mSavedState);
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	protected void onPause() {
+		super.onPause();
+		unregisterReceiver(mPodcastDeletedReceiver);
 	}
 
 	/**
@@ -469,7 +485,8 @@ public class PonyExpressActivity extends ListActivity {
 			updateFeed(podcast_name);
 			return true;
 		case R.id.remove_podcast:
-			mPonyExpressApp.getDbHelper().removePodcast(info.id);
+			boolean deleted = mPonyExpressApp.getDbHelper().removePodcast(info.id);
+			//TODO Show Toast if deletion fails.
 			return true;			
 		default:
 			return super.onContextItemSelected(item);
@@ -646,5 +663,18 @@ public class PonyExpressActivity extends ListActivity {
 			}
 			return null;
 		}
+	}
+	/**
+	 * Receiver that takes a broadcast sent by the DbHandler when 
+	 * the database has been changed by the deletion of a podcast, so the list 
+	 * can be updated.
+	 */
+	public class PodcastDeleted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			listPodcasts();
+		}
+		
 	}
 }
