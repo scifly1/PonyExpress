@@ -333,6 +333,7 @@ public class EpisodesActivity extends ListActivity {
 	    Intent intent = new Intent(this,IdenticaActivity.class);
 	    intent.putExtra(PodcastKeys.GROUP, identicagroup);
 	    intent.putExtra(PodcastKeys.TAG, identicatag);
+	    intent.putExtra(PodcastKeys.NAME, mPodcastNameStripped);
 	    startActivity(intent);
 	}
 	

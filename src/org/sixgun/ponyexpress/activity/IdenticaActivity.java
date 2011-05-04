@@ -27,6 +27,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.service.IdenticaHandler;
+import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;
@@ -140,6 +141,11 @@ public class IdenticaActivity extends ListActivity {
 		}
 		mIdenticaTag = mData.getString(PodcastKeys.TAG);
 		setContentView(R.layout.identica);
+		
+		//Set title
+		TextView title = (TextView)findViewById(R.id.title);
+		final String podcastName = mData.getString(PodcastKeys.NAME);
+		title.setText(podcastName);
 		
 		OnClickListener DentButtonListener = new OnClickListener() {
 			
@@ -333,5 +339,22 @@ public class IdenticaActivity extends ListActivity {
 			setListAdapter(adapter);
 		}
 	};
+	
+	/**
+	 * Bring up the IdenticaSettings via a button click.
+	 * @param v, a reference to the button that was clicked to call this.
+	 */
+	public void showSettings(View v){
+		startActivity(new Intent(
+        		mPonyExpressApp,IdenticaAccountSetupActivity.class));
+	}
+	
+	/**
+	 * Go back down the task stack via a button click.
+	 * @param v, a reference to the button that was clicked to call this.
+	 */
+	public void goBack(View v) {
+		finish();
+	}
 }
 

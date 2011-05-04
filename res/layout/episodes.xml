@@ -6,9 +6,10 @@
 		android:orientation="vertical" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" >
 		
-		<TextView android:id="@+id/title" android:layout_width="fill_parent"
+		<TextView android:id="@+id/title" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:text="@string/Episodes_title"
 		android:textStyle="bold" android:paddingLeft="10dp" android:paddingTop="10dp"
+		android:layout_toLeftOf="@+id/comment_button" android:layout_alignParentLeft="true"
 		android:textSize="28sp" android:background="#FF000000"/>
 		<TextView android:id="@+id/unlistened_eps" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:background="#FF000000"

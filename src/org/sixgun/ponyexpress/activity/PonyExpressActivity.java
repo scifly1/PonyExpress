@@ -236,7 +236,7 @@ public class PonyExpressActivity extends ListActivity {
 	 * Starts the PodcastTabs activity with the selected podcast
 	 * @param id row_id of the podcast in the database
 	 */
-	private void selectPodcast(long id) {
+	private void selectPodcast(View v, long id) {
 		//Get the podcast name and album art url and number of unlistened episodes.
 
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
@@ -420,7 +420,7 @@ public class PonyExpressActivity extends ListActivity {
 				
 				@Override
 				public void onClick(View v) {
-					selectPodcast(id);
+					selectPodcast(v, id);
 					
 				}
 			});
@@ -482,7 +482,7 @@ public class PonyExpressActivity extends ListActivity {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()){
 		case R.id.view_eps:
-			selectPodcast(info.id);
+			selectPodcast(info.targetView, info.id);
 			return true;
 		case R.id.refresh_feeds:
 			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastName(info.id);
