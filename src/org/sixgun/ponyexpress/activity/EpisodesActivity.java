@@ -56,9 +56,9 @@ public class EpisodesActivity extends ListActivity {
 	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private PonyExpressApp mPonyExpressApp;
 	private String mPodcastName;
-	private String mUnlistened;
 	private String mAlbumArtUrl;
 	private String mPodcastNameStripped; 
+	private TextView mUnlistenedText;
 
 	
 	@Override
@@ -67,7 +67,7 @@ public class EpisodesActivity extends ListActivity {
 		setContentView(R.layout.episodes);
 		
 		TextView title = (TextView)findViewById(R.id.title);
-		TextView unlistened = (TextView)findViewById(R.id.unlistened_eps);
+		mUnlistenedText = (TextView)findViewById(R.id.unlistened_eps);
 		
 		//enable the context menu
 		registerForContextMenu(getListView());
@@ -76,18 +76,13 @@ public class EpisodesActivity extends ListActivity {
 		final Bundle data = getIntent().getExtras();
 		mPodcastName = data.getString(PodcastKeys.NAME);
 		mPodcastNameStripped = Utils.stripper(mPodcastName, "Ogg Feed");
-		mUnlistened = data.getString(PodcastKeys.UNLISTENED);
 		mAlbumArtUrl = data.getString(PodcastKeys.ALBUM_ART_URL);
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
-		//Set title and unlistened text.
+		//Set title.
 		title.setText(mPodcastNameStripped);
-		//FIXME The unlistened string should be recalculated so it updates when an episode is listened
-		unlistened.setText(mUnlistened);
 		
-		//FIXME The album art for the background is statically stored in res/drawable
-		//It should be downloaded and then stored.
 	}
 
 	/** 
@@ -284,6 +279,11 @@ public class EpisodesActivity extends ListActivity {
 		
 		EpisodeAdapter episodes = new EpisodeAdapter(this, c);
 		setListAdapter(episodes);
+		
+		//Also update the unlistened text at the same time.
+		final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(mPodcastName);
+		final String unListenedString = Utils.formUnlistenedString(mPonyExpressApp, unlistened);		
+		mUnlistenedText.setText(unListenedString);
 		
 	}
 	

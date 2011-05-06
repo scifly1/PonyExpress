@@ -22,6 +22,9 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.sixgun.ponyexpress.R;
+
+import android.content.Context;
 import android.util.Log;
 
 /**
@@ -96,6 +99,26 @@ public class Utils {
 			}
 		}
 		return path.delete();
+	}
+	
+	/**
+	 * Creates the correct string for any number of unlistened episoded.
+	 * @param ctx, the application context.
+	 * @param unlistened, the number of unlistened episodes.
+	 */
+	static public String formUnlistenedString(Context ctx, int unlistened){
+		String unlistenedString = "";
+		switch (unlistened) {
+		case 0: //no unlistened episodes
+			break;
+		case 1:
+			unlistenedString = unlistened + " " + ctx.getString(R.string.new_episode);
+			break;
+		default: //more than 1 unlistened episode
+			unlistenedString = unlistened + " " + ctx.getString(R.string.new_episodes);
+		}
+		
+		return unlistenedString;
 	}
 	
 }

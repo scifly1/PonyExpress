@@ -95,6 +95,8 @@ public class PodcastPlayer extends Service {
 
 	private boolean mIsInitialised;
 
+	private boolean mQueuedIsUnlistened;
+
 	
 	
 	/**
@@ -296,7 +298,11 @@ public class PodcastPlayer extends Service {
 			if (position != -1){
 				mFreePlayer.seekTo(position);
 				Log.d(TAG,"Seeking to " + position);
+				mQueuedIsUnlistened = false;
+			} else {
+				mQueuedIsUnlistened = true;
 			}
+			
 			mEpisodeQueued = file;
 		}
 		mIsInitialised = true;
@@ -329,6 +335,12 @@ public class PodcastPlayer extends Service {
 			mFreePlayer = swap;
 			mRowID = mRowIDQueued;
 			mPodcastName = mPodcastNameQueued;
+			
+			//Mark the episode listened if previously unlistened.
+			if (mQueuedIsUnlistened){
+				mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
+						EpisodeKeys.LISTENED, 0);
+			}
 		}
 		
 		mPlayer.start();

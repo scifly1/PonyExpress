@@ -27,7 +27,6 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.service.IdenticaHandler;
-import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;

@@ -241,11 +241,8 @@ public class PonyExpressActivity extends ListActivity {
 
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
-		final TextView unlistenedText = (TextView)v.findViewById(R.id.unlistened_eps);
-		final String unlistened = (String) unlistenedText.getText();
 		//Store in an intent and send to EpisodesActivity
 		Intent intent = new Intent(this,EpisodesActivity.class);
-		intent.putExtra(PodcastKeys.UNLISTENED, unlistened);
 		intent.putExtra(PodcastKeys.NAME, name);
 		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
 		startActivity(intent);
@@ -400,17 +397,7 @@ public class PonyExpressActivity extends ListActivity {
         		albumArt.setRemoteURI(albumArtUrl);
         		albumArt.loadImage();
 			}
-			String unlistenedString = "";
-			switch (unlistened) {
-			case 0: //no unlistened episodes
-				break;
-			case 1:
-				unlistenedString = unlistened + " " + getString(R.string.new_episode);
-				break;
-			default: //more than 1 unlistened episode
-				unlistenedString = unlistened + " " + getString(R.string.new_episodes);
-			}
-			
+			final String unlistenedString = Utils.formUnlistenedString(context, unlistened);
 			unlistenedText.setText(unlistenedString);
 			
 			//Add Click listener's for each row.
