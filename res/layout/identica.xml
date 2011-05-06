@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout android:id="@+id/IdenticaLayout" 
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical" android:background="#ff231b00"
 	xmlns:android="http://schemas.android.com/apk/res/android">
 	<RelativeLayout android:id="@+id/identica_header"
 		android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" >
+		android:layout_height="wrap_content" android:background="#ff000000">
 		
 		<TextView android:id="@+id/title" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:text="@string/Episodes_title"
@@ -15,7 +16,7 @@
 		android:text="@string/Identica_group_title"
 		android:layout_height="wrap_content" android:background="#FF000000"
 		android:layout_below="@+id/title" android:paddingLeft="10dp"
-		 android:textSize="18sp" />
+		 android:textSize="17sp" />
 		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
 		android:layout_width="fill_parent" android:layout_below="@+id/Identica_group_title" />
 		<ImageButton android:id="@+id/back_button" android:layout_centerVertical="true"
@@ -30,11 +31,14 @@
 	</RelativeLayout>
 	
 	<ListView android:id="@id/android:list"
-               android:layout_width="fill_parent"
-               android:layout_height="fill_parent"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
                android:layout_above="@+id/dent_label"
                android:layout_below="@+id/identica_header"
-               android:drawSelectorOnTop="false"/>
+               android:drawSelectorOnTop="false"
+               android:background="#ff231b00" 
+		android:cacheColorHint="#ff231b00" android:divider="#00000000"
+		android:dividerHeight="2dp"/>
 
      <TextView android:id="@id/android:empty"
                android:layout_width="fill_parent"

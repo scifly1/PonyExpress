@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-android:src="@drawable/lo_art"  
-android:gravity="top|left|clip_horizontal|clip_vertical"
-android:tint="#FFFF0000"/>
