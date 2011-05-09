@@ -10,15 +10,13 @@
 		<TextView android:id="@+id/title" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:text="@string/Episodes_title"
 		android:textStyle="bold" android:paddingLeft="10dp" android:paddingTop="10dp"
-		android:layout_toLeftOf="@+id/back_button" android:layout_alignParentLeft="true"
 		android:textSize="28sp" android:background="#FF000000"/>
 		<TextView android:id="@+id/Identica_group_title" android:layout_width="wrap_content"
 		android:text="@string/Identica_group_title"
 		android:layout_height="wrap_content" android:background="#FF000000"
 		android:layout_below="@+id/title" android:paddingLeft="10dp"
 		 android:textSize="17sp" />
-		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
-		android:layout_width="fill_parent" android:layout_below="@+id/Identica_group_title" />
+		
 		<ImageButton android:id="@+id/back_button" android:layout_centerVertical="true"
 		android:layout_toLeftOf="@+id/settings_button" android:src="@drawable/back_button"
 		android:layout_width="wrap_content" android:layout_height="wrap_content" 
@@ -29,12 +27,15 @@
 		android:background="#ff000000" android:onClick="showSettings"/>
 		
 	</RelativeLayout>
+	<TextView android:id="@+id/gradient"
+	android:background="@drawable/gradient" android:layout_height="wrap_content"
+	android:layout_width="fill_parent" android:layout_below="@+id/identica_header"/>
 	
 	<ListView android:id="@id/android:list"
                android:layout_width="wrap_content"
                android:layout_height="wrap_content"
                android:layout_above="@+id/dent_label"
-               android:layout_below="@+id/identica_header"
+               android:layout_below="@+id/gradient"
                android:drawSelectorOnTop="false"
                android:background="#ff231b00" 
 		android:cacheColorHint="#ff231b00" android:divider="#00000000"
@@ -45,7 +46,7 @@
                android:layout_height="wrap_content"
                android:text="@string/searching_dents"
                android:layout_above="@+id/dent_label"
-               android:layout_below="@+id/identica_header"/>
+               android:layout_below="@+id/gradient"/>
 	<TextView
         android:id="@+id/dent_label"
         android:layout_width="fill_parent"
