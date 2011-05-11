@@ -17,8 +17,6 @@
 		<activity android:name=".activity.PlayerActivity" />
 		<activity android:name=".activity.EpisodeTabs"
 			android:windowSoftInputMode="adjustPan" android:launchMode="singleTop" />
-<!--		<activity android:name=".activity.PodcastTabs"-->
-<!--			android:windowSoftInputMode="adjustPan" />-->
 		<activity android:name=".activity.EpisodeNotesActivity" />
 		<activity android:name=".activity.IdenticaActivity"
 			android:windowSoftInputMode="adjustPan" />
