@@ -58,21 +58,21 @@ import android.widget.Toast;
  */
 public class IdenticaActivity extends ListActivity {
 	
-	private static final String TAG = "PonyExpress IdenticaActivity";
-	private static final int SETUP_ACCOUNT = 0;
+	protected static final String TAG = "PonyExpress IdenticaActivity";
+	protected static final int SETUP_ACCOUNT = 0;
 	protected static final int ADD_FEED = 1;
-	private PonyExpressApp mPonyExpressApp; 
+	protected PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
-	private boolean mIdenticaHandlerBound;
-	private Bundle mData;
+	protected boolean mIdenticaHandlerBound;
+	protected Bundle mData;
 	
-	private EditText mDentText;
-	private TextView mCharCounter;
-	private Button mDentButton;
-	private boolean mGroupDents = false;
-	private String mIdenticaTag;
+	protected EditText mDentText;
+	protected TextView mCharCounter;
+	protected Button mDentButton;
+	protected boolean mGroupDents = false;
+	protected String mIdenticaTag;
 	private String mIdenticaGroup;
-	private String mTagText;
+	protected String mTagText;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -161,7 +161,6 @@ public class IdenticaActivity extends ListActivity {
 							editor.commit();
 							Log.d(TAG,"Easter egg activated");
 						} else {
-							//TODO Get a dent sent to !pony when easter egg is used
 							Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
 									 Toast.LENGTH_SHORT).show();
 							mIdenticaHandler.new PostDent().execute(text);
@@ -301,7 +300,7 @@ public class IdenticaActivity extends ListActivity {
         }
 	}
 	
-	private class GetLatestDents extends AsyncTask<Void,Void,ArrayList<Dent> > {
+	protected class GetLatestDents extends AsyncTask<Void,Void,ArrayList<Dent> > {
 		@Override
 		protected ArrayList<Dent> doInBackground(Void... params) {
 			ArrayList<Dent> dents;

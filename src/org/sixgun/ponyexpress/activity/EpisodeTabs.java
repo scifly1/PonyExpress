@@ -55,24 +55,29 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    TabHost.TabSpec spec;  // Resusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
 	    
-	    //Add Episode Notes Activity
-	    intent = new Intent(this,EpisodeNotesActivity.class);
-	    //Pass on the Extras
-	    intent.putExtras(data);
-	    spec = tabHost.newTabSpec("notes").setIndicator("Show Notes").setContent(intent);
-	    tabHost.addTab(spec);
 	    
 	    //TODO The tabs need icons...
 	    intent = new Intent(this,PlayerActivity.class);
 	    intent.putExtras(data);
-	    spec = tabHost.newTabSpec("episode").setIndicator("Play!").setContent(intent);
+	    spec = tabHost.newTabSpec("episode").setIndicator
+	    (res.getText(R.string.play),res.getDrawable(R.drawable.ic_tab_play)).setContent(intent);
+	    tabHost.addTab(spec);
+	    
+	  //Add Episode Notes Activity
+	    intent = new Intent(this,EpisodeNotesActivity.class);
+	    //Pass on the Extras
+	    intent.putExtras(data);
+	    spec = tabHost.newTabSpec("notes").setIndicator
+	    (res.getText(R.string.show_notes),res.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
 	    tabHost.addTab(spec);
 	    
 	    //Add Identi.ca feed Activity if a tag has been set.
 	    if (data.getExtras().containsKey(PodcastKeys.TAG)){
-	    	intent = new Intent(this,IdenticaActivity.class);
+	    	intent = new Intent(this,IdenticaEpisodeActivity.class);
 	    	intent.putExtras(data);
-	    	spec = tabHost.newTabSpec("identica").setIndicator("Identi.ca").setContent(intent);
+	    	
+	    	spec = tabHost.newTabSpec("identica").setIndicator
+	    	(res.getText(R.string.comment),res.getDrawable(R.drawable.ic_tab_dent)).setContent(intent);
 	    	tabHost.addTab(spec);
 	    }
 	    

@@ -22,6 +22,8 @@
 		<activity android:name=".activity.EpisodeNotesActivity" />
 		<activity android:name=".activity.IdenticaActivity"
 			android:windowSoftInputMode="adjustPan" />
+		<activity android:name=".activity.IdenticaEpisodeActivity"
+			android:windowSoftInputMode="adjustPan" />
 		<activity android:name=".activity.IdenticaAccountSetupActivity" />
 		<activity android:name=".activity.PreferencesActivity" />
 		<activity android:name=".activity.AddNewPodcastFeedActivity" />

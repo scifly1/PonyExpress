@@ -15,6 +15,7 @@
 		<b>Episodes</b>
 	</string>
 	<string name="Identica_group_title">Group Dents</string>
+	<string name="Identica_episode_title">Episode Dents</string>
 	<string name="sixgun_shows">Sixgun Productions\' Shows</string>
 	<string name="Add_feeds">Add other podcasts.</string>
 	<string name="footer">Pony Express is free software:\n Tap here for more information.\n
@@ -25,6 +26,8 @@
 	<string name="re_download">Re-download</string>
 	<string name="listen">Listen</string>
 	<string name="dent">Dent about this episode..</string>
+	<string name="comment">Comments</string>
+	<string name="show_notes">Show notes</string>
 	<string name="downloading_episode">1 Podcast downloading.</string>
 	<string name="downloading_episodes">Podcasts downloading.</string>
 	<string name="searching_dents">Searching for dents..."</string>
