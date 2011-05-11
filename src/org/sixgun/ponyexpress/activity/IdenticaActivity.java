@@ -43,6 +43,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
@@ -337,6 +340,34 @@ public class IdenticaActivity extends ListActivity {
 			setListAdapter(adapter);
 		}
 	};
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		 MenuInflater inflater = getMenuInflater();
+		    inflater.inflate(R.menu.general_options_menu, menu);
+		    return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+	    case R.id.settings_menu:
+	        startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
+	        return true;
+	    case R.id.identica_account_settings:
+	    	//Fire off AccountSetup screen
+			startActivityForResult(new Intent(
+					mPonyExpressApp,IdenticaAccountSetupActivity.class),
+					SETUP_ACCOUNT);
+	    	return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+		}
+	}
 	
 	/**
 	 * Bring up the IdenticaSettings via a button click.

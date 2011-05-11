@@ -34,6 +34,10 @@ import android.view.MenuItem;
  *
  * It extends TabActivity as it is used sub-classed by TabActivitys rather than plain Activitys. 
  */
+
+//FIXME This is only used by the EpisodeTabs activity.  
+//All other activites set up options independently.
+
 public class GeneralOptionsMenuActivity extends TabActivity {
 
 	private static final int SETUP_ACCOUNT = 0;
