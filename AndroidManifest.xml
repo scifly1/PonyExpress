@@ -33,7 +33,14 @@
 		
 	
 </application>
-	<uses-sdk android:minSdkVersion="3" />
+	<uses-sdk android:minSdkVersion="3" 
+			targetedSdkVersion="8"/>
+	
+	<supports-screens android:resizeable="true"
+                  android:smallScreens="true" 
+                  android:normalScreens="true" 
+                  android:largeScreens="true" 
+                  android:anyDensity="true" />
 
 	<uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.READ_PHONE_STATE" />

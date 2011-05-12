@@ -9,16 +9,16 @@
 		android:id="@+id/album_art" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:layout_centerHorizontal="true"
 		android:adjustViewBounds="true" android:paddingTop="1dp" 
-		android:maxWidth="240dp" android:maxHeight="190dp" android:scaleType="fitCenter" />
+		android:maxWidth="220dp" android:maxHeight="170dp" android:scaleType="fitCenter" />
 	<ProgressBar android:id="@+id/DownloadProgressBar"
 		android:layout_width="wrap_content" android:layout_centerHorizontal="true"
 		android:layout_height="wrap_content" android:minWidth="250dp"
 		android:layout_below="@+id/album_art" style="?android:attr/progressBarStyleHorizontal"
-		android:max="100" android:indeterminate="false" android:paddingBottom="14dp"
-		android:paddingTop="8dp" android:visibility="gone"/>
+		android:max="100" android:indeterminate="false" android:paddingBottom="7dp"
+		android:paddingTop="5dp" android:visibility="gone"/>
 	<SeekBar android:layout_width="wrap_content" android:id="@+id/PlayerSeekBar"
 		android:layout_centerHorizontal="true" android:paddingTop="5dp" 
-		android:layout_height="wrap_content" android:paddingBottom="10dp"
+		android:layout_height="wrap_content" android:paddingBottom="7dp"
 		android:minWidth="250dp" android:layout_below="@+id/album_art" />
 	<RelativeLayout android:id="@+id/player_controls"
 		android:layout_height="wrap_content" android:layout_width="fill_parent"
