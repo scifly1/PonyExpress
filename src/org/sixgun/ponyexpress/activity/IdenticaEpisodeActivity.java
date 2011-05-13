@@ -157,17 +157,6 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 			}
 		});
 	}
-
-	protected void updateCounter() {
-		final int chars = 140;
-		int charsRemaining = chars-mDentText.length();
-		mCharCounter.setText("" + charsRemaining);
-		if (charsRemaining < 0) {
-			mDentButton.setEnabled(false);
-		} else {
-			mDentButton.setEnabled(true);
-		}
-	}
 	
 	
 }
