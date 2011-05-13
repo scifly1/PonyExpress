@@ -22,16 +22,22 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -126,6 +132,23 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 			
 			@Override
 			public void afterTextChanged(Editable s) {
+				
+			}
+		});
+		
+		//Set the background
+		mBackground = (ViewGroup) findViewById(R.id.IdenticaLayout);
+		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+			
+			@Override
+			public void onGlobalLayout() {
+				Resources res = getResources();
+				Bitmap image = ((BitmapDrawable)res.getDrawable(R.drawable.albumart)).getBitmap();
+				int new_height = mBackground.getHeight();
+				int new_width = mBackground.getWidth();
+				BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+				(res, image, new_height, new_width);
+				mBackground.setBackgroundDrawable(new_background);
 				
 			}
 		});

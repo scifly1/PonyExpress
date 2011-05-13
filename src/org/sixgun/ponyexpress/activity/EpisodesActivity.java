@@ -30,8 +30,11 @@ import org.sixgun.ponyexpress.util.Utils;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -42,6 +45,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
@@ -59,6 +63,7 @@ public class EpisodesActivity extends ListActivity {
 	private String mAlbumArtUrl;
 	private String mPodcastNameStripped; 
 	private TextView mUnlistenedText;
+	private ViewGroup mBackground;
 
 	
 	@Override
@@ -82,6 +87,23 @@ public class EpisodesActivity extends ListActivity {
 		
 		//Set title.
 		title.setText(mPodcastNameStripped);
+		
+		//Set the background
+		mBackground = (ViewGroup) findViewById(R.id.episodes_body);
+		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+			
+			@Override
+			public void onGlobalLayout() {
+				Resources res = getResources();
+				Bitmap image = ((BitmapDrawable)res.getDrawable(R.drawable.albumart)).getBitmap();
+				int new_height = mBackground.getHeight();
+				int new_width = mBackground.getWidth();
+				BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+				(res, image, new_height, new_width);
+				mBackground.setBackgroundDrawable(new_background);
+				
+			}
+		});
 		
 	}
 

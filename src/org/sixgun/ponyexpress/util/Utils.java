@@ -25,7 +25,11 @@ import java.net.URL;
 import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.util.Log;
+import android.view.Gravity;
 
 /**
  * Utility class with general utility methods.
@@ -121,4 +125,16 @@ public class Utils {
 		return unlistenedString;
 	}
 	
+	static public BitmapDrawable createBackgroundFromAlbumArt(Resources res, Bitmap art, int height, int width){
+		Bitmap new_image;
+		if (height >  width){
+			new_image = Bitmap.createScaledBitmap(art, height, height, true);
+		} else {
+			new_image = Bitmap.createScaledBitmap(art, width, width, true);	
+		}
+		BitmapDrawable new_background = new BitmapDrawable(res,new_image);
+		new_background.setGravity(Gravity.LEFT|Gravity.TOP);
+		new_background.setAlpha(80);
+		return new_background;
+	}
 }

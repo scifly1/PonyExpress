@@ -31,6 +31,7 @@ import android.webkit.WebView;
  */
 public class EpisodeNotesActivity extends Activity {
 
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -43,5 +44,7 @@ public class EpisodeNotesActivity extends Activity {
 		//We use loadDataWithBaseURL here with no URL so that it expects URL encoding.
 		//loadData does not handle the encoding correctly..
 		description.loadDataWithBaseURL(null, descriptionText, "text/html", "UTF-8", null);
+		
+		
 	}
 }

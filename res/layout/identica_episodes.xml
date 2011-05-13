@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout android:id="@+id/IdenticaLayout" 
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
-	android:orientation="vertical" android:background="#ff231b00"
+	android:orientation="vertical" 
 	xmlns:android="http://schemas.android.com/apk/res/android">
 
 	
@@ -11,8 +11,8 @@
                android:layout_above="@+id/dent_label"
                android:layout_alignParentTop="true"
                android:drawSelectorOnTop="false"
-               android:background="#ff231b00" 
-		android:cacheColorHint="#ff231b00" android:divider="#00000000"
+               android:background="#00000000" 
+		android:cacheColorHint="#00000000" android:divider="#00000000"
 		android:dividerHeight="2dp"/>
 
      <TextView android:id="@id/android:empty"

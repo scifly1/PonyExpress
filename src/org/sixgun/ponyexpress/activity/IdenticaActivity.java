@@ -27,6 +27,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.service.IdenticaHandler;
+import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;
@@ -35,6 +36,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -49,6 +53,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -76,6 +81,7 @@ public class IdenticaActivity extends ListActivity {
 	protected String mIdenticaTag;
 	private String mIdenticaGroup;
 	protected String mTagText;
+	protected ViewGroup mBackground;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -149,6 +155,23 @@ public class IdenticaActivity extends ListActivity {
 		final String podcastName = mData.getString(PodcastKeys.NAME);
 		title.setText(podcastName);
 		
+		//Set the background
+		mBackground = (ViewGroup) findViewById(R.id.identica_body);
+		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+			
+			@Override
+			public void onGlobalLayout() {
+				Resources res = getResources();
+				Bitmap image = ((BitmapDrawable)res.getDrawable(R.drawable.albumart)).getBitmap();
+				int new_height = mBackground.getHeight();
+				int new_width = mBackground.getWidth();
+				BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+				(res, image, new_height, new_width);
+				mBackground.setBackgroundDrawable(new_background);
+				
+			}
+		});
+				
 		OnClickListener DentButtonListener = new OnClickListener() {
 			
 			@Override
@@ -248,7 +271,6 @@ public class IdenticaActivity extends ListActivity {
 		String text = mDentText.getText().toString();
 		outState.putString(DentKeys.PARTIALDENT, text);
 	}
-
 
 	@Override
 	protected void onDestroy() {
