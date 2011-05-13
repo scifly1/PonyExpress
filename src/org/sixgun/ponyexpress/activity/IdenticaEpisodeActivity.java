@@ -20,6 +20,7 @@ package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.util.Utils;
@@ -58,6 +59,7 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 		
 		setContentView(R.layout.identica_episodes);
 		mIdenticaTag = mData.getString(PodcastKeys.TAG);
+		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		
 		OnClickListener DentButtonListener = new OnClickListener() {
 			
@@ -143,12 +145,14 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 			@Override
 			public void onGlobalLayout() {
 				Resources res = getResources();
-				Bitmap image = ((BitmapDrawable)res.getDrawable(R.drawable.albumart)).getBitmap();
-				int new_height = mBackground.getHeight();
-				int new_width = mBackground.getWidth();
-				BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-				(res, image, new_height, new_width);
-				mBackground.setBackgroundDrawable(new_background);
+				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
+				if (image != null){
+					int new_height = mBackground.getHeight();
+					int new_width = mBackground.getWidth();
+					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+					(res, image, new_height, new_width);
+					mBackground.setBackgroundDrawable(new_background);
+				}
 				
 			}
 		});

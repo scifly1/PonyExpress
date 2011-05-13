@@ -46,7 +46,7 @@ public class PodcastFeedParser extends BaseFeedParser {
    
     
     
-	protected PodcastFeedParser(Context ctx, String feedUrl) {
+	public PodcastFeedParser(Context ctx, String feedUrl) {
 		super(ctx, feedUrl);
 		
 	}
@@ -107,6 +107,45 @@ public class PodcastFeedParser extends BaseFeedParser {
 		}			
 		return new_podcast;
 		
+	}
+	
+	public String parseAlbumArtURL() {
+		if (mFeedUrl == null){
+			return null;
+		}
+				
+		//Set up the required elements.
+		RootElement root = new RootElement("rss");
+		Element channel = root.requireChild("channel");
+		
+		//Use a podcast instance as it can hold the url and we need to use a final
+		//object here.
+		final Podcast new_podcast = new Podcast();
+		
+		//Set up the ElementListener.
+		//This Listener catches the album art url of the podcast.
+		channel.getChild(MEDIA_NS, ALBUM_ART_URL).setStartElementListener(new StartElementListener() {
+			
+			@Override
+			public void start(Attributes attributes) {
+				String url = attributes.getValue("", "url");
+				Log.d(TAG,"Podcast art from: " + url);
+				new_podcast.setArt_Url(url);				
+			}
+		});
+		//Finally, now the listeners are set up we can parse the XML file.
+		
+		InputStream istream = getInputStream();	    
+		if (istream != null){
+			try {
+				Xml.parse(istream, Xml.Encoding.UTF_8, 
+						root.getContentHandler());
+			} catch (Exception e) {
+				NotifyError();
+				return null;
+			}
+		}			
+		return new_podcast.getArt_Url().toString();
 	}
 
 }

@@ -95,13 +95,14 @@ public class EpisodesActivity extends ListActivity {
 			@Override
 			public void onGlobalLayout() {
 				Resources res = getResources();
-				Bitmap image = ((BitmapDrawable)res.getDrawable(R.drawable.albumart)).getBitmap();
-				int new_height = mBackground.getHeight();
-				int new_width = mBackground.getWidth();
-				BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-				(res, image, new_height, new_width);
-				mBackground.setBackgroundDrawable(new_background);
-				
+				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
+				if (image != null){
+					int new_height = mBackground.getHeight();
+					int new_width = mBackground.getWidth();
+					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+					(res, image, new_height, new_width);
+					mBackground.setBackgroundDrawable(new_background);
+				}
 			}
 		});
 		
@@ -356,6 +357,7 @@ public class EpisodesActivity extends ListActivity {
 	    intent.putExtra(PodcastKeys.GROUP, identicagroup);
 	    intent.putExtra(PodcastKeys.TAG, identicatag);
 	    intent.putExtra(PodcastKeys.NAME, mPodcastNameStripped);
+	    intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
 	    startActivity(intent);
 	}
 	

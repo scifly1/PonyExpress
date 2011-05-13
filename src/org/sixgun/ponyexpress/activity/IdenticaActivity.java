@@ -82,6 +82,7 @@ public class IdenticaActivity extends ListActivity {
 	private String mIdenticaGroup;
 	protected String mTagText;
 	protected ViewGroup mBackground;
+	protected String mAlbumArtUrl;
 	
 	//This is all responsible for connecting/disconnecting to the IdenticaHandler service.
 	private ServiceConnection mConnection = new ServiceConnection() {
@@ -148,6 +149,7 @@ public class IdenticaActivity extends ListActivity {
 			mIdenticaGroup = mData.getString(PodcastKeys.GROUP);
 		}
 		mIdenticaTag = mData.getString(PodcastKeys.TAG);
+		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		setContentView(R.layout.identica);
 		
 		//Set title
@@ -162,12 +164,14 @@ public class IdenticaActivity extends ListActivity {
 			@Override
 			public void onGlobalLayout() {
 				Resources res = getResources();
-				Bitmap image = ((BitmapDrawable)res.getDrawable(R.drawable.albumart)).getBitmap();
-				int new_height = mBackground.getHeight();
-				int new_width = mBackground.getWidth();
-				BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-				(res, image, new_height, new_width);
-				mBackground.setBackgroundDrawable(new_background);
+				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
+				if (image != null){
+					int new_height = mBackground.getHeight();
+					int new_width = mBackground.getWidth();
+					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+					(res, image, new_height, new_width);
+					mBackground.setBackgroundDrawable(new_background);
+				}
 				
 			}
 		});

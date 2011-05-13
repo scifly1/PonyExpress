@@ -36,6 +36,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
+import org.sixgun.ponyexpress.util.PodcastFeedParser;
 import org.sixgun.ponyexpress.util.SixgunPodcastsParser;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
@@ -536,6 +537,9 @@ public class PonyExpressActivity extends ListActivity {
 			for (String podcast: podcast_names){
 				String podcast_url = 
 					mPonyExpressApp.getDbHelper().getPodcastUrl(podcast);
+				
+				checkForNewArt(podcast_url);
+				
 				EpisodeFeedParser parser = new EpisodeFeedParser(mPonyExpressApp,
 						podcast_url);
 				List<Episode> episodes = parser.parse();
@@ -582,8 +586,14 @@ public class PonyExpressActivity extends ListActivity {
 				Log.d(TAG, "Adding new Podcasts!");
 				mPonyExpressApp.getDbHelper().addNewPodcasts(sixgun_podcasts);
 			}
-			
 		}
+		
+		private void checkForNewArt(String podcast_url){
+			PodcastFeedParser parser = new PodcastFeedParser(mPonyExpressApp,podcast_url);
+			String art_url = parser.parseAlbumArtURL();
+			mPonyExpressApp.getDbHelper().updateAlbumArtUrl(podcast_url, art_url);
+		}
+		
 		/** Deletes a file from the SD Card.
 		 * 
 		 * @param rowID of the file to be deleted from the database.

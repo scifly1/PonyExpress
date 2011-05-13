@@ -326,7 +326,7 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	/**
-	 * Updates the database when a podcast has been downloaded or listened to.
+	 * Updates the database when a podcast has been downloaded.
 	 * @param podcast_name
 	 * @param rowID 
 	 * @param key
@@ -346,6 +346,14 @@ public class PonyExpressDbAdaptor {
 		}
 		return mDb.update(table_name, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
+	/**
+	 * Updates the database when a podcast has been listened to.
+	 * @param podcast_name
+	 * @param rowID 
+	 * @param key
+	 * @param newRecord
+	 * @return true if update successful.
+	 */
 	public boolean update(String podcast_name, long rowID, String key, int newRecord){
 		final String table_name = getTableName(podcast_name);
 		ContentValues values = new ContentValues();
@@ -353,6 +361,17 @@ public class PonyExpressDbAdaptor {
 			values.put(EpisodeKeys.LISTENED, newRecord);
 		}
 		return mDb.update(table_name, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
+	}
+	/**
+	 * Updates the database with a new album art url.
+	 * @param rowID 
+	 * @param newUrl
+	 * @return true if update successful.
+	 */
+	public boolean update(long rowID, String newUrl){
+		ContentValues values = new ContentValues();
+		values.put(PodcastKeys.ALBUM_ART_URL, newUrl);
+		return mDb.update(PODCAST_TABLE, values, PodcastKeys._ID + "=" + rowID, null) > 0;
 	}
 
 	/**
@@ -648,6 +667,22 @@ public class PonyExpressDbAdaptor {
 		}
 		cursor.close();
 		return url;
+	}
+	
+	public void updateAlbumArtUrl(String podcast_url, String artUrl){
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL,PodcastKeys.FEED_URL};
+		final String quotedUrl = "\"" + podcast_url + "\"";
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, PodcastKeys.FEED_URL + "=" + quotedUrl, null, null, null, null, null);
+		if (cursor != null){
+			cursor.moveToFirst();
+			final String old_url = cursor.getString(1);
+			if (!artUrl.equals(old_url)){
+				//Album art has changed
+				Log.d(TAG, "Old art: " + old_url + " New art: " + artUrl);
+				update(cursor.getLong(0), artUrl);
+			}
+		}
 	}
 
 	public String getIdenticaTag(String podcast_name) {
