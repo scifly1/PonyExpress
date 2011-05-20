@@ -19,6 +19,9 @@
 package org.sixgun.ponyexpress.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -38,6 +41,7 @@ import android.view.Gravity;
 public class Utils {
 	
 	private static final String TAG = "PonyExpressUtils";
+	private static Method mBitmapDrawable;
 
 	/**
 	 * Formats a time in millisecods into a h:mm:ss string
@@ -124,7 +128,15 @@ public class Utils {
 		
 		return unlistenedString;
 	}
-	
+	/**
+	 * Creates a BitmapDrawable of a specific size from the given album art.
+	 * Uses the deprecated BitmapDrawable constructor on android 1.5.
+	 * @param res
+	 * @param art
+	 * @param height
+	 * @param width
+	 * @return BitmapDrawable
+	 */
 	static public BitmapDrawable createBackgroundFromAlbumArt(Resources res, Bitmap art, int height, int width){
 		Bitmap new_image;
 		if (height >  width){
@@ -132,9 +144,59 @@ public class Utils {
 		} else {
 			new_image = Bitmap.createScaledBitmap(art, width, width, true);	
 		}
-		BitmapDrawable new_background = new BitmapDrawable(res,new_image);
+		//First use deprecated Ctor that will work on android 1.5
+		BitmapDrawable new_background = new BitmapDrawable(new_image);
+		//If on a newer android use the better Ctor.
+		if (mBitmapDrawable !=null){
+			try {
+				new_background = BitmapDrawable(res, new_image);
+			} catch (IllegalArgumentException e) {
+				Log.e(TAG, "Illegal arguments to BitmapDrawable" , e);
+			} catch (IOException e) {
+				Log.e(TAG, "IOException calling BitmapDrawable", e);
+			}
+		}
 		new_background.setGravity(Gravity.LEFT|Gravity.TOP);
 		new_background.setAlpha(80);
 		return new_background;
+	}
+	/**
+	 * Method to determine if we need to use the deprcated BitmapDrawable constructor.
+	 */
+	static private void initCompatibility(){
+		try {
+	           mBitmapDrawable = BitmapDrawable.class.getMethod(
+	                   "BitmapDrawable", new Class[] { Resources.class, Bitmap.class } );
+	       } catch (NoSuchMethodException nsme) {
+	           /* failure, must be older device */
+	       }
+	}
+	
+	static {
+		initCompatibility();
+	}
+	
+	private static BitmapDrawable BitmapDrawable(Resources res, Bitmap image) throws IllegalArgumentException, IOException{
+		BitmapDrawable bd = null;
+		try {
+			return (BitmapDrawable) mBitmapDrawable.invoke(null, res, image);
+		} catch (InvocationTargetException ite) {
+			/* unpack original exception when possible */
+			Throwable cause = ite.getCause();
+			if (cause instanceof IOException) {
+				throw (IOException) cause;
+			} else if (cause instanceof RuntimeException) {
+				throw (RuntimeException) cause;
+			} else if (cause instanceof Error) {
+				throw (Error) cause;
+			} else {
+				/* unexpected checked exception; wrap and re-throw */
+				throw new RuntimeException(ite);
+			} 
+		} catch (IllegalAccessException e) {
+			Log.e(TAG, "unexpected " + e);
+		}
+		
+		return bd;
 	}
 }

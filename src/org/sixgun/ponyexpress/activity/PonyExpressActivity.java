@@ -631,6 +631,7 @@ public class PonyExpressActivity extends ListActivity {
 		
 	};
 	
+	//FIXME Make this user startable to fix issue where user deletes a file.
 	private class DatabaseCheck extends AsyncTask<Void, Void, Void> {
 		
 		@Override
