@@ -13,7 +13,7 @@
 		android:textSize="28sp" android:background="#FF000000"/>
 		<TextView android:id="@+id/sixgun_subtitle" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="@string/sixgun_shows"
-		 android:paddingLeft="10dp"  android:textSize="17sp"
+		 android:paddingLeft="5dp"  android:textSize="16sp"
 		 android:layout_below="@id/app_name"  android:background="#FF000000"/>
 		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
 		android:layout_width="fill_parent" android:layout_below="@id/sixgun_subtitle"/>
