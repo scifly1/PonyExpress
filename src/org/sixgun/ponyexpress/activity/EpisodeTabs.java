@@ -56,7 +56,6 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    Intent intent;  // Reusable Intent for each tab
 	    
 	    
-	    //TODO The tabs need icons...
 	    intent = new Intent(this,PlayerActivity.class);
 	    intent.putExtras(data);
 	    spec = tabHost.newTabSpec("episode").setIndicator
