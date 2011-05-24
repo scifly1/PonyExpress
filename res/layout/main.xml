@@ -38,7 +38,7 @@
 		android:layout_height="wrap_content" android:layout_below="@+id/pony_header"
 		android:layout_above="@+id/pony_footer"
 		android:paddingTop="5dp" android:background="@drawable/background" 
-		android:cacheColorHint="#00000000" android:divider="#00000000"
+		android:cacheColorHint="#00000000" android:divider="#00000001"
 		android:dividerHeight="2dp"/>
 	
 </RelativeLayout>
