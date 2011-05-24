@@ -209,6 +209,24 @@ public class IdenticaActivity extends ListActivity {
 				}				
 			}
 		};
+		
+		//Need to get the back and settings button explicitly for android1.5
+		OnClickListener handler = new OnClickListener() {
+		    public void onClick(View v) {
+		        switch (v.getId()) {
+		            case R.id.settings_button:
+		            	showSettings(v);
+		                break;
+		            case R.id.back_button:
+		            	goBack(v);
+		                break;
+		        }
+		    }
+		};
+
+		findViewById(R.id.settings_button).setOnClickListener(handler);
+		findViewById(R.id.back_button).setOnClickListener(handler);
+		
 		//Check connectivity first and inactivate button if no connection
 		mDentButton = (Button) findViewById(R.id.dent_ok);
 		if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
