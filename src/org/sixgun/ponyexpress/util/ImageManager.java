@@ -98,6 +98,11 @@ public class ImageManager implements ImageCache {
 
   // Looks to see if an image is in the file system.
   private Bitmap lookupFile(String url) {
+	  if (url == null)
+	  {
+		  // No url -> no bitmap.
+		  return null;
+	  }
     String hashedUrl = getMd5(url);
     FileInputStream fis = null;
 

@@ -590,7 +590,16 @@ public class PonyExpressActivity extends ListActivity {
 		
 		private void checkForNewArt(String podcast_url){
 			PodcastFeedParser parser = new PodcastFeedParser(mPonyExpressApp,podcast_url);
-			String art_url = parser.parseAlbumArtURL();
+			String art_url;
+			try
+			{
+				art_url = parser.parseAlbumArtURL();
+			}
+			catch (NullPointerException ex)
+			{
+				// No album art.  Just return.
+				return;
+			}
 			mPonyExpressApp.getDbHelper().updateAlbumArtUrl(podcast_url, art_url);
 		}
 		
