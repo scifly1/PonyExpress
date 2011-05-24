@@ -5,7 +5,7 @@
 	android:layout_height="fill_parent" android:background="#ff231b00">
 	<RelativeLayout android:id="@+id/pony_header"
 		android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:background="#ff231b00">
+		android:layout_height="wrap_content" >
 		
 		<TextView android:id="@+id/app_name" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="@string/app_name"

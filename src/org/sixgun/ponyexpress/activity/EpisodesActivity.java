@@ -45,6 +45,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.View.OnClickListener;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
@@ -70,6 +71,17 @@ public class EpisodesActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.episodes);
+		
+		//Need to get the identica button explicitly for android1.5
+		OnClickListener identica = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				startIdenticaActivity(v);
+			}
+		};
+		
+		findViewById(R.id.comment_button).setOnClickListener(identica);
 		
 		TextView title = (TextView)findViewById(R.id.title);
 		mUnlistenedText = (TextView)findViewById(R.id.unlistened_eps);

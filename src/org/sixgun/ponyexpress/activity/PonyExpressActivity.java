@@ -102,6 +102,27 @@ public class PonyExpressActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
+		//Need to get the add podcast and settings button explicitly for android1.5
+		OnClickListener handler = new OnClickListener() {
+		    public void onClick(View v) {
+		        switch (v.getId()) {
+		            case R.id.settings_button:
+		            	showSettings(v);
+		                break;
+		            case R.id.add_podcasts_button:
+		            	addPodcast(v);
+		                break;
+		            case R.id.pony_footer:
+		            	showAbout(v);
+		            	break;
+		        }
+		    }
+		};
+
+		findViewById(R.id.settings_button).setOnClickListener(handler);
+		findViewById(R.id.add_podcasts_button).setOnClickListener(handler);
+		findViewById(R.id.pony_footer).setOnClickListener(handler);
+		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
