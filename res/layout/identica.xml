@@ -7,6 +7,16 @@
 		android:orientation="vertical" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:background="#ff000000">
 		
+		<ImageButton android:id="@+id/settings_button" android:paddingTop="10dp"
+		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:background="#ff000000" android:onClick="showSettings"/>
+		
+		<ImageButton android:id="@+id/back_button" android:paddingTop="10dp"
+		android:layout_toLeftOf="@+id/settings_button" android:src="@drawable/back_button"
+		android:layout_width="wrap_content" android:layout_height="wrap_content" 
+		android:background="#ff000000" android:onClick="goBack"/>
+		
 		<TextView android:id="@+id/title" android:layout_width="wrap_content"
 		android:layout_height="wrap_content" android:text="@string/Episodes_title"
 		android:textStyle="bold" android:paddingLeft="10dp" android:paddingTop="10dp"
@@ -18,14 +28,8 @@
 		android:layout_below="@+id/title" android:paddingLeft="10dp"
 		 android:textSize="17sp" />
 		
-		<ImageButton android:id="@+id/back_button" android:layout_centerVertical="true"
-		android:layout_toLeftOf="@+id/settings_button" android:src="@drawable/back_button"
-		android:layout_width="wrap_content" android:layout_height="wrap_content" 
-		android:background="#ff000000" android:onClick="goBack"/>
-		<ImageButton android:id="@+id/settings_button" android:layout_centerVertical="true"
-		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
-		android:layout_width="wrap_content" android:layout_height="wrap_content" 
-		android:background="#ff000000" android:onClick="showSettings"/>
+		
+		
 		
 	</RelativeLayout>
 	<RelativeLayout android:id="@+id/identica_body"
@@ -41,8 +45,8 @@
                android:layout_above="@+id/dent_label"
                android:layout_below="@+id/gradient"
                android:drawSelectorOnTop="false"
-               android:background="#00000000" 
-		android:cacheColorHint="#00000000" android:divider="#00000000"
+               android:background="#00000001" 
+		android:cacheColorHint="#00000000" android:divider="#00000001"
 		android:dividerHeight="2dp"/>
 
      <TextView android:id="@id/android:empty"
