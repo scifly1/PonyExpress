@@ -17,7 +17,7 @@
 		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
 		android:layout_width="fill_parent" android:layout_below="@id/sixgun_subtitle"/>
 		 
-		<ImageButton android:id="@+id/settings_button" android:layout_centerVertical="true"
+		<ImageButton android:id="@+id/settings_button" android:paddingTop="10dp"
 		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
 		android:layout_width="wrap_content" android:layout_height="wrap_content" 
 		android:background="#ff000000" android:onClick="showSettings"/>
