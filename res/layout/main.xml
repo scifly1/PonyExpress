@@ -5,7 +5,7 @@
 	android:layout_height="fill_parent" android:background="#ff231b00">
 	<RelativeLayout android:id="@+id/pony_header"
 		android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" >
+		android:layout_height="wrap_content" android:background="#ff231b00">
 		
 		<TextView android:id="@+id/app_name" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:text="@string/app_name"
@@ -15,8 +15,7 @@
 		android:layout_height="wrap_content" android:text="@string/sixgun_shows"
 		 android:paddingLeft="5dp"  android:textSize="16sp"
 		 android:layout_below="@id/app_name"  android:background="#FF000000"/>
-		<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
-		android:layout_width="fill_parent" android:layout_below="@id/sixgun_subtitle"/>
+		
 		 
 		<ImageButton android:id="@+id/settings_button" android:paddingTop="10dp"
 		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
@@ -29,16 +28,31 @@
 		android:visibility="gone"/>
 	</RelativeLayout>
 	
+	
+	
+	<LinearLayout android:id="@+id/podcast_list"
+	android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:background="@drawable/background"
+		android:layout_below="@+id/pony_header" android:layout_above="@+id/pony_footer" >
+	<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
+		android:layout_width="fill_parent"  />
+	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
+		android:layout_height="wrap_content" 
+		android:paddingTop="5dp"  
+		android:cacheColorHint="#00000000" android:divider="#00000001"
+		android:dividerHeight="2dp"/>
+	</LinearLayout>
+	
+	<LinearLayout android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:background="#00000001"
+		android:layout_alignParentBottom="true" >
+	<TextView android:id="@+id/footer_gradient"
+	android:background="@drawable/reverse_gradient" android:layout_height="wrap_content"
+		android:layout_width="fill_parent"  />
 	<Button android:id="@+id/pony_footer" android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
 		android:text="@string/footer" android:textSize="18sp" android:textColor="#ffcccccc"
 		android:background="#ff231b00" android:onClick="showAbout"
 		/>
-	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" android:layout_below="@+id/pony_header"
-		android:layout_above="@+id/pony_footer"
-		android:paddingTop="5dp" android:background="@drawable/background" 
-		android:cacheColorHint="#00000000" android:divider="#00000001"
-		android:dividerHeight="2dp"/>
-	
+		</LinearLayout>
 </RelativeLayout>
