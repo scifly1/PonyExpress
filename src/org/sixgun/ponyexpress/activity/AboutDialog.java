@@ -24,6 +24,8 @@ import org.sixgun.ponyexpress.R;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Build;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -42,7 +44,17 @@ public class AboutDialog {
 		builder.setIcon(R.drawable.pony_icon);
 		builder.setView(view);
 		builder.setCancelable(true);
-		builder.setTitle(R.string.about_title);
+		
+		String versionNumber;
+		try {
+            String pkg = context.getPackageName();
+            versionNumber = context.getPackageManager().getPackageInfo(pkg, 0).versionName;
+        } catch (NameNotFoundException e) {
+            versionNumber = "?";
+        }
+		String title = context.getString(R.string.about_title) + " " + versionNumber;
+		builder.setTitle(title);
+		
 		builder.setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.cancel();

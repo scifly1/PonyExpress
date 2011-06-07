@@ -89,7 +89,7 @@
 
 	<string name="about_message">
 		"
-Pony Express is a podcatcher and player for Android brought to you by Sixgun Productions. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
+Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
 		\n\n
 		Code:
 		Paul Elms (@scifly)\n\n
