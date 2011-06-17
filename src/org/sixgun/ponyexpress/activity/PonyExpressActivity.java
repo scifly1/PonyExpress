@@ -67,9 +67,11 @@ import android.view.ViewGroup;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.AdapterView.AdapterContextMenuInfo;
@@ -96,6 +98,10 @@ public class PonyExpressActivity extends ListActivity {
 	private GregorianCalendar mLastUpdate;
 	private boolean mAdditionalPodcasts;
 	private BroadcastReceiver mPodcastDeletedReceiver;
+	OnClickListener mClickHandler;
+	private int mListSize;
+	private ViewGroup mListFooter;
+	private boolean mListingPodcasts;
 	
 	
 	protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +109,7 @@ public class PonyExpressActivity extends ListActivity {
 		setContentView(R.layout.main);
 		
 		//Need to get the add podcast and settings button explicitly for android1.5
-		OnClickListener handler = new OnClickListener() {
+		mClickHandler = new OnClickListener() {
 		    public void onClick(View v) {
 		        switch (v.getId()) {
 		            case R.id.settings_button:
@@ -112,6 +118,8 @@ public class PonyExpressActivity extends ListActivity {
 		            case R.id.add_podcasts_button:
 		            	addPodcast(v);
 		                break;
+		            case R.id.footer_button:
+		            	//fallthrough
 		            case R.id.pony_footer:
 		            	showAbout(v);
 		            	break;
@@ -119,9 +127,39 @@ public class PonyExpressActivity extends ListActivity {
 		    }
 		};
 
-		findViewById(R.id.settings_button).setOnClickListener(handler);
-		findViewById(R.id.add_podcasts_button).setOnClickListener(handler);
-		findViewById(R.id.pony_footer).setOnClickListener(handler);
+		findViewById(R.id.settings_button).setOnClickListener(mClickHandler);
+		findViewById(R.id.add_podcasts_button).setOnClickListener(mClickHandler);
+		//Add click listerner for the footer_button even though it may be hidden later.
+		findViewById(R.id.pony_footer).setOnClickListener(mClickHandler);
+		
+		ViewGroup list_root = (ViewGroup) findViewById(R.id.podcast_list_root);
+		list_root.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+			
+			@Override
+			public void onGlobalLayout() {
+				//Determine if we need to add a footer and hide the base footer.
+				if (mListingPodcasts){ //onGlobalLayout is called frequently, we only want this to run
+					//when listing the podcasts.
+					ListView list = getListView();
+					int last_pos_visible = list.getLastVisiblePosition();
+					if (last_pos_visible == -1){
+						Log.d(TAG, "We should not be here!!");
+						return; //we are being called when exiting activity which should not happen as mListingPodcasts should be false.
+					}
+					ViewGroup footer_layout = (ViewGroup) findViewById(R.id.footer_layout);
+					if (last_pos_visible < mListSize - 1 && footer_layout.getVisibility() == View.VISIBLE && list.getFooterViewsCount() < 1){
+						//The last position is not visible and we don't have a footer already
+						//so add footer to list and hide the 'other' footer.
+						listPodcasts(true);
+					} else if (last_pos_visible == mListSize -1 && footer_layout.getVisibility() == View.GONE){
+						//last Position is visible so remove footer if present.
+						list.removeFooterView(mListFooter);
+						footer_layout.setVisibility(View.VISIBLE);
+					}
+					mListingPodcasts = false;
+				}			
+			}
+		});
 		
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
@@ -167,6 +205,8 @@ public class PonyExpressActivity extends ListActivity {
 		}
 		
 		mPodcastDeletedReceiver = new PodcastDeleted();
+		
+		listPodcasts(false);
 	}
 	
 	@Override
@@ -174,7 +214,7 @@ public class PonyExpressActivity extends ListActivity {
 		super.onResume();
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PODCAST_DELETED");
 		registerReceiver(mPodcastDeletedReceiver, filter);
-		listPodcasts();
+		listPodcasts(false);
 		if (mSavedState != null){
 			restoreLocalState(mSavedState);
 		}
@@ -376,13 +416,33 @@ public class PonyExpressActivity extends ListActivity {
 			mUpdateTask = null;
 		}
 	}
-	
-	private void listPodcasts() {
+	/**
+	 * This method lists the podcasts found in the database in the ListView.
+	 * @param addFooter This is a bit of a hack where we draw the list without 
+	 * a footer, determine with the globalLayoutListener if we need a footer and then
+	 * re-call this to add a footer to the adapter.
+	 */
+	private void listPodcasts(boolean addFooter) {
 		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
 		startManagingCursor(c);
 		//Create a CursorAdapter to map podcast title and art to the ListView.
 		PodcastCursorAdapter adapter = new PodcastCursorAdapter(mPonyExpressApp, c);
+		mListingPodcasts = true;
+		//Add footer to the listview if required.
+		if (addFooter){
+			ViewGroup footer_layout = (ViewGroup) findViewById(R.id.footer_layout);
+			mListFooter = (ViewGroup) getLayoutInflater().inflate(R.layout.main_footer, null);
+			ListView list = getListView();
+			//prevent more than one footer being added each time we pass through here.
+			if (list.getFooterViewsCount() == 0){
+				list.addFooterView(mListFooter);
+				mListFooter.findViewById(R.id.footer_button).setOnClickListener(mClickHandler);
+				footer_layout.setVisibility(View.GONE);
+			}
+		}
+		mListSize = adapter.getCount();
 		setListAdapter(adapter);
+		
 		registerForContextMenu(getListView());
 	}
 
@@ -656,7 +716,7 @@ public class PonyExpressActivity extends ListActivity {
 			editor.putLong(LASTUPDATE, mLastUpdate.getTimeInMillis());
 			editor.commit();
 			//re-list podcasts to update new episode counts
-			listPodcasts();
+			listPodcasts(false);
 		}
 		
 	};
@@ -705,7 +765,7 @@ public class PonyExpressActivity extends ListActivity {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			listPodcasts();
+			listPodcasts(false);
 		}
 		
 	}

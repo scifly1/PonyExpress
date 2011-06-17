@@ -28,31 +28,30 @@
 		android:visibility="gone"/>
 	</RelativeLayout>
 	
-	
+	<LinearLayout android:id="@+id/footer_layout" android:orientation="vertical" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:background="#00000001"
+		android:layout_alignParentBottom="true"  >
+	<TextView android:id="@+id/footer_gradient"
+	android:background="@drawable/reverse_gradient" android:layout_height="wrap_content"
+		android:layout_width="fill_parent"  />
+	<Button android:id="@+id/pony_footer" android:layout_width="fill_parent"
+		android:layout_height="wrap_content" 
+		android:text="@string/footer" android:textSize="18sp" android:textColor="#ffcccccc"
+		android:background="#ff000000" android:onClick="showAbout"
+		/>
+	</LinearLayout>
 	
 	<LinearLayout android:id="@+id/podcast_list"
 	android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:background="@drawable/background"
-		android:layout_below="@+id/pony_header" android:layout_above="@+id/pony_footer" >
+		android:layout_height="fill_parent" android:background="@drawable/background"
+		android:layout_below="@+id/pony_header" android:layout_above="@+id/footer_layout" >
 	<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
 		android:layout_width="fill_parent"  />
-	<ListView android:id="@android:id/list" android:layout_width="wrap_content"
-		android:layout_height="wrap_content" 
+	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
+		android:layout_height="fill_parent" 
 		android:paddingTop="5dp"  
 		android:cacheColorHint="#00000000" android:divider="#00000001"
 		android:dividerHeight="2dp"/>
 	</LinearLayout>
 	
-	<LinearLayout android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:background="#00000001"
-		android:layout_alignParentBottom="true" >
-	<TextView android:id="@+id/footer_gradient"
-	android:background="@drawable/reverse_gradient" android:layout_height="wrap_content"
-		android:layout_width="fill_parent"  />
-	<Button android:id="@+id/pony_footer" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:layout_alignParentBottom="true"
-		android:text="@string/footer" android:textSize="18sp" android:textColor="#ffcccccc"
-		android:background="#ff000000" android:onClick="showAbout"
-		/>
-		</LinearLayout>
-</RelativeLayout>
+--></RelativeLayout>

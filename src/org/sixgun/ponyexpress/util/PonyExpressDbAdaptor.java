@@ -683,6 +683,7 @@ public class PonyExpressDbAdaptor {
 				update(cursor.getLong(0), artUrl);
 			}
 		}
+		cursor.close();
 	}
 
 	public String getIdenticaTag(String podcast_name) {
