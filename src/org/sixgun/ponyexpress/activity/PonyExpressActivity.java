@@ -559,7 +559,10 @@ public class PonyExpressActivity extends ListActivity {
 			return true;
 		case R.id.remove_podcast:
 			boolean deleted = mPonyExpressApp.getDbHelper().removePodcast(info.id);
-			//TODO Show Toast if deletion fails.
+			if(!deleted) {
+				Toast.makeText(mPonyExpressApp, R.string.delete_failed, Toast.LENGTH_SHORT)
+					.show();
+			}
 			return true;			
 		default:
 			return super.onContextItemSelected(item);

@@ -154,4 +154,5 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		<item>8</item>
 		<item>10</item>
 	</string-array>
+	<string name="delete_failed">Unable to remove the podcast subscription.</string>
 </resources>
