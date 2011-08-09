@@ -64,7 +64,13 @@ public class AddNewPodcastFeedActivity extends Activity {
 					//Remove the leading '!' and store.
 					podcast.setIdenticaGroup(group.substring(1));
 				}
-				podcast.setIdenticaTag(tag.substring(1));
+				if(!tag.equals("") && !tag.equals("#")){
+					if(tag.substring(0,1) == "#") {
+						podcast.setIdenticaTag(tag.substring(1));
+					} else {
+						podcast.setIdenticaTag(tag);
+					}
+				}
 				
 				mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
 				
