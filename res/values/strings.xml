@@ -85,6 +85,7 @@
 	<string name="wrong_network_type">You are on a mobile network and have disabled
 		downloads unless on WiFi. Check the settings.</string>
 	<string name="download_failed">Sorry, there was an error during download.</string>
+	<string name="delete_failed">Unable to remove the podcast subscription.</string>
 	<string name="about_title">About Pony Express</string>
 
 	<string name="about_message">
@@ -94,7 +95,7 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		Code:
 		Paul Elms (@scifly)\n\n
 		Code contributions from:\n\
-		@macno, Daniel Brinkers, Tom Sutch(@tomsutch), Johan Vervloet(@johanv)
+		@macno, Daniel Brinkers, Tom Sutch(@tomsutch), Johan Vervloet(@johanv), Andrew Smith
 		\n\n
 		Design:
 		Fabian A. Scherschel (@fabsh)
@@ -154,5 +155,5 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		<item>8</item>
 		<item>10</item>
 	</string-array>
-	<string name="delete_failed">Unable to remove the podcast subscription.</string>
+	
 </resources>
