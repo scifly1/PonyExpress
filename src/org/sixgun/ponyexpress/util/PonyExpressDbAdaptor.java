@@ -171,10 +171,15 @@ public class PonyExpressDbAdaptor {
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "= " + quotedName, null, null, null, null, null);
 		String tablename = "";
+		boolean cursor_not_empty;
 		if (cursor != null){
-			cursor.moveToFirst();
-			tablename = cursor.getString(0);
-			Log.d(TAG, "Tablename of Episode is: "+ tablename);
+			cursor_not_empty = cursor.moveToFirst();
+			if (cursor_not_empty){
+				tablename = cursor.getString(0);
+				Log.d(TAG, "Tablename of Episode is: "+ tablename);
+			} else {
+				Log.e(TAG, "Looking for a Podcast name not in the database!");
+			}
 		}
 		cursor.close();
 		return tablename;	
@@ -266,24 +271,26 @@ public class PonyExpressDbAdaptor {
 	public Map<Long, String> getFilenamesOnDisk(String podcast_name){
 		//Get all episodes from correct table that have been downloaded (and are still on disk)
 		final String table_name = getTableName(podcast_name);
-		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.DOWNLOADED, 
-				EpisodeKeys.FILENAME};
 		Map<Long, String> files = new HashMap<Long, String>();
-		final Cursor cursor = mDb.query(true, table_name, columns, 
-				EpisodeKeys.DOWNLOADED + "!= 0", null, null, null, null, null);
+		if (table_name != "") { // Podcast not in database for some reason
+			final String[] columns = {EpisodeKeys._ID, EpisodeKeys.DOWNLOADED, 
+					EpisodeKeys.FILENAME};
+			final Cursor cursor = mDb.query(true, table_name, columns, 
+					EpisodeKeys.DOWNLOADED + "!= 0", null, null, null, null, null);
 
-		String short_filename = "";
-		if (cursor != null){
-			cursor.moveToFirst();
-			for (int i = 0; i < cursor.getCount(); i++){
-				final String filename = cursor.getString(2);
-				//get everything after last '/' (separator) and remove the '/'
-				short_filename = filename.substring(filename.lastIndexOf('/')).substring(1);
-				files.put(cursor.getLong(0),short_filename);
-				cursor.moveToNext();
+			String short_filename = "";
+			if (cursor != null){
+				cursor.moveToFirst();
+				for (int i = 0; i < cursor.getCount(); i++){
+					final String filename = cursor.getString(2);
+					//get everything after last '/' (separator) and remove the '/'
+					short_filename = filename.substring(filename.lastIndexOf('/')).substring(1);
+					files.put(cursor.getLong(0),short_filename);
+					cursor.moveToNext();
+				}
 			}
+			cursor.close();
 		}
-		cursor.close();				
 		return files;
 	}
 	/**

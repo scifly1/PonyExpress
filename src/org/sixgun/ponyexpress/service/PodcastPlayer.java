@@ -28,6 +28,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
+import org.sixgun.ponyexpress.activity.EpisodesActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 
 import android.app.Notification;
@@ -49,6 +50,7 @@ import android.os.IBinder;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.widget.RemoteViews;
 
 /**
  * PodcastPlayer is a service that handles all interactions with the media player.
@@ -199,7 +201,6 @@ public class PodcastPlayer extends Service {
 		switch (action){
 		case INIT_PLAYER:
 			initPlayer(intent.getExtras());
-			mIsInitialised = true;
 			break;
 		case REWIND:
 			if (isPlaying()){
@@ -273,7 +274,8 @@ public class PodcastPlayer extends Service {
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
 		int position = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
-	
+		boolean isError = false;
+		
 		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
 			//Set podcast as data source and prepare the player
@@ -282,17 +284,24 @@ public class PodcastPlayer extends Service {
 				mFreePlayer.setDataSource(podcast.getAbsolutePath());
 			} catch (IllegalArgumentException e) {
 				Log.e(TAG, "Illegal path supplied to player", e);
+				isError = true;
 			} catch (IllegalStateException e) {
 				Log.e(TAG, "Player is not set up correctly", e);
+				isError = true;
 			} catch (IOException e) {
 				Log.e(TAG,"Player cannot access path",e);
+				isError = true;
 			}
-			try {
-				mFreePlayer.prepare();
-			} catch (IllegalStateException e) {
-				Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
-			} catch (IOException e) {
-				Log.e(TAG,"Player cannot access path",e);
+			if (!isError) {
+				try {
+					mFreePlayer.prepare();
+				} catch (IllegalStateException e) {
+					Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
+					isError = true;
+				} catch (IOException e) {
+					Log.e(TAG,"Player cannot access path",e);
+					isError = true;
+				}
 			}
 			//SeekTo last listened position
 			if (position != -1){
@@ -305,7 +314,14 @@ public class PodcastPlayer extends Service {
 			
 			mEpisodeQueued = file;
 		}
-		mIsInitialised = true;
+		if (isError){
+			mIsInitialised = false;
+			mEpisodeQueued = ""; //this ensures that if the user re-enters 
+			//the player that the init is carried out.
+			showErrorNotification();
+		} else {
+			mIsInitialised = true;
+		}
 	}
 	
 	/**
@@ -521,6 +537,31 @@ public class PodcastPlayer extends Service {
 	
 	private void hideNotification() {
 		mNM.cancel(NOTIFY_ID);
+	}
+	
+	private void showErrorNotification(){
+		//Shows a notification that there is an error with an episode file 
+		//and suggests the user long press to re-download.
+		Intent notificationIntent = new Intent(this,EpisodesActivity.class);
+		notificationIntent.putExtras(mData);
+		PendingIntent contentIntent = PendingIntent.getActivity(mPonyExpressApp, 
+				0, notificationIntent, 0);
+		Notification notification = new Notification(
+				R.drawable.stat_notify_error, null,
+				System.currentTimeMillis());
+		
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		notification.defaults |= Notification.DEFAULT_LIGHTS;
+		
+		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.wrappable_notification_layout);
+		contentView.setImageViewResource(R.id.notification_image, R.drawable.stat_notify_error);
+		contentView.setTextViewText(R.id.notification_title,getText(R.string.app_name));
+		contentView.setTextViewText(R.id.notification_text, getText(R.string.file_error));
+		notification.contentView = contentView;
+		notification.contentIntent = contentIntent;
+		
+		mNM.notify(NOTIFY_ID, notification);
+		
 	}
 	
 	private void registerRemoteControl() {
