@@ -426,7 +426,7 @@ public class PonyExpressDbAdaptor {
 		final Cursor cursor = mDb.query(true, table_name,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		int downloaded = 0;  //false
-		if (cursor != null){
+		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			downloaded = cursor.getInt(1);
 			Log.d(TAG, "Episode downloaded: "+ downloaded);
