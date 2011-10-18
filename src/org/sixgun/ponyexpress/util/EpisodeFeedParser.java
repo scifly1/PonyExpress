@@ -49,6 +49,9 @@ public class EpisodeFeedParser extends BaseFeedParser{
     static final String DESCRIPTION = "description";
     static final String TITLE = "title";
     static final String ITEM = "item";
+    static final String OGG = "audio/ogg";
+    static final String MPEG = "audio/mpeg";
+    static final String OLD_OGG = "application/ogg";
 	protected static final String TAG = "EpisodeFeedParser";
     
     /**
@@ -72,6 +75,9 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		RootElement root = new RootElement("rss");
 		Element channel = root.requireChild("channel");
 		Element item = channel.requireChild(ITEM);
+		
+		//FIXME Should probably use requireChild below to ensure listeners are called.
+		//This would replace the checking of each episode for all data.
 		
 		/*Set up the ElementListeners.
 		 * The first listens for the end if the item element, which marks the end
@@ -112,11 +118,18 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			
 			@Override
 			public void start(Attributes attributes) {
-				String length = attributes.getValue("", "length");
-				Log.d(TAG,"Episode Length is "+ length);
-				new_episode.setLength(length);
-				String url = attributes.getValue("", "url");
-				new_episode.setLink(url);
+				//Check that the content is a media file and not a pdf or something.	
+				String mime_type = attributes.getValue("", "type");
+				
+				if (mime_type.equalsIgnoreCase(OGG) || 
+						mime_type.equalsIgnoreCase(MPEG) ||
+						mime_type.equalsIgnoreCase(OLD_OGG)){
+					String length = attributes.getValue("", "length");
+					Log.d(TAG,"Episode Length is "+ length);
+					new_episode.setLength(length);
+					String url = attributes.getValue("", "url");
+					new_episode.setLink(url);
+				}
 			}
 		});
 		//This Listener catches the Description of the podcast.
@@ -132,7 +145,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		
 		InputStream istream = getInputStream();
 		//To debug with test feeds comment out the above line and uncomment the next line.
-	    //putStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
+	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
 		if (istream != null){
 			try {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
