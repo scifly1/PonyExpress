@@ -130,7 +130,7 @@ public class DentParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				NotifyError();
+				NotifyError("");
 			}
 		} else {
 			//If connection errors tell user

@@ -56,7 +56,7 @@ public abstract class BaseFeedParser {
     	try {
             mFeedUrl = new URL(feedUrl);
         } catch (MalformedURLException e) {
-            NotifyError();
+            NotifyError("");
             mFeedUrl = null;
         }
         mCtx = ctx;
@@ -103,7 +103,7 @@ public abstract class BaseFeedParser {
 		return conn;
     }
 
-    protected void NotifyError() {
+    protected void NotifyError(String error_message) {
     	//Send a notification to the user telling them of the error
 		//This uses an empty intent because there is no new activity to start.
 		PendingIntent intent = PendingIntent.getActivity(mCtx.getApplicationContext(), 
@@ -111,7 +111,12 @@ public abstract class BaseFeedParser {
 		NotificationManager notifyManager = 
 			(NotificationManager) mCtx.getSystemService(Context.NOTIFICATION_SERVICE);
 		int icon = R.drawable.stat_notify_error;
+		
 		CharSequence text = mCtx.getText(R.string.feed_error);
+		if (error_message != ""){
+			text = error_message;
+		}
+
 		Notification notification = new Notification(
 				icon, null,
 				System.currentTimeMillis());
@@ -123,4 +128,5 @@ public abstract class BaseFeedParser {
 	}
     
     abstract public Object parse();
+    
 }

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sixgun.ponyexpress.Episode;
+import org.sixgun.ponyexpress.R;
 import org.xml.sax.Attributes;
 
 import android.content.Context;
@@ -80,7 +81,14 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		 */
 		item.setEndElementListener(new EndElementListener(){
             public void end() {
-                episodes.add(new Episode(new_episode));
+            	if (new_episode.hasAllData()){
+            		episodes.add(new Episode(new_episode));
+            		
+            	} else {
+            		Log.e(TAG, "RSS feed is malformed, required data is missing!");
+            		NotifyError(mCtx.getString(R.string.malformed_feed));
+            	}   
+            	new_episode.clear();
             }
 		});
 		//This listener catches the title.
@@ -124,17 +132,19 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		
 		InputStream istream = getInputStream();
 		//To debug with test feeds comment out the above line and uncomment the next line.
-	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed2);
+	    //putStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
 		if (istream != null){
 			try {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				NotifyError();
+				NotifyError("");
 			}
 		}
 		return episodes;
 		
 	}
+	
+	
 
 }

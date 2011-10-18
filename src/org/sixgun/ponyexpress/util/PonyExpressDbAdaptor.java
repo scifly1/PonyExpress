@@ -510,7 +510,7 @@ public class PonyExpressDbAdaptor {
 		final Cursor cursor = mDb.query(table_name, columns, 
 				null, null, null, null, null);
 		int rows = 0;
-		if (cursor != null && cursor.getCount() > 0){
+		if (cursor != null && cursor.getCount() >= 0){
 			rows = cursor.getCount();
 		} else {
 			Log.e(TAG,"Empty cursor at getNumberofRows()");

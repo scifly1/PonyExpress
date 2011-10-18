@@ -101,7 +101,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				NotifyError();
+				NotifyError("");
 				return null;
 			}
 		}			
@@ -141,11 +141,12 @@ public class PodcastFeedParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 			} catch (Exception e) {
-				NotifyError();
+				NotifyError("");
 				return null;
 			}
 		}			
 		return new_podcast.getArt_Url().toString();
 	}
+
 
 }
