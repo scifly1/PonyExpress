@@ -22,9 +22,11 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.apache.http.HttpStatus;
 import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
@@ -75,6 +77,26 @@ public class Utils {
 			return null;
 		}
 		return url;
+	}
+	
+	/**
+	 * Checks that the given URL returns status 200 (OK)
+	 * @param the URL
+	 * @return the connection if connection can be made or null otherwise.
+	 */
+	static public HttpURLConnection checkURL(URL _url){
+		HttpURLConnection conn;
+		try {
+			conn = (HttpURLConnection) _url.openConnection();
+			Log.d(TAG,"Response code: " + conn.getResponseCode());
+			//Check that the server responds properly
+			if (conn.getResponseCode() != HttpStatus.SC_OK){
+				return null;
+			}
+		} catch (IOException e) {
+			return null;
+		}
+		return conn;
 	}
 	
 	/**

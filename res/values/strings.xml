@@ -88,6 +88,7 @@
 	<string name="download_failed">Sorry, there was an error during download.</string>
 	<string name="delete_failed">Unable to remove the podcast subscription.</string>
 	<string name="file_error">There is a problem with this episode.	Long press on the episode name to re-download it.</string>
+	<string name="url_error">The url you entered may be incorrect, please try again.</string>
 	<string name="about_title">About Pony Express</string>
 
 	<string name="about_message">

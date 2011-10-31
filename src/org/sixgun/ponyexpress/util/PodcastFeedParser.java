@@ -74,7 +74,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 		new_podcast.setFeedUrl(mFeedUrl);
 		
 		//This listener catches the name.
-		channel.getChild(NAME).setEndTextElementListener(new EndTextElementListener() {
+		channel.requireChild(NAME).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
@@ -104,8 +104,12 @@ public class PodcastFeedParser extends BaseFeedParser {
 				NotifyError("");
 				return null;
 			}
-		}			
-		return new_podcast;
+			return new_podcast;
+		} else {
+			NotifyError("");
+			return null;		
+		}
+		
 		
 	}
 	

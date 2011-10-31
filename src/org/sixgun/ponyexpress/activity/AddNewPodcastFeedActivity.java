@@ -18,6 +18,8 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.net.URL;
+
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
@@ -31,6 +33,7 @@ import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class AddNewPodcastFeedActivity extends Activity {
@@ -57,24 +60,27 @@ public class AddNewPodcastFeedActivity extends Activity {
 				final String tag = mTagText.getText().toString();
 				
 				Podcast podcast = new Podcast();
-				//TODO check feed returns Response 200 before setting it.
-				podcast.setFeedUrl(Utils.getURL(feed));
-				//TODO Check identica group exists, (query identica).
-				if (!group.equals("") && !group.equals("!")){
-					//Remove the leading '!' and store.
-					podcast.setIdenticaGroup(group.substring(1));
-				}
-				if(!tag.equals("") && !tag.equals("#")){
-					if(tag.substring(0,1) == "#") {
-						podcast.setIdenticaTag(tag.substring(1));
-					} else {
-						podcast.setIdenticaTag(tag);
+				
+				URL  feedUrl = Utils.getURL(feed);
+				if (Utils.checkURL(feedUrl) != null){
+					podcast.setFeedUrl(feedUrl);
+					//TODO Check identica group exists, (query identica).
+					if (!group.equals("") && !group.equals("!")){
+						//Remove the leading '!' and store.
+						podcast.setIdenticaGroup(group.substring(1));
 					}
-				}
-				
-				mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-				
-				finish();
+					if(!tag.equals("") && !tag.equals("#")){
+						if(tag.substring(0,1) == "#") {
+							podcast.setIdenticaTag(tag.substring(1));
+						} else {
+							podcast.setIdenticaTag(tag);
+						}
+					}
+
+					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+
+					finish();
+				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
 		};
 		OnClickListener CancelButtonListener = new OnClickListener() {
@@ -103,6 +109,8 @@ public class AddNewPodcastFeedActivity extends Activity {
 		startActivity(new Intent(
         		mPonyExpressApp,PreferencesActivity.class));
 	}
+	
+	
 	
 
 }

@@ -38,6 +38,7 @@ public class Episode implements Comparable<Episode> {
 	private static final String TAG = "PonyExpress Episode";
 	static SimpleDateFormat FORMATTER = 
         new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
+	private final static String EPOCH = "Thu, 01 Jan 1970 00:00:00 GMT";
     private String mTitle;
     private URL mLink;
     private Date mDate;
@@ -102,7 +103,12 @@ public class Episode implements Comparable<Episode> {
         try {
             this.mDate = FORMATTER.parse(date.trim());
         } catch (ParseException e) {
-            Log.e(TAG,"Error parsing the date from the feed!",e);
+            Log.e(TAG,"Error parsing the date from the feed! Setting date to Epoch",e);
+            try {
+				this.mDate = FORMATTER.parse(EPOCH);
+			} catch (ParseException e1) {
+				Log.e(TAG, "Unable to set EPOCH as pubDate!");
+			}
         }
     }
     

@@ -88,19 +88,13 @@ public abstract class BaseFeedParser {
 		return istream;
     }
     
+    /** 
+     * Checks that a connection can be made to mFeedUrl and 
+     * if so returns the connection.
+     * @return the HttpUrlConnection
+     */
     private HttpURLConnection openConnection(){
-    	HttpURLConnection conn;
-		try {
-			conn = (HttpURLConnection) mFeedUrl.openConnection();
-			Log.d(TAG,"Response code: " + conn.getResponseCode());
-			//Check that the server responds properly
-			if (conn.getResponseCode() != HttpStatus.SC_OK){
-				return null;
-			}
-		} catch (IOException e) {
-			return null;
-		}
-		return conn;
+    	return Utils.checkURL(mFeedUrl);	
     }
 
     protected void NotifyError(String error_message) {
