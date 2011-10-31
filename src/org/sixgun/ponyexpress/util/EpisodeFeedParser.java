@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,7 @@ import java.util.List;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.R;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 
 import android.content.Context;
 import android.sax.Element;
@@ -76,37 +78,32 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		Element channel = root.requireChild("channel");
 		Element item = channel.requireChild(ITEM);
 		
-		//FIXME Should probably use requireChild below to ensure listeners are called.
-		//This would replace the checking of each episode for all data.
-		
 		/*Set up the ElementListeners.
 		 * The first listens for the end if the item element, which marks the end
 		 * of each episodes description in the RSS.  At this point the Episode is added
-		 * the list as it should have had all its details recorded by the other 
-		 * listeners.
+		 * the list as it will have had all its details recorded by the other 
+		 * listeners. 
 		 */
 		item.setEndElementListener(new EndElementListener(){
             public void end() {
-            	if (new_episode.hasAllData()){
-            		episodes.add(new Episode(new_episode));
-            		
-            	} else {
-            		Log.e(TAG, "RSS feed is malformed, required data is missing!");
-            		NotifyError(mCtx.getString(R.string.malformed_feed));
-            	}   
+            	episodes.add(new Episode(new_episode));
+            	
             	new_episode.clear();
             }
 		});
+		
 		//This listener catches the title.
-		item.getChild(TITLE).setEndTextElementListener(new EndTextElementListener() {
+		item.requireChild(TITLE).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
 				new_episode.setTitle(body);
+				
 			}
 		});
+		
 		//This listener catches the pubDate.
-		item.getChild(PUB_DATE).setEndTextElementListener(new EndTextElementListener() {
+		item.requireChild(PUB_DATE).setEndTextElementListener(new EndTextElementListener() {
 			
 			@Override
 			public void end(String body) {
@@ -114,7 +111,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			}
 		});
 		//This Listener catches the length and url of the podcast.
-		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
+		item.requireChild(CONTENT).setStartElementListener(new StartElementListener() {
 			
 			@Override
 			public void start(Attributes attributes) {
@@ -150,7 +147,10 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			try {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
-			} catch (Exception e) {
+			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
+				Log.e(TAG, "RSS feed is malformed, required data is missing!");
+        		NotifyError(mCtx.getString(R.string.malformed_feed));
+			} catch (IOException e) {
 				NotifyError("");
 			}
 		}

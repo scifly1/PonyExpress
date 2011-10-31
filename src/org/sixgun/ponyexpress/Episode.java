@@ -169,19 +169,6 @@ public class Episode implements Comparable<Episode> {
 		
 	}
 
-	/**
-	 * Called after parsing the RSS data into an episode object to ensure
-	 * all required data from RSS has been gathered.  Ensures that malformed feeds
-	 * do not corrupt Pony.
-	 * @return True if all data collected, false otherwise.
-	 */
-	public boolean hasAllData() {
-		if (mTitle == null || mLink == null || mDate == null || mLength == null){
-			return false;
-		} else {
-			return true;
-		}
-		
-	}
+
 	
 }
