@@ -33,6 +33,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
+import android.os.StatFs;
 import android.util.Log;
 import android.view.Gravity;
 
@@ -220,5 +222,18 @@ public class Utils {
 		}
 		
 		return bd;
+	}
+	
+	/**
+	 * Checks the remaining space on the SD card.
+	 * @return the remaining space in megabytes.
+	 */
+	static public double checkSdCardSpace(){
+		StatFs stat = new StatFs(Environment.getExternalStorageDirectory().getPath());
+		double sdAvailSpace = (double)stat.getAvailableBlocks() *(double)stat.getBlockSize();
+		//One megabyte equals 1,000,000 bytes.
+		return sdAvailSpace / 1000000;
+		
+		
 	}
 }

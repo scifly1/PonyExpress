@@ -86,6 +86,7 @@
 	<string name="wrong_network_type">You are on a mobile network and have disabled
 		downloads unless on WiFi. Check the settings.</string>
 	<string name="download_failed">Sorry, there was an error during download.</string>
+	<string name="low_space">MB of space left on SD Card.  This may not be enough for the download!</string>
 	<string name="delete_failed">Unable to remove the podcast subscription.</string>
 	<string name="file_error">There is a problem with this episode.	Long press on the episode name to re-download it.</string>
 	<string name="url_error">The url you entered may be incorrect, please try again.</string>
