@@ -474,13 +474,13 @@ public class PlayerActivity extends Activity {
 			activateDownloadCancelButton();
 			Log.d(TAG, "Player resuming..");
 			startDownloadProgressBar(mIndex);
-		} else {
+		} else if (!mEpisodeDownloaded){
 			//Check remaining space on SD card and warn if < 100Mbytes.
 			double freeSpace = Utils.checkSdCardSpace();
 			if (freeSpace < 100.0){
 				String text = mPonyExpressApp.getString(R.string.low_space);
 				text = (int)freeSpace + text;
-				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_LONG).show();
+				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
