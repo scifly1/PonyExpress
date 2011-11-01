@@ -212,6 +212,8 @@ public class DownloaderService extends Service {
 							}
 							if (episode.downloadCancelled()){
 								Log.d(TAG, "Podcast download cancelled.");
+								//Delete partial download.
+								deleteEpisode(podcastPath, url);
 							}
 							else {
 								Log.d(TAG,"Podcast written to SD card.");
@@ -331,6 +333,27 @@ public class DownloaderService extends Service {
 		}
 		
 	}
+	
+	/**
+	 * Deletes the partially downloaded episode if downloading is cancelled.
+	 *
+	 */
+	//FIXME Episode deletion also occurs in PanyExpressActivity, it could be unified in Utils.
+	private void deleteEpisode(String podcastPath, URL url){
+		File path = new File(mRoot, podcastPath);		
+		//Split filename from path url.
+		final String filename_path = url.getFile();
+		final String filename = filename_path.substring(filename_path.lastIndexOf('/'));
+		File partialEpisode = new File(path, filename);
+		if  (partialEpisode.delete()){
+			Log.d(TAG, filename + " deleted.");
+		} else { 
+			Log.e(TAG, "Failed to delete " + filename);
+			}
+		
+	}
+	
+	
 	/**This thread  follows mCurrentDownloads while the 
 	* service is active. It Displays notifications while > 1.  
 	*/

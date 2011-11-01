@@ -791,8 +791,6 @@ public class PlayerActivity extends Activity {
 			mDownloadButton.setVisibility(View.VISIBLE);
 			mDownloadButton.setEnabled(true);
 			mDownloadProgress.setProgress(0);
-			
-			//FIXME The partial download is not deleted, not a problem but takes up space. 
 		}
 		
 	};
