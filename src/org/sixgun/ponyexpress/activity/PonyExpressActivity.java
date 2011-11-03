@@ -645,7 +645,7 @@ public class PonyExpressActivity extends ListActivity {
 					if (rowID != -1){
 						if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast)){
 							//delete from SD Card
-							deleteFile(rowID, podcast);
+							Utils.deleteFile(mPonyExpressApp, rowID, podcast);
 						}
 						//remove from database after deleting.
 						mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast);
@@ -687,19 +687,6 @@ public class PonyExpressActivity extends ListActivity {
 			mPonyExpressApp.getDbHelper().updateAlbumArtUrl(podcast_url, art_url);
 		}
 		
-		/** Deletes a file from the SD Card.
-		 * 
-		 * @param rowID of the file to be deleted from the database.
-		 */
-		private void deleteFile(long rowID, String podcast_name) {
-			File rootPath = Environment.getExternalStorageDirectory();
-			File dirPath = new File(rootPath,PonyExpressApp.PODCAST_PATH);
-			String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(rowID, podcast_name);
-			//Add the podcast name as a folder under the PODCAST_PATH
-			filename = podcast_name + filename;
-			File fullPath = new File(dirPath,filename);
-			fullPath.delete();			
-		}
 		/* 
 		 */
 		@Override

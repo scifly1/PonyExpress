@@ -10,6 +10,7 @@
 	<string name="mark_listened">Mark as listened</string>
 	<string name="mark_not_listened">Mark as not listened</string>
 	<string name="download_all">Download all</string>
+	<string name="delete_episode">Delete episode from SD Card</string>
 	<string name="episodes_stored_dialog">Episodes stored per podcast</string>
 	<string name="episodes_stored_title">Episode storage</string>
 	<string name="Episodes_title">

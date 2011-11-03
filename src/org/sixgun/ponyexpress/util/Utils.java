@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.apache.http.HttpStatus;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
@@ -131,6 +132,20 @@ public class Utils {
 			}
 		}
 		return path.delete();
+	}
+	
+	/** Deletes a file from the SD Card.
+	 * 
+	 * @param rowID of the file to be deleted from the database.
+	 */
+	static public boolean deleteFile(PonyExpressApp ponyApp, long rowID, String podcast_name) {
+		File rootPath = Environment.getExternalStorageDirectory();
+		File dirPath = new File(rootPath,PonyExpressApp.PODCAST_PATH);
+		String filename = ponyApp.getDbHelper().getEpisodeFilename(rowID, podcast_name);
+		//Add the podcast name as a folder under the PODCAST_PATH
+		filename = podcast_name + filename;
+		File fullPath = new File(dirPath,filename);
+		return fullPath.delete();			
 	}
 	
 	/**

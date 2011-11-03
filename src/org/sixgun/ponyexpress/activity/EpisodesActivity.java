@@ -203,6 +203,7 @@ public class EpisodesActivity extends ListActivity {
 		} else {
 			menu.removeItem(R.id.re_download);
 			menu.removeItem(R.id.listen);
+			menu.removeItem(R.id.delete);
 		}
 	}
 
@@ -319,6 +320,12 @@ public class EpisodesActivity extends ListActivity {
 			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
 			onListItemClick(getListView(), info.targetView, info.position, info.id);
 			return true;
+		case R.id.delete:
+			markListened(info.id);
+			if (Utils.deleteFile(mPonyExpressApp, info.id, mPodcastName)){
+				mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
+			}
+			listEpisodes();
 		default:
 			return super.onContextItemSelected(item);
 		}	
