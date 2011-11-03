@@ -266,6 +266,20 @@ public class PonyExpressDbAdaptor {
 		return mDb.query(
 				true,table_name,columns,EpisodeKeys.LISTENED + "= -1",null,null,null,null,null);
 	}
+	
+	/**
+	 * Gets all undownloaded and unlistened episodes.
+	 * @param the name of the Podcast
+	 * @return a cursor of all undownloaded and unlistened episodes.
+	 */
+	public Cursor getAllUndownloadedAndUnlistened(String podcast_name) {
+		final String table_name = getTableName(podcast_name);
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.URL,
+				EpisodeKeys.SIZE};
+		final String where = EpisodeKeys.DOWNLOADED + "= 0 AND " + EpisodeKeys.LISTENED + "= -1";
+		return mDb.query(true, table_name, columns, where, null, null, null, null, null);
+	}
+	
 	/**
 	 * Gets all filenames of all the files that have been downloaded and should be 
 	 * on the SD Card.

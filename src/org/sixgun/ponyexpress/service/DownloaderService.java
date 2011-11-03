@@ -370,6 +370,14 @@ public class DownloaderService extends Service {
 				int icon_counter = 0;
 				
 				while (mDownloaderAwake){
+					try {
+						//Sleep first to give mCurrentDownloads a chance to increment
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						mNM.cancel(NOTIFY_ID);
+						return;
+					}
+					
 					if (mCurrentDownloads > 0){ 
 						if (mCurrentDownloads == 1){
 							text = getText(R.string.downloading_episode);
@@ -421,12 +429,7 @@ public class DownloaderService extends Service {
 						mNM.cancel(NOTIFY_ID);
 						stopSelf();
 					}
-					try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-						mNM.cancel(NOTIFY_ID);
-						return;
-					}
+					
 				}
 			}
 		}).start();
