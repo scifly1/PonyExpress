@@ -70,6 +70,7 @@ public class EpisodesActivity extends ListActivity {
 	private String mPodcastNameStripped; 
 	private TextView mUnlistenedText;
 	private ViewGroup mBackground;
+	private int mNumberUnlistened;
 
 	
 	@Override
@@ -163,6 +164,9 @@ public class EpisodesActivity extends ListActivity {
 				== ConnectivityManager.TYPE_MOBILE) {
 				//Hide download all menu item	
 				menu.removeItem(DOWNLOAD_ALL);
+		} else if (mNumberUnlistened == 0){
+			//Also hide download all menu item if no unlistened to episodes
+			menu.removeItem(DOWNLOAD_ALL);
 		} else if (menu.findItem(DOWNLOAD_ALL) == null){
 			menu.add(Menu.NONE,DOWNLOAD_ALL, Menu.FIRST, R.string.download_all);
 		}
@@ -372,8 +376,8 @@ public class EpisodesActivity extends ListActivity {
 		setListAdapter(episodes);
 		
 		//Also update the unlistened text at the same time.
-		final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(mPodcastName);
-		final String unListenedString = Utils.formUnlistenedString(mPonyExpressApp, unlistened);		
+		mNumberUnlistened = mPonyExpressApp.getDbHelper().countUnlistened(mPodcastName);
+		final String unListenedString = Utils.formUnlistenedString(mPonyExpressApp, mNumberUnlistened);		
 		mUnlistenedText.setText(unListenedString);
 		
 	}
