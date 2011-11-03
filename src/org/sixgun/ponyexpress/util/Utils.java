@@ -20,8 +20,8 @@ package org.sixgun.ponyexpress.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -45,7 +45,7 @@ import android.view.Gravity;
 public class Utils {
 	
 	private static final String TAG = "PonyExpressUtils";
-	private static Method mBitmapDrawable;
+	private static Constructor<?> mBitmapDrawableCtor;
 
 	/**
 	 * Formats a time in millisecods into a h:mm:ss string
@@ -170,30 +170,38 @@ public class Utils {
 		}
 		//First use deprecated Ctor that will work on android 1.5
 		BitmapDrawable new_background = new BitmapDrawable(new_image);
-		//If on a newer android use the better Ctor.
-		if (mBitmapDrawable !=null){
+		//If on android > 1.5 use the better Ctor.
+		if (mBitmapDrawableCtor != null){
 			try {
 				new_background = BitmapDrawable(res, new_image);
 			} catch (IllegalArgumentException e) {
-				Log.e(TAG, "Illegal arguments to BitmapDrawable" , e);
+				Log.e(TAG, "Illegal Args passed to BitmapDrawable", e);
 			} catch (IOException e) {
-				Log.e(TAG, "IOException calling BitmapDrawable", e);
+				Log.e(TAG, "IO exception with BitmapDrawable", e);
 			}
 		}
-		new_background.setGravity(Gravity.LEFT|Gravity.TOP);
+		new_background.setGravity(Gravity.TOP| Gravity.LEFT);
 		new_background.setAlpha(80);
 		return new_background;
 	}
 	/**
-	 * Method to determine if we need to use the deprcated BitmapDrawable constructor.
+	 * Method to determine if we need to use the deprecated BitmapDrawable constructor.
 	 */
 	static private void initCompatibility(){
+		Class<?> cls;
+		Class<?> partypes[] = new Class[2];
 		try {
-	           mBitmapDrawable = BitmapDrawable.class.getMethod(
-	                   "BitmapDrawable", new Class[] { Resources.class, Bitmap.class } );
-	       } catch (NoSuchMethodException nsme) {
-	           /* failure, must be older device */
-	       }
+			cls = BitmapDrawable.class;
+			partypes[0] = Resources.class;
+			partypes[1] = Bitmap.class;
+			mBitmapDrawableCtor	= cls.getConstructor(partypes);	
+		} catch (SecurityException e) {
+			Log.e(TAG, "BitmapDrawable security exception" , e);
+		} catch (NoSuchMethodException e) {
+			//Android 1.5
+			Log.e(TAG,"BitmapDrawable has no such method", e);
+		}  
+
 	}
 	
 	static {
@@ -202,23 +210,18 @@ public class Utils {
 	
 	private static BitmapDrawable BitmapDrawable(Resources res, Bitmap image) throws IllegalArgumentException, IOException{
 		BitmapDrawable bd = null;
+		Object[] arglist = new Object[2];
+		arglist[0] = res;
+		arglist[1] = image;
 		try {
-			return (BitmapDrawable) mBitmapDrawable.invoke(null, res, image);
-		} catch (InvocationTargetException ite) {
-			/* unpack original exception when possible */
-			Throwable cause = ite.getCause();
-			if (cause instanceof IOException) {
-				throw (IOException) cause;
-			} else if (cause instanceof RuntimeException) {
-				throw (RuntimeException) cause;
-			} else if (cause instanceof Error) {
-				throw (Error) cause;
-			} else {
-				/* unexpected checked exception; wrap and re-throw */
-				throw new RuntimeException(ite);
-			} 
+			bd = (android.graphics.drawable.BitmapDrawable) 
+						mBitmapDrawableCtor.newInstance(arglist);
+		} catch (InstantiationException e) {
+			Log.e(TAG, "Could not instantiate BitmapDrawable", e);
 		} catch (IllegalAccessException e) {
-			Log.e(TAG, "unexpected " + e);
+			Log.e(TAG, "Could not access BitmapDrawable", e);
+		} catch (InvocationTargetException e) {
+			Log.e(TAG, "Could not invoke BitmapDrawable", e);
 		}
 		
 		return bd;
@@ -236,4 +239,5 @@ public class Utils {
 		
 		
 	}
+	
 }
