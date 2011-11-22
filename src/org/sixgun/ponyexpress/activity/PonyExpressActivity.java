@@ -52,29 +52,29 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.AsyncTask.Status;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CursorAdapter;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 /**
  * Launch Activity for PonyExpress.
@@ -115,7 +115,7 @@ public class PonyExpressActivity extends ListActivity {
 		            	showSettings(v);
 		                break;
 		            case R.id.add_podcasts_button:
-		            	addPodcast(v);
+		            	addPodcast(v, "");
 		                break;
 		            case R.id.footer_button:
 		            	//fallthrough
@@ -199,6 +199,13 @@ public class PonyExpressActivity extends ListActivity {
 		mPodcastDeletedReceiver = new PodcastDeleted();
 		
 		listPodcasts(false);
+		
+		//If started by clicking a podcast link call AddPodcast
+		Intent intent = getIntent();
+		if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_VIEW)){
+			final String url = intent.getDataString();
+			addPodcast(null, url);
+		}
 	}
 	
 	@Override
@@ -323,9 +330,10 @@ public class PonyExpressActivity extends ListActivity {
 	 * Bring up the add Podcasts activity.
 	 * @param v
 	 */
-	public void addPodcast(View v) {
-		startActivity(new Intent(
-				mPonyExpressApp, AddNewPodcastFeedActivity.class));
+	public void addPodcast(View v, String url) {
+		Intent intent = new Intent(mPonyExpressApp, AddNewPodcastFeedActivity.class);
+		intent.putExtra(PodcastKeys.FEED_URL, url);
+		startActivity(intent);
 	}
 	
 	

@@ -21,6 +21,7 @@ package org.sixgun.ponyexpress.activity;
 import java.net.URL;
 
 import org.sixgun.ponyexpress.Podcast;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.Utils;
@@ -50,7 +51,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.add_feed);
-		
+				
 		OnClickListener OKButtonListener =  new OnClickListener() {
 			
 			@Override
@@ -78,7 +79,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 					}
 
 					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-
+					Toast.makeText(mPonyExpressApp, R.string.add_podcast, Toast.LENGTH_SHORT).show();
 					finish();
 				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
@@ -99,6 +100,20 @@ public class AddNewPodcastFeedActivity extends Activity {
 		okButton.setOnClickListener(OKButtonListener);
 		Button cancelButton = (Button) findViewById(R.id.cancel);
 		cancelButton.setOnClickListener(CancelButtonListener);
+		
+		//If the feedURl has been sent in the intent populate the text box
+		if (!getIntent().getExtras().getString(PodcastKeys.FEED_URL).equals("")){
+			String url = getIntent().getExtras().getString(PodcastKeys.FEED_URL);
+			//Chop off the scheme (http:// or podcast://)
+			int index = url.indexOf("//");
+			if (index != -1){
+				url = url.substring(index +2);
+				mFeedText.append(url);
+			} else {
+				Toast.makeText(this, R.string.url_error, Toast.LENGTH_SHORT).show();
+			}
+			
+		}
 	}
 	
 	/**
