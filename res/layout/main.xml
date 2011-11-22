@@ -24,8 +24,7 @@
 		<ImageButton android:id="@+id/add_podcasts_button" android:paddingTop="10dp"
 		android:layout_toLeftOf="@+id/settings_button" android:src="@drawable/add_podcasts_button"
 		android:layout_width="wrap_content" android:layout_height="wrap_content" 
-		android:background="#ff000000" android:onClick="addPodcast"
-		android:visibility="gone"/>
+		android:background="#ff000000" android:onClick="addPodcast"/>
 	</RelativeLayout>
 	
 	<LinearLayout android:id="@+id/footer_layout" android:orientation="vertical" android:layout_width="fill_parent"

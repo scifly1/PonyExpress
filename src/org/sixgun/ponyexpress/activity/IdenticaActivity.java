@@ -21,11 +21,11 @@ package org.sixgun.ponyexpress.activity;
 import java.util.ArrayList;
 
 import org.sixgun.ponyexpress.Dent;
+import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.service.IdenticaHandler;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
@@ -35,14 +35,12 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -51,8 +49,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -182,19 +180,10 @@ public class IdenticaActivity extends ListActivity {
 			public void onClick(View v) {
 				if (mIdenticaHandler.credentialsSet()){
 					if (mDentText.getText().length() != 0) {
-						//Easter egg for the observant :)
-						String text = mDentText.getText().toString();
-						if (text.equals("alloneword")){
-							SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
-							SharedPreferences.Editor editor = prefs.edit();
-							editor.putBoolean(getString(R.string.add_podcasts), true);
-							editor.commit();
-							Log.d(TAG,"Easter egg activated");
-						} else {
-							Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
-									 Toast.LENGTH_SHORT).show();
-							mIdenticaHandler.new PostDent().execute(text);
-						}
+						final String text = mDentText.getText().toString();
+						Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
+								Toast.LENGTH_SHORT).show();
+						mIdenticaHandler.new PostDent().execute(text);
 						mDentText.setText(mTagText);
 						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
 						new GetLatestDents().execute();
