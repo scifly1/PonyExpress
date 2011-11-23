@@ -78,8 +78,12 @@ public class AddNewPodcastFeedActivity extends Activity {
 						}
 					}
 
-					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+					final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
 					Toast.makeText(mPonyExpressApp, R.string.add_podcast, Toast.LENGTH_SHORT).show();
+					//Send podcast name back to PonyExpressActivity so it can update the new feed.
+					Intent intent = new Intent();
+					intent.putExtra(PodcastKeys.NAME, name);
+					setResult(RESULT_OK, intent);
 					finish();
 				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
@@ -88,6 +92,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
+				setResult(RESULT_CANCELED);
 				finish();
 			}
 		};

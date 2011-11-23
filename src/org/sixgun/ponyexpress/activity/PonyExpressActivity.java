@@ -87,6 +87,7 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
 	private static final int ABOUT_DIALOG = 4;
+	private static final int ADD_FEED = 0;
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask; 
 	private String mPodcastBeingUpdated;
@@ -332,10 +333,24 @@ public class PonyExpressActivity extends ListActivity {
 	public void addPodcast(View v, String url) {
 		Intent intent = new Intent(mPonyExpressApp, AddNewPodcastFeedActivity.class);
 		intent.putExtra(PodcastKeys.FEED_URL, url);
-		startActivity(intent);
+		startActivityForResult(intent, ADD_FEED);
 	}
 	
-	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		//No need for Switch/case on requestCode as only one result expected
+		if (resultCode == RESULT_OK){
+			final String podcast_name = data.getExtras().
+					getString(PodcastKeys.NAME);
+			updateFeed(podcast_name);
+		}
+		
+	}
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreateDialog(int, android.os.Bundle)
 	 */

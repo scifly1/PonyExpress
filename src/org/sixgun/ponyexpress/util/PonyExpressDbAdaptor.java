@@ -608,8 +608,9 @@ public class PonyExpressDbAdaptor {
 	 * the feed. ie: podcast title and album art url and adds
 	 * it them to the Db.
 	 *  @param podcast
+	 *  @return the name of the inserted podcast or null
 	 */
-	public void addNewPodcast(Podcast podcast){
+	public String addNewPodcast(Podcast podcast){
 		PodcastFeedParser parser = new PodcastFeedParser(mCtx,podcast.getFeed_Url().toString());
 		Podcast new_podcast = parser.parse();
 		if (new_podcast != null){
@@ -621,7 +622,9 @@ public class PonyExpressDbAdaptor {
 			//Create table for this podcast's episodes
 			String tableName = getTableName(new_podcast.getName());
 			mDb.execSQL("CREATE TABLE IF NOT EXISTS " + tableName + EPISODE_TABLE_FIELDS);
+			return new_podcast.getName();
 		}
+		return null;
 	}
 	
 	
