@@ -40,7 +40,6 @@ import android.view.MenuItem;
 
 public class GeneralOptionsMenuActivity extends TabActivity {
 
-	private static final int SETUP_ACCOUNT = 0;
 	private PonyExpressApp mPonyExpressApp;
 	
 	
@@ -72,9 +71,8 @@ public class GeneralOptionsMenuActivity extends TabActivity {
 	        return true;
 	    case R.id.identica_account_settings:
 	    	//Fire off AccountSetup screen
-			startActivityForResult(new Intent(
-					mPonyExpressApp,IdenticaAccountSetupActivity.class),
-					SETUP_ACCOUNT);
+			startActivity(new Intent(
+					mPonyExpressApp,IdenticaAccountSetupActivity.class));
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);

@@ -88,9 +88,8 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 					Toast.makeText(IdenticaEpisodeActivity.this, R.string.login_failed, 
 							Toast.LENGTH_LONG).show();
 					//Fire off AccountSetup screen
-					startActivityForResult(new Intent(
-							IdenticaEpisodeActivity.this,IdenticaAccountSetupActivity.class),
-							SETUP_ACCOUNT);
+					startActivity(new Intent(
+							IdenticaEpisodeActivity.this,IdenticaAccountSetupActivity.class));
 				}				
 			}
 		};

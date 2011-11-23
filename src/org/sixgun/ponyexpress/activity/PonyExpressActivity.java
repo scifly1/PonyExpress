@@ -86,7 +86,6 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String TAG = "PonyExpressActivity";
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
-	private static final int SETUP_ACCOUNT = 0;
 	private static final int ABOUT_DIALOG = 4;
 	private PonyExpressApp mPonyExpressApp; 
 	private UpdateEpisodes mUpdateTask; 
@@ -379,9 +378,8 @@ public class PonyExpressActivity extends ListActivity {
 	        return true;
 	    case R.id.identica_account_settings:
 	    	//Fire off AccountSetup screen
-			startActivityForResult(new Intent(
-					mPonyExpressApp,IdenticaAccountSetupActivity.class),
-					SETUP_ACCOUNT);
+	    	startActivity(new Intent(
+					mPonyExpressApp,IdenticaAccountSetupActivity.class));
 	    	return true;
 	    case R.id.about:
 	    	showDialog(ABOUT_DIALOG);

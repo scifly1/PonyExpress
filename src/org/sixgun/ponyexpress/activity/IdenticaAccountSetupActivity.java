@@ -113,9 +113,6 @@ public class IdenticaAccountSetupActivity extends Activity {
 				final String password = mPasswordText.getText().toString();
 				mIdenticaHandler.setCredentials(username, password);
 				
-				Intent intent = new Intent();
-				setResult(RESULT_OK, intent);
-				
 				if (!mIdenticaHandler.verifyCredentials()){
 					Log.d(TAG, "Cannot verify credentials!");
 					Toast.makeText(IdenticaAccountSetupActivity.this, R.string.credentials_not_verified, Toast.LENGTH_SHORT).show();
@@ -130,7 +127,6 @@ public class IdenticaAccountSetupActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				setResult(RESULT_CANCELED);
 				finish();
 			}
 		};

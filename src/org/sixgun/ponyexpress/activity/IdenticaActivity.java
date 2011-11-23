@@ -65,8 +65,6 @@ import android.widget.Toast;
 public class IdenticaActivity extends ListActivity {
 	
 	protected static final String TAG = "PonyExpress IdenticaActivity";
-	protected static final int SETUP_ACCOUNT = 0;
-	protected static final int ADD_FEED = 1;
 	protected PonyExpressApp mPonyExpressApp; 
 	protected IdenticaHandler mIdenticaHandler;
 	protected boolean mIdenticaHandlerBound;
@@ -192,9 +190,8 @@ public class IdenticaActivity extends ListActivity {
 					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
 							Toast.LENGTH_LONG).show();
 					//Fire off AccountSetup screen
-					startActivityForResult(new Intent(
-							IdenticaActivity.this,IdenticaAccountSetupActivity.class),
-							SETUP_ACCOUNT);
+					startActivity(new Intent(
+							IdenticaActivity.this,IdenticaAccountSetupActivity.class));
 				}				
 			}
 		};
@@ -393,9 +390,8 @@ public class IdenticaActivity extends ListActivity {
 	        return true;
 	    case R.id.identica_account_settings:
 	    	//Fire off AccountSetup screen
-			startActivityForResult(new Intent(
-					mPonyExpressApp,IdenticaAccountSetupActivity.class),
-					SETUP_ACCOUNT);
+			startActivity(new Intent(
+					mPonyExpressApp,IdenticaAccountSetupActivity.class));
 	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
