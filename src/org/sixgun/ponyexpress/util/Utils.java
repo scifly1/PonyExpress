@@ -130,8 +130,12 @@ public class Utils {
 					file.delete();
 				}
 			}
+			return path.delete();
+		} else {
+			Log.w(TAG, "Path for deletion could not be found!");
+			return true;
 		}
-		return path.delete();
+		
 	}
 	
 	/** Deletes a file from the SD Card.
