@@ -66,8 +66,7 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.GROUP + " TEXT);";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
-    
-    private PonyExpressDbHelper mDbHelper;
+	private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
     public boolean mDatabaseUpgraded = false;
     public boolean mNewDatabase = false;
@@ -618,9 +617,10 @@ public class PonyExpressDbAdaptor {
 			new_podcast.setIdenticaGroup(podcast.getIdenticaGroup());
 			//Insert Podcast into Podcast table
 			insertPodcast(new_podcast);
+			
 			//Create table for this podcast's episodes
 			String tableName = getTableName(new_podcast.getName());
-			mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
+			mDb.execSQL("CREATE TABLE IF NOT EXISTS " + tableName + EPISODE_TABLE_FIELDS);
 		}
 	}
 	
