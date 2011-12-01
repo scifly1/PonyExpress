@@ -38,10 +38,10 @@ import android.util.Xml;
  */
 public class PodcastFeedParser extends BaseFeedParser {
 
-	static final String MEDIA_NS = "http://search.yahoo.com/mrss/";
+	static final String MEDIA_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 	// names of the XML tags
     static final String NAME = "title";
-    static final String ALBUM_ART_URL = "thumbnail";
+    static final String ALBUM_ART_URL = "image";
 	private static final String TAG = "Pony/PodcastFeedParser";
    
     
@@ -87,7 +87,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			
 			@Override
 			public void start(Attributes attributes) {
-				String url = attributes.getValue("", "url");
+				String url = attributes.getValue("", "href");
 				Log.d(TAG,"Podcast art from: " + url);
 				new_podcast.setArt_Url(url);				
 			}
@@ -132,7 +132,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			
 			@Override
 			public void start(Attributes attributes) {
-				String url = attributes.getValue("", "url");
+				String url = attributes.getValue("", "href");
 				Log.d(TAG,"Podcast art from: " + url);
 				new_podcast.setArt_Url(url);				
 			}
