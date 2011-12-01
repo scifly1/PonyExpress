@@ -38,10 +38,10 @@ import android.util.Xml;
  */
 public class PodcastFeedParser extends BaseFeedParser {
 
-	static final String MEDIA_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd";
+	private static final String MEDIA_NS = "http://www.itunes.com/dtds/podcast-1.0.dtd";
 	// names of the XML tags
-    static final String NAME = "title";
-    static final String ALBUM_ART_URL = "image";
+    private static final String NAME = "title";
+    private static final String ALBUM_ART_URL = "image";
 	private static final String TAG = "Pony/PodcastFeedParser";
    
     

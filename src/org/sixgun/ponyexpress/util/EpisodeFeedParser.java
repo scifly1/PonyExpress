@@ -45,16 +45,17 @@ import android.util.Xml;
  */
 public class EpisodeFeedParser extends BaseFeedParser{
 	
+	
 	// names of the XML tags
-    static final String PUB_DATE = "pubDate";
-    static final String CONTENT = "enclosure";
-    static final String DESCRIPTION = "description";
-    static final String TITLE = "title";
-    static final String ITEM = "item";
-    static final String OGG = "audio/ogg";
-    static final String MPEG = "audio/mpeg";
-    static final String OLD_OGG = "application/ogg";
-	protected static final String TAG = "EpisodeFeedParser";
+    private static final String PUB_DATE = "pubDate";
+    private static final String CONTENT = "enclosure";
+    private static final String DESCRIPTION = "description";
+    private static final String TITLE = "title";
+    private static final String ITEM = "item";
+    private static final String OGG = "audio/ogg";
+    private static final String MPEG = "audio/mpeg";
+    private static final String OLD_OGG = "application/ogg";
+	private static final String TAG = "EpisodeFeedParser";
     
     /**
      * Constructor - Takes a feedUrl and passes it to the SuperClass.
