@@ -16,11 +16,11 @@
 
 package org.sixgun.ponyexpress.util;
 
-import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -33,6 +33,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
 
@@ -154,6 +155,7 @@ public class ImageManager implements ImageCache {
         SOCKET_TIMEOUT_MS);
 
     HttpResponse response;
+    
 
     try {
       response = mClient.execute(get);
@@ -166,12 +168,12 @@ public class ImageManager implements ImageCache {
       throw new IOException("Non OK response: " +
           response.getStatusLine().getStatusCode());
     }
-
+    
     HttpEntity entity = response.getEntity();
-    BufferedInputStream bis = new BufferedInputStream(entity.getContent(),
-        8 * 1024);
-    Bitmap bitmap = BitmapFactory.decodeStream(bis);
-    bis.close();
+    BufferedHttpEntity bhe = new BufferedHttpEntity(entity);
+    InputStream is = bhe.getContent();
+    Bitmap bitmap = BitmapFactory.decodeStream(is);
+    is.close();
 
     return bitmap;
   }
@@ -190,6 +192,7 @@ public class ImageManager implements ImageCache {
 
     if (bitmap == null) {
     	Log.w(TAG, "Retrieved bitmap is null.");
+    	Log.d(TAG, "URL: " + url);
     } else {
       put(url, bitmap);
     }
