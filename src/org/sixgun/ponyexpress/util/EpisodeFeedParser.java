@@ -45,17 +45,21 @@ import android.util.Xml;
  */
 public class EpisodeFeedParser extends BaseFeedParser{
 	
-	
+	private static final String CONTENT_NS = "http://purl.org/rss/1.0/modules/content/";
 	// names of the XML tags
     private static final String PUB_DATE = "pubDate";
     private static final String CONTENT = "enclosure";
     private static final String DESCRIPTION = "description";
+    private static final String ENCODED = "encoded";
     private static final String TITLE = "title";
     private static final String ITEM = "item";
     private static final String OGG = "audio/ogg";
     private static final String MPEG = "audio/mpeg";
     private static final String OLD_OGG = "application/ogg";
 	private static final String TAG = "EpisodeFeedParser";
+	
+	private String mDescription = "";
+	private String mDescription_content = "";
     
     /**
      * Constructor - Takes a feedUrl and passes it to the SuperClass.
@@ -87,6 +91,13 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		 */
 		item.setEndElementListener(new EndElementListener(){
             public void end() {
+            	//Determine which description to use
+            	if (mDescription_content.length() > mDescription.length()){
+            		new_episode.setDescription(mDescription_content);
+            	} else {
+            		new_episode.setDescription(mDescription);
+            	}
+            	
             	episodes.add(new Episode(new_episode));
             	
             	new_episode.clear();
@@ -131,14 +142,26 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			}
 		});
 		//This Listener catches the Description of the podcast.
+		//The description may be in an encoded tag or a description tag
+		//Collect both and use the one with the longest string
+		
+		item.getChild(CONTENT_NS, ENCODED).setEndTextElementListener(
+				new EndTextElementListener() {
+
+					@Override
+					public void end(String body) {
+						mDescription_content = body;				
+					}
+				});
+		
 		item.getChild(DESCRIPTION).setEndTextElementListener(
 				new EndTextElementListener() {
-			
-			@Override
-			public void end(String body) {
-				new_episode.setDescription(body);
-			}
-		});
+					@Override
+					public void end(String body) {
+						mDescription = body;				
+					}
+				});
+		
 		//Finally, now the listeners are set up we can parse the XML file.
 		
 		InputStream istream = getInputStream();
