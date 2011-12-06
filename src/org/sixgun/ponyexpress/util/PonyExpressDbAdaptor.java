@@ -166,6 +166,7 @@ public class PonyExpressDbAdaptor {
     
     private String getTableName(String podcastName) {
 		final String[] columns = {PodcastKeys.TABLE_NAME};
+		//Use double quote here for the podcastName as it is an identifier.
 		final String quotedName = "\"" + podcastName + "\"";
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "= " + quotedName, null, null, null, null, null);
@@ -551,7 +552,7 @@ public class PonyExpressDbAdaptor {
 	
 	public boolean containsEpisode(String title, String podcast_name) {
 		final String table_name = getTableName(podcast_name);
-		final String quotedTitle = "\"" + title + "\"";
+		final String quotedTitle = Utils.handleQuotes(title);
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
 		final Cursor cursor = mDb.query(true, table_name,
 				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
@@ -656,7 +657,7 @@ public class PonyExpressDbAdaptor {
 		if (row_ID != -1){
 			tablename = tablename + row_ID;
 			podcastValues.put(PodcastKeys.TABLE_NAME,tablename);
-			final String quotedName = "\"" + name + "\"";
+			final String quotedName = Utils.handleQuotes(name);
 			mDb.update(PODCAST_TABLE, podcastValues, PodcastKeys.NAME + "=" + quotedName , null);
 			return true;
 		}else return false;
@@ -690,7 +691,7 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public String getPodcastUrl(String podcast_name) {
-		final String quotedName = "\"" + podcast_name + "\"";
+		final String quotedName = Utils.handleQuotes(podcast_name);
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.FEED_URL};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quotedName ,
@@ -723,7 +724,7 @@ public class PonyExpressDbAdaptor {
 	
 	public void updateAlbumArtUrl(String podcast_url, String artUrl){
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL,PodcastKeys.FEED_URL};
-		final String quotedUrl = "\"" + podcast_url + "\"";
+		final String quotedUrl = Utils.handleQuotes(podcast_url);
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.FEED_URL + "=" + quotedUrl, null, null, null, null, null);
 		if (cursor != null && cursor.getCount() > 0){
@@ -741,7 +742,7 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public String getIdenticaTag(String podcast_name) {
-		final String quotedName = "\"" + podcast_name + "\"";
+		final String quotedName = Utils.handleQuotes(podcast_name);
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.TAG};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quotedName ,
@@ -758,7 +759,7 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public String getIdenticaGroup(String podcast_name) {
-		final String quotedName = "\"" + podcast_name + "\"";
+		final String quotedName = Utils.handleQuotes(podcast_name);
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.GROUP};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quotedName ,

@@ -259,4 +259,13 @@ public class Utils {
 		
 	}
 	
+	/** 
+	 * Escapes single quotes inside a string literal and wraps the string in 
+	 * single quotes so allowing for double quotes in the string for sqlite. 
+	 */
+	static public String handleQuotes(String string){
+		String new_string =  string.replace("'", "''");
+		return "'" + new_string + "'";
+	}
+	
 }
