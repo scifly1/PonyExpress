@@ -71,7 +71,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 						podcast.setIdenticaGroup(group.substring(1));
 					}
 					if(!tag.equals("") && !tag.equals("#")){
-						if(tag.substring(0,1) == "#") {
+						if(tag.startsWith("#")) {
 							podcast.setIdenticaTag(tag.substring(1));
 						} else {
 							podcast.setIdenticaTag(tag);
