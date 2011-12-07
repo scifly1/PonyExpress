@@ -1,55 +1,111 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/podcast_list_root"
-	android:orientation="vertical" android:layout_width="fill_parent"
-	android:layout_height="fill_parent" android:background="#ff231b00">
-	<RelativeLayout android:id="@+id/pony_header"
-		android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" >
+    android:id="@+id/podcast_list_root"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ff231b00"
+    android:orientation="vertical" >
+
+	<RelativeLayout
+	    android:id="@+id/pony_header"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:orientation="vertical"
+	    android:background="#FF000000" >
 		
-		<TextView android:id="@+id/app_name" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:text="@string/app_name"
-		android:textStyle="bold" android:paddingLeft="10dp" android:paddingTop="10dp"
-		android:textSize="28sp" android:background="#FF000000"/>
-		<TextView android:id="@+id/sixgun_subtitle" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:text="@string/sixgun_shows"
-		 android:paddingLeft="5dp"  android:textSize="16sp"
-		 android:layout_below="@id/app_name"  android:background="#FF000000"/>
-		
+		<TextView
+		    android:id="@+id/app_name"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:background="#FF000000"
+		    android:paddingLeft="10dp"
+		    android:paddingTop="10dp"
+		    android:text="@string/app_name"
+		    android:textSize="28sp"
+		    android:textStyle="bold"
+		    android:clickable="true"
+		    android:onClick="onClick" />
+
+		<TextView
+		    android:id="@+id/sixgun_subtitle"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_below="@id/app_name"
+		    android:background="#FF000000"
+		    android:paddingLeft="5dp"
+		    android:text="@string/sixgun_shows"
+		    android:textSize="16sp"
+		    android:clickable="true"
+		    android:onClick="onClick" />
 		 
-		<ImageButton android:id="@+id/settings_button" android:paddingTop="10dp"
-		android:layout_alignParentRight="true" android:src="@drawable/settings_button"
-		android:layout_width="wrap_content" android:layout_height="wrap_content" 
-		android:background="#ff000000" android:onClick="showSettings"/>
-		<ImageButton android:id="@+id/add_podcasts_button" android:paddingTop="10dp"
-		android:layout_toLeftOf="@+id/settings_button" android:src="@drawable/add_podcasts_button"
-		android:layout_width="wrap_content" android:layout_height="wrap_content" 
-		android:background="#ff000000" android:onClick="addPodcast"/>
+		<ImageButton
+		    android:id="@+id/settings_button"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_alignParentRight="true"
+		    android:background="#ff000000"
+		    android:onClick="showSettings"
+		    android:paddingTop="10dp"
+		    android:src="@drawable/settings_button" />
+
+		<ImageButton
+		    android:id="@+id/add_podcasts_button"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_toLeftOf="@+id/settings_button"
+		    android:background="#ff000000"
+		    android:onClick="addPodcast"
+		    android:paddingTop="10dp"
+		    android:src="@drawable/add_podcasts_button" />
+
 	</RelativeLayout>
 	
-	<LinearLayout android:id="@+id/footer_layout" android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:background="#00000001"
-		android:layout_alignParentBottom="true"  >
-	<TextView android:id="@+id/footer_gradient"
-	android:background="@drawable/reverse_gradient" android:layout_height="wrap_content"
-		android:layout_width="fill_parent"  />
-	<Button android:id="@+id/pony_footer" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" 
-		android:text="@string/footer" android:textSize="18sp" android:textColor="#ffcccccc"
-		android:background="#ff000000" android:onClick="showAbout"
-		/>
+	<LinearLayout
+	    android:id="@+id/footer_layout"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:layout_alignParentBottom="true"
+	    android:background="#00000001"
+	    android:orientation="vertical" >
+
+	<TextView
+	    android:id="@+id/footer_gradient"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:background="@drawable/reverse_gradient" />
+
+	<Button
+	    android:id="@+id/pony_footer"
+	    android:layout_width="fill_parent"
+	    android:layout_height="wrap_content"
+	    android:background="#ff000000"
+	    android:onClick="showAbout"
+	    android:text="@string/footer"
+	    android:textColor="#ffcccccc"
+	    android:textSize="18sp" />
+
 	</LinearLayout>
 	
-	<LinearLayout android:id="@+id/podcast_list"
-	android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="fill_parent" android:background="@drawable/background"
-		android:layout_below="@+id/pony_header" android:layout_above="@+id/footer_layout" >
-	<TextView android:background="@drawable/gradient" android:layout_height="wrap_content"
-		android:layout_width="fill_parent"  />
-	<ListView android:id="@android:id/list" android:layout_width="fill_parent"
+	<LinearLayout
+	    android:id="@+id/podcast_list"
+	    android:layout_width="fill_parent"
+	    android:layout_height="fill_parent"
+	    android:layout_above="@+id/footer_layout"
+	    android:layout_below="@+id/pony_header"
+	    android:background="@drawable/background"
+	    android:orientation="vertical" >
+
+	<TextView
+	    android:background="@drawable/gradient"
+	    android:layout_height="wrap_content"
+		android:layout_width="fill_parent" />
+	<ListView
+	    android:id="@android:id/list"
+	    android:layout_width="fill_parent"
 		android:layout_height="fill_parent" 
 		android:paddingTop="5dp"  
-		android:cacheColorHint="#00000000" android:divider="#00000001"
+		android:cacheColorHint="#00000000"
+		android:divider="#00000001"
 		android:dividerHeight="2dp"/>
 	</LinearLayout>
 	

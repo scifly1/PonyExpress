@@ -119,13 +119,18 @@ public class PonyExpressActivity extends ListActivity {
 		                break;
 		            case R.id.footer_button:
 		            	//fallthrough
+		            case R.id.sixgun_subtitle:
+		            	//fallthrough
+		            case R.id.app_name:
+		            	//fallthrough
 		            case R.id.pony_footer:
 		            	showAbout(v);
 		            	break;
 		        }
 		    }
 		};
-
+		findViewById(R.id.app_name).setOnClickListener(mClickHandler);
+		findViewById(R.id.sixgun_subtitle).setOnClickListener(mClickHandler);
 		findViewById(R.id.settings_button).setOnClickListener(mClickHandler);
 		findViewById(R.id.add_podcasts_button).setOnClickListener(mClickHandler);
 		//Add click listerner for the footer_button even though it may be hidden later.
