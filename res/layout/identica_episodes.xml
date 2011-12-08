@@ -1,57 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/IdenticaLayout" 
-	android:layout_width="fill_parent" android:layout_height="fill_parent"
-	android:orientation="vertical" 
+<RelativeLayout
+	android:id="@+id/IdenticaLayout"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
 	xmlns:android="http://schemas.android.com/apk/res/android">
 
-	
-	<ListView android:id="@id/android:list"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_above="@+id/dent_label"
-               android:layout_alignParentTop="true"
-               android:drawSelectorOnTop="false"
-               android:background="#00000001" 
-		android:cacheColorHint="#00000000" android:divider="#00000001"
-		android:dividerHeight="2dp"/>
 
-     <TextView android:id="@id/android:empty"
-               android:layout_width="fill_parent"
-               android:layout_height="wrap_content"
-               android:text="@string/searching_dents"
-               android:layout_above="@+id/dent_label"
-               android:layout_alignParentTop="true"/>
+	<ListView
+		android:id="@id/android:list"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/dent_label"
+		android:layout_alignParentTop="true"
+		android:drawSelectorOnTop="false"
+		android:background="#00000001"
+		android:cacheColorHint="#00000000"
+		android:divider="#00000001"
+		android:dividerHeight="2dp" />
+
 	<TextView
-        android:id="@+id/dent_label"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/dent_here"
-        android:layout_above="@+id/identica_linear"/>
-    <LinearLayout android:id="@+id/identica_linear" android:layout_width="fill_parent" 
-    android:layout_height="wrap_content" android:orientation="horizontal"
-     android:layout_alignParentBottom="true">
-    <EditText
-        android:id="@+id/dent_entry"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:background="@android:drawable/editbox_background"
-        android:layout_alignParentBottom="true"
-        android:inputType="textShortMessage|textCapSentences|textAutoCorrect|textImeMultiLine"
-        android:maxLength="150"/>
-    <Button
-        android:id="@+id/dent_ok"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="1dip"
-        android:text="@string/dent_ok" />
-        </LinearLayout>
-    <TextView
-        android:id="@+id/char_count"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_above="@+id/identica_linear"
-        android:layout_alignParentRight="true"
-        android:textStyle="bold" />
+		android:id="@id/android:empty"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/searching_dents"
+		android:layout_above="@+id/dent_label"
+		android:layout_alignParentTop="true" />
+	<TextView
+		android:id="@+id/dent_label"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:text="@string/dent_here"
+		android:layout_above="@+id/identica_linear" />
+	<LinearLayout
+		android:id="@+id/identica_linear"
+		android:layout_width="fill_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal"
+		android:layout_alignParentBottom="true">
+		<EditText
+			android:id="@+id/dent_entry"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:background="@android:drawable/editbox_background"
+			android:layout_alignParentBottom="true"
+			android:inputType="textShortMessage|textCapSentences|textAutoCorrect|textImeMultiLine"
+			android:maxLength="150" />
+		<Button
+			android:id="@+id/dent_ok"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_marginLeft="1dip"
+			android:text="@string/dent_ok" />
+	</LinearLayout>
+	<TextView
+		android:id="@+id/char_count"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_above="@+id/identica_linear"
+		android:layout_alignParentRight="true"
+		android:textStyle="bold" />
 
 </RelativeLayout>
