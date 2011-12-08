@@ -1,8 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-<item android:id="@+id/mark_listened" android:title="@string/mark_listened" android:orderInCategory="3"></item>
-<item android:title="@string/mark_not_listened" android:id="@+id/mark_not_listened" android:orderInCategory="4"></item>
-<item android:title="@string/download" android:id="@+id/download" android:orderInCategory="2"></item>
-<item android:id="@+id/re_download" android:title="@string/re_download" android:orderInCategory="6"></item>
-<item android:id="@+id/listen" android:title="@string/listen" android:orderInCategory="1"></item>
-<item android:id="@+id/delete" android:orderInCategory="5" android:title="@string/delete_episode"></item>
+	<item
+		android:id="@+id/mark_listened"
+		android:title="@string/mark_listened"
+		android:orderInCategory="3" />
+	<item
+		android:title="@string/mark_not_listened"
+		android:id="@+id/mark_not_listened"
+		android:orderInCategory="4" />
+	<item
+		android:title="@string/download"
+		android:id="@+id/download"
+		android:orderInCategory="2" />
+	<item
+		android:id="@+id/re_download"
+		android:title="@string/re_download"
+		android:orderInCategory="6" />
+	<item
+		android:id="@+id/listen"
+		android:title="@string/listen"
+		android:orderInCategory="1" />
+	<item
+		android:id="@+id/delete"
+		android:orderInCategory="5"
+		android:title="@string/delete_episode" />
 </menu>
