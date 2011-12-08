@@ -1,15 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/pony_footer"
-	android:orientation="vertical" android:layout_width="fill_parent"
-		android:layout_height="wrap_content" android:background="#00000001"
-	 >
-	<TextView android:id="@+id/footer_gradient"
-	android:background="@drawable/reverse_gradient" android:layout_height="wrap_content"
-		android:layout_width="fill_parent"  />
-	<Button  android:id="@+id/footer_button" android:layout_width="fill_parent"
-		android:layout_height="fill_parent" android:layout_alignParentBottom="true"
-		android:text="@string/footer" android:textSize="18sp" android:textColor="#ffcccccc"
-		android:background="#ff000000" android:onClick="showAbout"
-		/>
-		</LinearLayout>
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:background="#00000001">
+	<TextView
+		android:id="@+id/footer_gradient"
+		android:background="@drawable/reverse_gradient"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" />
+	<Button
+		android:id="@+id/footer_button"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:layout_alignParentBottom="true"
+		android:text="@string/footer"
+		android:textSize="18sp"
+		android:textColor="#ffcccccc"
+		android:background="#ff000000"
+		android:onClick="showAbout" />
+</LinearLayout>

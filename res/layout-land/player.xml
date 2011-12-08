@@ -1,44 +1,89 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout android:id="@+id/RelativeLayout02"
-	android:layout_width="fill_parent" android:layout_height="fill_parent"
-	xmlns:android="http://schemas.android.com/apk/res/android">	
-	<ProgressBar android:id="@+id/DownloadProgressBar" android:layout_width="wrap_content"
-	android:layout_centerHorizontal="true" android:layout_height="wrap_content"
-		android:minWidth="250dp" android:layout_below="@+id/album_art" 
-		android:visibility="gone" android:max="100" android:indeterminate="false" 
-		style="?android:attr/progressBarStyleHorizontal" android:paddingTop="10dp" 
-		android:paddingBottom="20dp"/>
-	<SeekBar android:layout_width="wrap_content" android:id="@+id/PlayerSeekBar"
-		android:layout_centerHorizontal="true" android:layout_height="wrap_content"
-		android:minWidth="250dp" android:paddingTop="10dp" android:paddingBottom="17dp"/>
-	<RelativeLayout android:id="@+id/player_controls" android:layout_height="wrap_content"
-		android:layout_width="fill_parent" android:layout_centerHorizontal="true" 
+<RelativeLayout
+	android:id="@+id/RelativeLayout02"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<ProgressBar
+		android:id="@+id/DownloadProgressBar"
+		android:layout_width="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_height="wrap_content"
+		android:minWidth="250dp"
+		android:layout_below="@+id/album_art"
+		android:visibility="gone"
+		android:max="100"
+		android:indeterminate="false"
+		style="?android:attr/progressBarStyleHorizontal"
+		android:paddingTop="10dp"
+		android:paddingBottom="20dp" />
+	<SeekBar
+		android:layout_width="wrap_content"
+		android:id="@+id/PlayerSeekBar"
+		android:layout_centerHorizontal="true"
+		android:layout_height="wrap_content"
+		android:minWidth="250dp"
+		android:paddingTop="10dp"
+		android:paddingBottom="17dp" />
+	<RelativeLayout
+		android:id="@+id/player_controls"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent"
+		android:layout_centerHorizontal="true"
 		android:layout_below="@+id/PlayerSeekBar">
-	<ImageButton android:src="@drawable/media_playback_start"
-		android:layout_height="wrap_content" android:id="@+id/PlayButton"
-		android:layout_width="wrap_content" android:layout_centerHorizontal="true" />
-	<ImageButton android:layout_below="@+id/PlayerSeekBar"
-		android:layout_toLeftOf="@+id/PlayButton" android:src="@drawable/media_seek_backward"
-		android:layout_height="wrap_content" android:id="@+id/rewind"
-		android:layout_width="wrap_content" />
-	<ImageButton android:layout_below="@+id/PlayerSeekBar" android:src="@drawable/media_seek_forward"
-		android:layout_toRightOf="@+id/PlayButton" android:layout_height="wrap_content"
-		android:id="@+id/fastforward" android:layout_width="wrap_content" />
-	<TextView android:id="@+id/elapsed_time" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:layout_toLeftOf="@+id/rewind"  android:layout_marginRight="1sp"
-		android:text="0:00:00" android:layout_marginTop="10dp"/>
-	<TextView android:id="@+id/length" android:layout_width="wrap_content" android:layout_height="wrap_content"
-		android:layout_toRightOf="@+id/fastforward"  android:layout_marginLeft="1sp"
-		android:text="0:00:00" android:layout_marginTop="10dp"/>
-		</RelativeLayout>
-	<Button android:text="@string/download" android:layout_height="wrap_content"
-		android:id="@+id/DownloadButton" android:layout_width="wrap_content"
-		android:layout_centerHorizontal="true" 
-		android:layout_below="@+id/DownloadProgressBar" android:visibility="gone" />
-		
-	<Button android:text="@string/cancel" android:layout_height="wrap_content"
-		android:id="@+id/CancelButton" android:layout_width="wrap_content"
-		android:layout_centerHorizontal="true" android:layout_below="@+id/DownloadProgressBar"
+		<ImageButton
+			android:src="@drawable/media_playback_start"
+			android:layout_height="wrap_content"
+			android:id="@+id/PlayButton"
+			android:layout_width="wrap_content"
+			android:layout_centerHorizontal="true" />
+		<ImageButton
+			android:layout_below="@+id/PlayerSeekBar"
+			android:layout_toLeftOf="@+id/PlayButton"
+			android:src="@drawable/media_seek_backward"
+			android:layout_height="wrap_content"
+			android:id="@+id/rewind"
+			android:layout_width="wrap_content" />
+		<ImageButton
+			android:layout_below="@+id/PlayerSeekBar"
+			android:src="@drawable/media_seek_forward"
+			android:layout_toRightOf="@+id/PlayButton"
+			android:layout_height="wrap_content"
+			android:id="@+id/fastforward"
+			android:layout_width="wrap_content" />
+		<TextView
+			android:id="@+id/elapsed_time"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_toLeftOf="@+id/rewind"
+			android:layout_marginRight="1sp"
+			android:text="0:00:00"
+			android:layout_marginTop="10dp" />
+		<TextView
+			android:id="@+id/length"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:layout_toRightOf="@+id/fastforward"
+			android:layout_marginLeft="1sp"
+			android:text="0:00:00"
+			android:layout_marginTop="10dp" />
+	</RelativeLayout>
+	<Button
+		android:text="@string/download"
+		android:layout_height="wrap_content"
+		android:id="@+id/DownloadButton"
+		android:layout_width="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_below="@+id/DownloadProgressBar"
+		android:visibility="gone" />
+
+	<Button
+		android:text="@string/cancel"
+		android:layout_height="wrap_content"
+		android:id="@+id/CancelButton"
+		android:layout_width="wrap_content"
+		android:layout_centerHorizontal="true"
+		android:layout_below="@+id/DownloadProgressBar"
 		android:visibility="gone" />
 
 </RelativeLayout>

@@ -1,18 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-	<Preference android:title="@string/version"
-		android:selectable="false" android:key="@string/version_key" />
+	<Preference
+		android:title="@string/version"
+		android:selectable="false"
+		android:key="@string/version_key" />
 	<PreferenceCategory android:title="@string/settings">
-		<ListPreference android:entries="@array/update_freqs"
-			android:title="@string/refresh_feeds" android:summary="@string/refresh_feeds_summary"
-			android:entryValues="@array/update_freqs" android:key="@string/update_freqs_key"
-			android:defaultValue="24" android:dialogTitle="@string/refresh_dialog_title" />
-		<ListPreference android:dialogTitle="@string/episodes_stored_dialog"
-			android:key="@string/eps_stored_key" android:entryValues="@array/eps_to_store_values"
-			android:entries="@array/eps_to_store" android:title="@string/episodes_stored_title"
-			android:defaultValue="6" android:summary="@string/episodes_stored_dialog"/>
-		<CheckBoxPreference android:title="@string/only_on_wifi" android:summary="@string/only_on_wifi_summary" 
-		android:key="@string/wifi_only_key" android:defaultValue="true" />
+		<ListPreference
+			android:entries="@array/update_freqs"
+			android:title="@string/refresh_feeds"
+			android:summary="@string/refresh_feeds_summary"
+			android:entryValues="@array/update_freqs"
+			android:key="@string/update_freqs_key"
+			android:defaultValue="24"
+			android:dialogTitle="@string/refresh_dialog_title" />
+		<ListPreference
+			android:dialogTitle="@string/episodes_stored_dialog"
+			android:key="@string/eps_stored_key"
+			android:entryValues="@array/eps_to_store_values"
+			android:entries="@array/eps_to_store"
+			android:title="@string/episodes_stored_title"
+			android:defaultValue="6"
+			android:summary="@string/episodes_stored_dialog" />
+		<CheckBoxPreference
+			android:title="@string/only_on_wifi"
+			android:summary="@string/only_on_wifi_summary"
+			android:key="@string/wifi_only_key"
+			android:defaultValue="true" />
 	</PreferenceCategory>
 
 
