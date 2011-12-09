@@ -54,7 +54,7 @@ public class AboutDialog {
 		String title = context.getString(R.string.about_title) + " " + versionNumber;
 		builder.setTitle(title);
 		
-		builder.setPositiveButton(R.string.dismiss, new DialogInterface.OnClickListener() {
+		builder.setPositiveButton(R.string.draw, new DialogInterface.OnClickListener() {
 	           public void onClick(DialogInterface dialog, int id) {
 	                dialog.cancel();
 	           }
