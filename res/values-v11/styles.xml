@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
+<!-- This file is the same as the regular styles file at present.  ICS and Honeycomb
+stuff may be added later.  -->
     <style name="ThemeSelector" parent="android:Theme.DeviceDefault">
-        
+        <item name="android:windowNoTitle">true</item>
     </style>
 
 </resources>
