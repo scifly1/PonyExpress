@@ -613,8 +613,6 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected Void doInBackground(String... name) {
 			//FIXME this method is too long, break it up into smaller chuncks.
-			//Check for new sixgun podcasts.
-			CheckForNewPodcasts();
 			
 			boolean checkAll = true;
 			if (!name[0].equals("")){
@@ -625,6 +623,9 @@ public class PonyExpressActivity extends ListActivity {
 			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 			Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
+			
+			//Check if this is the first time run.
+			CheckForFirstRun(prefs);
 			
 			//Get each podcast name if not updating a specific feed,
 			//then its feed url, and update each.
@@ -672,7 +673,19 @@ public class PonyExpressActivity extends ListActivity {
 			}
 			return null;
 		}
-		private void CheckForNewPodcasts() {
+		private void CheckForFirstRun(SharedPreferences prefs) {
+			//Checks if this is the first run and adds the Sixgun.org shows if it is.
+			final boolean first = prefs.getBoolean("first", true);
+			if (first == true){
+				//Calls the method that checks for Sixgun.org shows
+				CheckForNewSixgunShows();
+				//Sets the preference to false so this doesn't get called again.
+				final SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean("first", false);
+				editor.commit();
+			}
+		}
+		private void CheckForNewSixgunShows() {
 			//Get current podcasts
 			Log.d(TAG,"Checking for new Sixgun podcasts");
 			final ArrayList<Podcast> current_sixgun_podcasts = mPonyExpressApp.getDbHelper().getCurrentPodcasts();
