@@ -404,6 +404,9 @@ public class PonyExpressActivity extends ListActivity {
 	    case R.id.about:
 	    	showDialog(ABOUT_DIALOG);
 	    	return true;
+	    case R.id.add_sixgun:
+	        updateFeed("peCheckForNewShows");
+	        return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
 		}
@@ -618,6 +621,10 @@ public class PonyExpressActivity extends ListActivity {
 			if (!name[0].equals("")){
 				checkAll = false;
 				mPodcastBeingUpdated = name[0];
+			}
+			if (name[0].equals("peCheckForNewShows")){
+				checkAll = true;
+				CheckForNewSixgunShows();
 			}
 			//Check mEpisodesToHold hasn't been changed since Activity was created.
 			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
