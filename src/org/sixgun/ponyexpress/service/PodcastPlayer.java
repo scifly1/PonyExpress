@@ -99,6 +99,8 @@ public class PodcastPlayer extends Service {
 
 	private boolean mQueuedIsUnlistened;
 
+	private int mStartPosition;
+
 	
 	
 	/**
@@ -178,7 +180,7 @@ public class PodcastPlayer extends Service {
 	    mRemoteControlReceiver = new ComponentName(getPackageName(),
 	                RemoteControlReceiver.class.getName());
 		
-		
+	    
 		Log.d(TAG, "PodcastPlayer started");
 	}
 	
@@ -273,7 +275,7 @@ public class PodcastPlayer extends Service {
 		final String file = mData.getString(EpisodeKeys.FILENAME);
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
-		int position = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
+		mStartPosition = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
 		boolean isError = false;
 		
 		if (!file.equals(mEpisodeQueued)){
@@ -304,9 +306,9 @@ public class PodcastPlayer extends Service {
 				}
 			}
 			//SeekTo last listened position
-			if (position != -1){
-				mFreePlayer.seekTo(position);
-				Log.d(TAG,"Seeking to " + position);
+			if (mStartPosition != -1){				
+				mFreePlayer.seekTo(mStartPosition);
+				Log.d(TAG,"Seeking to " + mStartPosition);
 				mQueuedIsUnlistened = false;
 			} else {
 				mQueuedIsUnlistened = true;
@@ -357,9 +359,15 @@ public class PodcastPlayer extends Service {
 				mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
 						EpisodeKeys.LISTENED, 0);
 			}
-		}
+		}		
 		
 		mPlayer.start();
+		//Fix for android 2.2 HTC phones that 
+		//don't seek to the current position with mp3 and instead go to 0
+		mStartPosition = mPlayer.getCurrentPosition();
+		mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
+		mPlayer.seekTo(mStartPosition);
+		
 		showNotification();
 		mEpisodePlaying = mEpisodeQueued;
 		Log.d(TAG,"Playing " + mEpisodePlaying);
