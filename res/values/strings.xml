@@ -92,7 +92,7 @@
 	<string name="url_error">The url you entered may be incorrect, please try again.</string>
 	<string name="add_podcast">Subscribing to the feed.</string>
 	<string name="about_title">About Pony Express</string>
-
+	<string name="draw">Draw!</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
@@ -118,8 +118,10 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		"
 
 	</string>
+	
+	    
 
-	<!--The following strings are used internally and not user visible.  -->
+	<!--ALL the following strings are used internally and not user visible.  -->
 
 	<string name="eps_stored_key">epsStoredKey</string>
 	<string name="version_key">versionKey</string>
@@ -160,6 +162,5 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		<item>8</item>
 		<item>10</item>
 	</string-array>
-	<string name="draw">Draw!</string>
 	
 </resources>
