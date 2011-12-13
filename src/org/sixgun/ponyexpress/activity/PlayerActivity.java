@@ -628,7 +628,8 @@ public class PlayerActivity extends Activity {
 								mSeekBar.setProgress(mCurrentPosition);
 								mElapsed.setText(Utils.milliToTime(mCurrentPosition));
 								//Poll player to see if it has been paused by completing playback
-								if (!mPodcastPlayer.isPlaying()){
+								//Check for null first as sometimes the player may have been stopped before this thread is.
+								if (mPodcastPlayer == null || !mPodcastPlayer.isPlaying()){
 									mPaused = true;
 									mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
 								}

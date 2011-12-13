@@ -433,10 +433,15 @@ public class PodcastPlayer extends Service {
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
-			return mFreePlayer.getCurrentPosition();
+			if (mFreePlayer != null){
+				return mFreePlayer.getCurrentPosition();
+			} else return 0; //When player is stopped quickly, the seekbar update thread may still 
+			//try and access the current position before it is stopped.
 		} else {
 			//Playback has been started now, so the mPlayer duration is correct
-			return mPlayer.getCurrentPosition();
+			if (mPlayer != null){
+				return mPlayer.getCurrentPosition();
+			} else return 0;
 		}
 	}
 	
@@ -445,7 +450,9 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public boolean isPlaying() {
-		return mPlayer.isPlaying();
+		if (mPlayer != null && mPlayer.isPlaying()){
+			return true;
+		} else return false;
 	}
 	
 	public boolean isResumeAfterCall() {
