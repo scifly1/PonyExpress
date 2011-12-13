@@ -33,6 +33,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 
 /*
  * BaseFeedParser is an abstract class that takes a url and its getInputStream() 
@@ -68,10 +69,10 @@ public abstract class BaseFeedParser {
     protected InputStream getInputStream() {
     	InputStream istream = null;
     	int attempts = 0;
-    	URLConnection conn;
+    	URLConnection conn = null;
 		//try to connect to server a maximum of five times
     	do {
-			conn = openConnection();
+    		conn = openConnection();
 			attempts++;
 		} while (conn == null && attempts < 5);
     	//if connected get Inputstream
@@ -79,10 +80,10 @@ public abstract class BaseFeedParser {
     		try {
     			istream = conn.getInputStream();
     		} catch (IOException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
+    			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+    			NotifyError("Failed to read the feed.");
     		}
-    	}
+    	} else { NotifyError("Failed to read the feed."); }
 		return istream;
     }
     
@@ -105,7 +106,7 @@ public abstract class BaseFeedParser {
 		int icon = R.drawable.stat_notify_error;
 		
 		CharSequence text = mCtx.getText(R.string.feed_error);
-		if (error_message != ""){
+		if (!error_message.equals("")){
 			text = error_message;
 		}
 
