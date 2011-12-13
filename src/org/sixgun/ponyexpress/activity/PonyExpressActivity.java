@@ -481,7 +481,6 @@ public class PonyExpressActivity extends ListActivity {
 			final int artUrlIndex = cursor.getColumnIndex(PodcastKeys.ALBUM_ART_URL);
 			//get the number of unlistened episodes
 			String name = cursor.getString(nameIndex);
-			final String fullName = name;
 			final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(name);
 			
 			//Remove the words "ogg feed" if present at the end.
@@ -519,14 +518,7 @@ public class PonyExpressActivity extends ListActivity {
 					return true;
 				}
 			});
-			ImageButton refresh = (ImageButton) view.findViewById(R.id.refresh_button);
-			refresh.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					updateFeed(fullName);
-				}
-			});
+			
 			
 			
 		}
