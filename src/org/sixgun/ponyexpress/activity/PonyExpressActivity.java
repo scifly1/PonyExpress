@@ -71,7 +71,6 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CursorAdapter;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -114,8 +113,8 @@ public class PonyExpressActivity extends ListActivity {
 		            case R.id.settings_button:
 		            	showSettings(v);
 		                break;
-		            case R.id.add_podcasts_button:
-		            	addPodcast(v, "");
+		            case R.id.ic_playlist:
+		            	//TODO
 		                break;
 		            case R.id.footer_button:
 		            	//fallthrough
@@ -129,7 +128,7 @@ public class PonyExpressActivity extends ListActivity {
 		};
 		findViewById(R.id.app_name).setOnClickListener(mClickHandler);
 		findViewById(R.id.settings_button).setOnClickListener(mClickHandler);
-		findViewById(R.id.add_podcasts_button).setOnClickListener(mClickHandler);
+		findViewById(R.id.ic_playlist).setOnClickListener(mClickHandler);
 		//Add click listerner for the footer_button even though it may be hidden later.
 		findViewById(R.id.pony_footer).setOnClickListener(mClickHandler);
 		
