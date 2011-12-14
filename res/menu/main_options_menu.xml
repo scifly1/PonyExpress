@@ -3,9 +3,14 @@
 	<item
 		android:title="@string/updatefeeds"
 		android:id="@+id/update_feeds" />
+	<item 
+	    android:title="@string/add_podcast"
+	    android:id="@+id/add_podcast" 
+	    android:icon="@drawable/add_podcasts_button"/>
 	<item
 		android:title="@string/settings"
-		android:id="@+id/settings_menu" />
+		android:id="@+id/settings_menu" 
+		android:icon="@drawable/ic_menu_preferences" />
 	<item
 		android:title="@string/identica_account_settings"
 		android:id="@+id/identica_account_settings" />

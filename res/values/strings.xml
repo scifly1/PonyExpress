@@ -52,6 +52,7 @@
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
 	<string name="settings">Settings</string>
+	<string name="add_podcast">Add a podcast</string>
 	<string name="identica_account_settings">Setup Identi.ca Account</string>
 	<string name="updatefeeds">Refresh subscriptions</string>
 	<string name="version">Pony Express Version</string>
@@ -90,7 +91,7 @@
 	<string name="delete_failed">Unable to remove the podcast subscription.</string>
 	<string name="file_error">There is a problem with this episode.	Long press on the episode name to re-download it.</string>
 	<string name="url_error">The url you entered may be incorrect, please try again.</string>
-	<string name="add_podcast">Subscribing to the feed.</string>
+	<string name="adding_podcast">Subscribing to the feed.</string>
 	<string name="about_title">About Pony Express</string>
 	<string name="draw">Draw!</string>
 	<string name="add_sixgun">Add all Sixgun.org shows</string>

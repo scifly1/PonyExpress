@@ -113,7 +113,7 @@ public class PonyExpressActivity extends ListActivity {
 		            case R.id.settings_button:
 		            	showSettings(v);
 		                break;
-		            case R.id.ic_playlist:
+		            case R.id.playlist_button:
 		            	//TODO
 		                break;
 		            case R.id.footer_button:
@@ -128,7 +128,7 @@ public class PonyExpressActivity extends ListActivity {
 		};
 		findViewById(R.id.app_name).setOnClickListener(mClickHandler);
 		findViewById(R.id.settings_button).setOnClickListener(mClickHandler);
-		findViewById(R.id.ic_playlist).setOnClickListener(mClickHandler);
+		findViewById(R.id.playlist_button).setOnClickListener(mClickHandler);
 		//Add click listerner for the footer_button even though it may be hidden later.
 		findViewById(R.id.pony_footer).setOnClickListener(mClickHandler);
 		
@@ -392,6 +392,9 @@ public class PonyExpressActivity extends ListActivity {
 	    	startActivity(new Intent(
 	        		mPonyExpressApp,PreferencesActivity.class));
 	        return true;
+	    case R.id.add_podcast:
+	    	addPodcast(null, "");
+	    	return true;
 	    case R.id.identica_account_settings:
 	    	//Fire off AccountSetup screen
 	    	startActivity(new Intent(

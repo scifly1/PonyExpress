@@ -37,14 +37,14 @@
 		    android:src="@drawable/settings_button" />
 
 		<ImageButton
-		    android:id="@+id/ic_playlist"
+		    android:id="@+id/playlist_button"
 		    android:layout_width="wrap_content"
 		    android:layout_height="wrap_content"
 		    android:layout_toLeftOf="@+id/settings_button"
 		    android:background="#ff000000"
 		    android:onClick=""
 		    android:paddingTop="10dp"
-		    android:src="@drawable/ic_playlist" />
+		    android:src="@drawable/playlist_button" />
 
 	</RelativeLayout>
 	

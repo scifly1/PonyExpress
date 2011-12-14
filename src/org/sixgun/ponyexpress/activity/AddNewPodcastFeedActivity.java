@@ -89,8 +89,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 						intent.putExtra(PodcastKeys.NAME, name);
 						setResult(RESULT_OK, intent);
 						finish();
-					}
-										
+					}										
 				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
 		};
