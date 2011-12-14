@@ -693,20 +693,20 @@ public class PonyExpressActivity extends ListActivity {
 			}
 		}
 		private void CheckForNewSixgunShows() {
-			//Get current podcasts
 			Log.d(TAG,"Checking for new Sixgun podcasts");
-			final ArrayList<Podcast> current_sixgun_podcasts = mPonyExpressApp.getDbHelper().getCurrentPodcasts();
 			//Get server list of sixgun podcasts and create list of urls
 			final Context ctx = mPonyExpressApp.getApplicationContext();
 			SixgunPodcastsParser parser = 
 				new SixgunPodcastsParser(ctx, getString(R.string.sixgun_feeds));
 			ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
-			//Compare the two arraylists and remove any that exist in both
-			sixgun_podcasts.removeAll(current_sixgun_podcasts);
-			//Add any new podcasts to the podcasts table
-			if (!sixgun_podcasts.isEmpty()){
-				Log.d(TAG, "Adding new Podcasts!");
-				mPonyExpressApp.getDbHelper().addNewPodcasts(sixgun_podcasts);
+			//Check if any podcast is already in the Database
+			for (Podcast podcast:sixgun_podcasts) {
+				boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+				if (mCheckDatabase == false) {
+					//Add any new podcasts to the podcasts table
+					Log.d(TAG, "Adding new Podcasts!");
+					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
+				}
 			}
 		}
 		

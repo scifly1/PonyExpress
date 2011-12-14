@@ -163,5 +163,6 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 	</string-array>
 	<string name="draw">Draw!</string>
 	<string name="add_sixgun">Add all Sixgun.org shows</string>
+	<string name="already_in_db">That url is already in the your list.</string>
 	
 </resources>

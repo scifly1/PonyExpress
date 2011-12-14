@@ -841,4 +841,13 @@ public class PonyExpressDbAdaptor {
 		mCtx.sendBroadcast(intent);
 		return deleted;
 	}
+	
+	public boolean checkDatabaseForUrl(Podcast podcast){
+		boolean mCheckDatabase = false;
+		final Cursor cursor = mDb.rawQuery("SELECT * FROM " + PODCAST_TABLE + " WHERE " + PodcastKeys.FEED_URL + "= '" + podcast.getFeed_Url().toString() + "'", null);
+		if (cursor != null && cursor.getCount() > 0){
+			mCheckDatabase = true;
+		}
+		return mCheckDatabase;	
+	}
 }

@@ -77,14 +77,20 @@ public class AddNewPodcastFeedActivity extends Activity {
 							podcast.setIdenticaTag(tag);
 						}
 					}
-
-					final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-					Toast.makeText(mPonyExpressApp, R.string.add_podcast, Toast.LENGTH_SHORT).show();
-					//Send podcast name back to PonyExpressActivity so it can update the new feed.
-					Intent intent = new Intent();
-					intent.putExtra(PodcastKeys.NAME, name);
-					setResult(RESULT_OK, intent);
-					finish();
+					//Check if the new url is already in the database
+					boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+					if (mCheckDatabase == true) {
+						Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
+					}else{
+						final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+						Toast.makeText(mPonyExpressApp, R.string.add_podcast, Toast.LENGTH_SHORT).show();
+						//Send podcast name back to PonyExpressActivity so it can update the new feed.
+						Intent intent = new Intent();
+						intent.putExtra(PodcastKeys.NAME, name);
+						setResult(RESULT_OK, intent);
+						finish();
+					}
+										
 				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
 		};
