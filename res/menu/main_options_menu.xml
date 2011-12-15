@@ -12,4 +12,5 @@
 	<item
 		android:title="@string/about"
 		android:id="@+id/about" />
+	<item android:id="@+id/add_sixgun" android:title="@string/add_sixgun"></item>
 </menu>

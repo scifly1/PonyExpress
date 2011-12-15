@@ -401,6 +401,9 @@ public class PonyExpressActivity extends ListActivity {
 	    case R.id.about:
 	    	showDialog(ABOUT_DIALOG);
 	    	return true;
+	    case R.id.add_sixgun:
+	        updateFeed("peCheckForNewShows");
+	        return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
 		}
@@ -610,18 +613,23 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected Void doInBackground(String... name) {
 			//FIXME this method is too long, break it up into smaller chuncks.
-			//Check for new sixgun podcasts.
-			CheckForNewPodcasts();
 			
 			boolean checkAll = true;
 			if (!name[0].equals("")){
 				checkAll = false;
 				mPodcastBeingUpdated = name[0];
 			}
+			if (name[0].equals("peCheckForNewShows")){
+				checkAll = true;
+				CheckForNewSixgunShows();
+			}
 			//Check mEpisodesToHold hasn't been changed since Activity was created.
 			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 			mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 			Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
+			
+			//Check if this is the first time run.
+			CheckForFirstRun(prefs);
 			
 			//Get each podcast name if not updating a specific feed,
 			//then its feed url, and update each.
@@ -669,21 +677,33 @@ public class PonyExpressActivity extends ListActivity {
 			}
 			return null;
 		}
-		private void CheckForNewPodcasts() {
-			//Get current podcasts
+		private void CheckForFirstRun(SharedPreferences prefs) {
+			//Checks if this is the first run and adds the Sixgun.org shows if it is.
+			final boolean first = prefs.getBoolean("first", true);
+			if (first == true){
+				//Calls the method that checks for Sixgun.org shows
+				CheckForNewSixgunShows();
+				//Sets the preference to false so this doesn't get called again.
+				final SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean("first", false);
+				editor.commit();
+			}
+		}
+		private void CheckForNewSixgunShows() {
 			Log.d(TAG,"Checking for new Sixgun podcasts");
-			final ArrayList<Podcast> current_sixgun_podcasts = mPonyExpressApp.getDbHelper().getCurrentPodcasts();
 			//Get server list of sixgun podcasts and create list of urls
 			final Context ctx = mPonyExpressApp.getApplicationContext();
 			SixgunPodcastsParser parser = 
 				new SixgunPodcastsParser(ctx, getString(R.string.sixgun_feeds));
 			ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
-			//Compare the two arraylists and remove any that exist in both
-			sixgun_podcasts.removeAll(current_sixgun_podcasts);
-			//Add any new podcasts to the podcasts table
-			if (!sixgun_podcasts.isEmpty()){
-				Log.d(TAG, "Adding new Podcasts!");
-				mPonyExpressApp.getDbHelper().addNewPodcasts(sixgun_podcasts);
+			//Check if any podcast is already in the Database
+			for (Podcast podcast:sixgun_podcasts) {
+				boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+				if (mCheckDatabase == false) {
+					//Add any new podcasts to the podcasts table
+					Log.d(TAG, "Adding new Podcasts!");
+					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
+				}
 			}
 		}
 		
