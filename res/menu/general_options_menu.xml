@@ -2,7 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item
 		android:title="@string/settings"
-		android:id="@+id/settings_menu" />
+		android:id="@+id/settings_menu" 
+		android:icon="@drawable/ic_menu_preferences"/>
 	<item
 		android:title="@string/identica_account_settings"
 		android:id="@+id/identica_account_settings" />
