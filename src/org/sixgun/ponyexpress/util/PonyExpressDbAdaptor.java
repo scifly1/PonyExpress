@@ -12,7 +12,6 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
-import org.sixgun.ponyexpress.R;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -69,7 +68,6 @@ public class PonyExpressDbAdaptor {
 	private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
     public boolean mDatabaseUpgraded = false;
-    public boolean mNewDatabase = false;
     
     private final Context mCtx;
 	
@@ -87,7 +85,6 @@ public class PonyExpressDbAdaptor {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(PODCAST_TABLE_CREATE);
-            mNewDatabase = true;
         }
 
 		@Override
@@ -154,9 +151,6 @@ public class PonyExpressDbAdaptor {
     public PonyExpressDbAdaptor open() throws SQLException {
         mDbHelper = new PonyExpressDbHelper(mCtx);
         mDb = mDbHelper.getWritableDatabase();
-        if (mNewDatabase) {
-        	loadSixgunPodcasts();
-        }
         return this;
     }
     
@@ -566,44 +560,6 @@ public class PonyExpressDbAdaptor {
 		}
 	}
 	
-	/**
-	 * Loads the Sixgun productions podcast titles and urls into the database
-	 * when first created. If no podcasts are found (sixgun.org might be down)
-	 * it just adds LO from the strings file.
-	 */
-	private void loadSixgunPodcasts() {
-		SixgunPodcastsParser parser = 
-			new SixgunPodcastsParser(mCtx, mCtx.getString(R.string.sixgun_feeds));
-		List<Podcast> podcasts = parser.parse();
-		if (podcasts.isEmpty()){
-			Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
-			//Sixgun.org cannot be contacted
-			String[] default_feed =  mCtx.getResources().getStringArray(R.array.default_lo_feed);
-			PodcastFeedParser default_parser = new PodcastFeedParser(mCtx, default_feed[0]);
-			Podcast default_podcast = default_parser.parse();
-			if (default_podcast != null){
-				default_podcast.setIdenticaTag(default_feed[1]);
-				default_podcast.setIdenticaGroup(default_feed[2]);
-				insertPodcast(default_podcast);
-				//Create table for this podcast's episodes
-				String tableName = getTableName(default_podcast.getName());
-				mDb.execSQL("CREATE TABLE " + tableName + EPISODE_TABLE_FIELDS);
-			}
-		}
-		addNewPodcasts(podcasts);
-	}
-	/**
-	 * Takes a list of podcasts (with feed url, and identi.ca info in) and gets the 
-	 * rest of the infomation from the feed. ie: podcast title and album art url and adds
-	 * it them to the Db.
-	 * @param podcasts a list of Podscasts.
-	 */			
-	public void addNewPodcasts(List<Podcast> podcasts){
-		for (Podcast podcast:podcasts) {
-			addNewPodcast(podcast);
-		}
-	}
-	
 	/** 
 	 * Takes a Podcast instance (with feed url, and identi.ca info) and gets rest of info from
 	 * the feed. ie: podcast title and album art url and adds
@@ -635,8 +591,7 @@ public class PonyExpressDbAdaptor {
     * @return The row ID of the inserted row or -1 if an error occurred. 
     */
 	private boolean insertPodcast(Podcast podcast) {
-		//FIXME Check if podcast is already in the database first?.
-        ContentValues podcastValues = new ContentValues();
+		ContentValues podcastValues = new ContentValues();
         String name = podcast.getName();
         podcastValues.put(PodcastKeys.NAME, name);
         podcastValues.put(PodcastKeys.FEED_URL, podcast.getFeed_Url().toString());
@@ -785,37 +740,7 @@ public class PonyExpressDbAdaptor {
 		c.close();
 		return count;
 	}
-	
-	/**
-	 * Returns a List of all current podcasts (with feed_urls and identica details).
-	 * Useed to update the sixgun podcasts in PonyExpressActivity.
-	 * @return list of podcasts
-	 */
-	public ArrayList<Podcast> getCurrentPodcasts(){
-		ArrayList<Podcast> podcasts = new ArrayList<Podcast> ();
-		final String[] columns = {PodcastKeys._ID,PodcastKeys.FEED_URL, PodcastKeys.GROUP, PodcastKeys.TAG};
-		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
-				columns, null ,
-				null, null, null, null, null);
-		if (cursor != null && cursor.getCount() > 0){
-			int rows = cursor.getCount();
-			cursor.moveToFirst();
-			for (int i = 0; i < rows; i++)
-			{
-				Podcast podcast = new Podcast();
-				podcast.setFeedUrl(Utils.getURL(cursor.getString(1)));
-				podcast.setIdenticaGroup(cursor.getString(2));
-				podcast.setIdenticaTag(cursor.getString(3));
-				podcasts.add(new Podcast(podcast));
-				cursor.moveToNext();
-			}
-		} else {
-			Log.e(TAG, "Empty cursor at getCurrentPodcasts()");
-		}
-		cursor.close();
-		return podcasts;
-	}
-	
+
 	public boolean removePodcast(long rowID){
 		final String podcast_name =  getPodcastName(rowID);
 		// Podcast path is Path + podcast name.
