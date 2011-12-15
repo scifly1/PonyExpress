@@ -25,6 +25,18 @@
 		    android:textStyle="bold"
 		    android:clickable="true"
 		    android:onClick="onClick" />
+
+		<TextView
+		    android:id="@+id/sixgun_subtitle"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    android:layout_below="@id/app_name"
+		    android:background="#FF000000"
+		    android:paddingLeft="10dp"
+		    android:text="@string/sixgun"
+		    android:textSize="16sp"
+		    android:clickable="true"
+		    android:onClick="onClick" />
 		 
 		<ImageButton
 		    android:id="@+id/settings_button"
