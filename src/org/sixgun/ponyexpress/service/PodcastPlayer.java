@@ -40,6 +40,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
@@ -47,6 +48,7 @@ import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -100,6 +102,8 @@ public class PodcastPlayer extends Service {
 	private boolean mQueuedIsUnlistened;
 
 	private int mStartPosition;
+	
+	SharedPreferences mPrefs;
 
 	
 	
@@ -147,6 +151,7 @@ public class PodcastPlayer extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		mPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		mPlayer1 = new MediaPlayer();
 		mPlayer2 = new MediaPlayer();
 		mPlayer = mPlayer1;
@@ -365,6 +370,10 @@ public class PodcastPlayer extends Service {
 		//Fix for android 2.2 HTC phones that 
 		//don't seek to the current position with mp3 and instead go to 0
 		mStartPosition = mPlayer.getCurrentPosition();
+		//Adds a 10sec recap on resume if it's marked true in the prefs.
+			if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false) == true){
+				mStartPosition -= 10000;
+			}
 		mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
 		mPlayer.seekTo(mStartPosition);
 		

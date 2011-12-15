@@ -26,6 +26,11 @@
 			android:summary="@string/only_on_wifi_summary"
 			android:key="@string/wifi_only_key"
 			android:defaultValue="true" />
+		<CheckBoxPreference
+			android:title="@string/recap_on_resume"
+			android:summary="@string/recap_on_resume_summary"
+			android:key="@string/recap_on_resume_key"
+			android:defaultValue="false" />
 	</PreferenceCategory>
 
 

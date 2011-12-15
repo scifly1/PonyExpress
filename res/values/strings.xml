@@ -97,6 +97,8 @@
 	<string name="draw">Draw!</string>
 	<string name="add_sixgun">Add all Sixgun.org shows</string>
 	<string name="already_in_db">That podcast is already in the your list.</string>
+	<string name="recap_on_resume">Recap on resume</string>
+	<string name="recap_on_resume_summary">Rewind 10 seconds before resuming play back</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
@@ -127,6 +129,7 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 
 	<!--ALL the following strings are used internally and not user visible.  -->
 
+	<string name="recap_on_resume_key">RecapOnResumeKey</string>
 	<string name="eps_stored_key">epsStoredKey</string>
 	<string name="version_key">versionKey</string>
 	<string name="update_freqs_key">updateFreqsKey</string>
