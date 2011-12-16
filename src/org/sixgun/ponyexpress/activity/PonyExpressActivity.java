@@ -693,16 +693,34 @@ public class PonyExpressActivity extends ListActivity {
 			SixgunPodcastsParser parser = 
 				new SixgunPodcastsParser(ctx, getString(R.string.sixgun_feeds));
 			ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
+			//Sixgun.org cannot be contacted
+			if (sixgun_podcasts.isEmpty()){
+				Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
+				String[] default_feed = ctx.getResources().getStringArray(R.array.default_lo_feed);
+				PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
+				Podcast default_podcast = default_parser.parse();
+				if (default_podcast != null){
+					default_podcast.setIdenticaTag(default_feed[1]);
+					default_podcast.setIdenticaGroup(default_feed[2]);
+					boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(default_podcast);
+					if (checkdb == false) {
+						//Add any new podcasts to the podcasts table
+						Log.d(TAG, "Adding new Podcasts!");
+						mPonyExpressApp.getDbHelper().addNewPodcast(default_podcast);
+					}	
+				}
+			}		
 			//Check if any podcast is already in the Database
 			for (Podcast podcast:sixgun_podcasts) {
-				boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-				if (mCheckDatabase == false) {
+				boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+				if (checkdb == false) {
 					//Add any new podcasts to the podcasts table
 					Log.d(TAG, "Adding new Podcasts!");
 					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
 				}
 			}
 		}
+		
 		
 		private void checkForNewArt(String podcast_url){
 			PodcastFeedParser parser = new PodcastFeedParser(mPonyExpressApp,podcast_url);
