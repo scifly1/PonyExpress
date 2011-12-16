@@ -87,7 +87,6 @@ public class PodcastPlayer extends Service {
 	private String mEpisodePlaying;
 	private boolean mResumeAfterCall = false; 
 	private boolean mBeenResumedAfterCall = false; 
-	private int mSeekDelta = 30000; // 30 seconds
 	private long mRowID;
 	private long mRowIDQueued;
 	HeadPhoneReceiver mHeadPhoneReciever;
@@ -342,7 +341,6 @@ public class PodcastPlayer extends Service {
 		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
 		registerReceiver(mHeadPhoneReciever, filter);
 		registerRemoteControl();
-		
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//We want to play a different episode so stop any currently playing
 			// and record the playback position
@@ -397,20 +395,17 @@ public class PodcastPlayer extends Service {
 		if (res){
 			Log.d(TAG, "Updated listened to position to " + playbackPosition);
 		}
-		
 		stopSelf();
 	}
 		
 	public void fastForward() {
-		final int playbackPosition = mPlayer.getCurrentPosition();
-		final int newPosition = mSeekDelta + playbackPosition;
-		mPlayer.seekTo(newPosition);
+		//Fast forwards a certain number of seconds based on the Seek Time user setting
+		mPlayer.seekTo(Integer.parseInt(mPrefs.getString(getString(R.string.seek_time_key), "30000")) + mPlayer.getCurrentPosition());
 	}
 	
 	public void rewind() {
-		final int playbackPosition = mPlayer.getCurrentPosition();
-		final int newPosition = playbackPosition - mSeekDelta;
-		mPlayer.seekTo(newPosition);
+		//Rewinds a certain number of seconds based on the Seek Time user setting
+		mPlayer.seekTo(mPlayer.getCurrentPosition() - Integer.parseInt(mPrefs.getString(getString(R.string.seek_time_key), "30000")));
 	}
 	/** This Method is called from PlayerActivity to Seek using the SeekBar  
 	 * 

@@ -26,6 +26,14 @@
 			android:summary="@string/only_on_wifi_summary"
 			android:key="@string/wifi_only_key"
 			android:defaultValue="true" />
+		<ListPreference
+			android:dialogTitle="@string/seek_time"
+			android:key="@string/seek_time_key"
+			android:entryValues="@array/seek_time_seconds_values"
+			android:entries="@array/seek_time_seconds"
+			android:title="@string/seek_time"
+			android:defaultValue="30000"
+			android:summary="@string/seek_time_summary" />
 		<CheckBoxPreference
 			android:title="@string/recap_on_resume"
 			android:summary="@string/recap_on_resume_summary"
