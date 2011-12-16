@@ -400,12 +400,18 @@ public class PodcastPlayer extends Service {
 		
 	public void fastForward() {
 		//Fast forwards a certain number of seconds based on the Seek Time user setting
-		mPlayer.seekTo(Integer.parseInt(mPrefs.getString(getString(R.string.seek_time_key), "30000")) + mPlayer.getCurrentPosition());
+		final int playbackPosition = mPlayer.getCurrentPosition();
+		final int seekDelta = Integer.parseInt(mPrefs.getString(getString(R.string.ff_seek_time_key), "30000"));
+		final int newPosition = playbackPosition + seekDelta;
+		mPlayer.seekTo(newPosition);
 	}
 	
 	public void rewind() {
 		//Rewinds a certain number of seconds based on the Seek Time user setting
-		mPlayer.seekTo(mPlayer.getCurrentPosition() - Integer.parseInt(mPrefs.getString(getString(R.string.seek_time_key), "30000")));
+		final int playbackPosition = mPlayer.getCurrentPosition();
+		final int seekDelta = Integer.parseInt(mPrefs.getString(getString(R.string.r_seek_time_key), "30000"));
+		final int newPosition = playbackPosition - seekDelta;
+		mPlayer.seekTo(newPosition);
 	}
 	/** This Method is called from PlayerActivity to Seek using the SeekBar  
 	 * 

@@ -107,8 +107,10 @@
 	<string name="already_in_db">That podcast is already in the your list.</string>
 	<string name="recap_on_resume">Recap on resume</string>
 	<string name="recap_on_resume_summary">Rewind 10 seconds before resuming play back</string>
-	<string name="seek_time_summary">The amount of time to skip forward or back when the buttons are pushed</string>
-	<string name="seek_time">Seek Time</string>
+	<string name="r_seek_time_summary">The amount of time to rewind when the rewind button is pushed</string>
+	<string name="r_seek_time">Rewind Seek Time</string>
+	<string name="ff_seek_time_summary">The amount of time to skip forward when the fast forward button is pushed</string>
+	<string name="ff_seek_time">Fast Forward Seek Time</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
@@ -139,7 +141,8 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 
 	<!--ALL the following strings are used internally and not user visible.  -->
 
-	<string name="seek_time_key">SeekTimeKey</string>
+	<string name="ff_seek_time_key">FFSeekTimeKey</string>
+	<string name="r_seek_time_key">RSeekTimeKey</string>
 	<string name="recap_on_resume_key">RecapOnResumeKey</string>
 	<string name="eps_stored_key">epsStoredKey</string>
 	<string name="version_key">versionKey</string>
