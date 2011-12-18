@@ -805,7 +805,8 @@ public class PonyExpressActivity extends ListActivity {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			listPodcasts(false);
+			//need to recheck the ListSize to see if the footer needs to be moved
+			onResume();
 		}
 		
 	}
