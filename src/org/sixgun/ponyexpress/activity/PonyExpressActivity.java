@@ -154,7 +154,7 @@ public class PonyExpressActivity extends ListActivity {
 						//The last position is not visible and we don't have a footer already
 						//so add footer to list and hide the 'other' footer.
 						listPodcasts(true);
-					} else if (last_pos_visible == mListSize -1 && footer_layout.getVisibility() == View.GONE){
+					} else if (last_pos_visible == mListSize && footer_layout.getVisibility() == View.GONE){
 						//last Position is visible so remove footer if present.
 						list.removeFooterView(mListFooter);
 						footer_layout.setVisibility(View.VISIBLE);
