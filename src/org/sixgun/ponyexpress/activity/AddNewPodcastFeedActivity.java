@@ -83,7 +83,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 						Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
 					}else{
 						final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-						Toast.makeText(mPonyExpressApp, R.string.add_podcast, Toast.LENGTH_SHORT).show();
+						Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
 						//Send podcast name back to PonyExpressActivity so it can update the new feed.
 						Intent intent = new Intent();
 						intent.putExtra(PodcastKeys.NAME, name);
