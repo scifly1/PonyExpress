@@ -648,10 +648,15 @@ public class PonyExpressActivity extends ListActivity {
 						podcast_url);
 				List<Episode> episodes = parser.parse();
 				
-				for (Episode episode: episodes){
+				//Stops adding episodes once mEpisodesToHold is reached
+				for (int i = 0; i < (mEpisodesToHold) ; i++){
 					//Add any episodes not already in database
-					if (!mPonyExpressApp.getDbHelper().containsEpisode(episode.getTitle(),podcast)) {
-						mPonyExpressApp.getDbHelper().insertEpisode(episode, podcast);
+					try{
+						if (!mPonyExpressApp.getDbHelper().containsEpisode(episodes.get(i).getTitle(),podcast)) {
+							mPonyExpressApp.getDbHelper().insertEpisode(episodes.get(i), podcast);
+						}
+					}catch(IndexOutOfBoundsException e){
+						Log.d(TAG, "Number of episodes in this feed is less than the number to keep");
 					}
 				}
 				
