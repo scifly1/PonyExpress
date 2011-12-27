@@ -32,6 +32,7 @@
 	<string name="show_notes">Show notes</string>
 	<string name="downloading_episode">1 Podcast downloading.</string>
 	<string name="downloading_episodes">Podcasts downloading.</string>
+	<string name="verify_creds">Verifying credentials! Please wait...</string>
 	<string name="searching_dents">Searching for dents..."</string>
 	<string name="no_dents">No dents for this episode yet! Go on, be the first!
 	</string>
@@ -42,8 +43,10 @@
 	<string name="feed_error">There was an error getting a feed..</string>
 	<string name="malformed_feed">The RSS feed is malformed, data is missing!</string>
 	<string name="sending_dent">Sending message, please wait.</string>
+	<string name="login_successful">Identi.ca login successful. Dent away!</string>
 	<string name="login_failed">Identi.ca login failed! Have you set up your
 		account?</string>
+	<string name="identica_offline">Identi.ca appears to be offline. Please try again later.</string>
 	<string name="credentials_not_verified">Could not verify your credentials!</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>

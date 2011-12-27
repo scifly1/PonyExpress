@@ -67,6 +67,7 @@ import android.util.Log;
 public class IdenticaHandler extends Service {
 
 	
+	protected PonyExpressApp mPonyExpressApp;
 	private static final String TAG = "PonyExpress IdenticaHandler";
 	private static final String TAG_TIMELINE_API = "https://identi.ca/api/statusnet/tags/timeline/";
 	private static final String GROUP_TIMELINE_API = "https://identi.ca/api/statusnet/groups/timeline/";
@@ -76,7 +77,6 @@ public class IdenticaHandler extends Service {
 	public static final String USERNAME = "username";
 	public static final String PASSWORD = "password";
 	private final IBinder mBinder = new IdenticaHandlerBinder();
-	
 	private String mUserName = "";
 	private String mPassword = "";
 	
@@ -105,6 +105,8 @@ public class IdenticaHandler extends Service {
 		super.onCreate();
 		Log.d(TAG, "PonyExpress IdenticaHandler started");
 		
+		//Get the application context.
+		mPonyExpressApp = (PonyExpressApp)getApplication();
 		SharedPreferences loginDetails = getSharedPreferences(LOGINFILE,0);
 		mUserName = loginDetails.getString(USERNAME, "");
 		mPassword = loginDetails.getString(PASSWORD, "");		
@@ -131,7 +133,10 @@ public class IdenticaHandler extends Service {
 		mPassword = password;
 	}
 
-	public boolean verifyCredentials() {
+	public int verifyCredentials() {
+		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()) {
+			return 4;
+		}
 		DefaultHttpClient httpClient = setUpClient();
 		HttpGet get = new HttpGet(VERIFY_API);
 		
@@ -139,16 +144,16 @@ public class IdenticaHandler extends Service {
 		try {
 			response = httpClient.execute(get);
 		} catch (ClientProtocolException e) {
-			throw new RuntimeException(e);
+			return 1;
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			return 2;
 		}
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode == HttpStatus.SC_UNAUTHORIZED){
-			return false;
+			return 3;
 		}
 		Log.d(TAG, "Status Code: " + statusCode);
-		return true;
+		return 999;
 		
 	}
 	

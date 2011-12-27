@@ -22,10 +22,12 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.IdenticaHandler;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
@@ -41,6 +43,8 @@ import android.widget.Toast;
  */
 public class IdenticaAccountSetupActivity extends Activity {
 
+	private VerifyCredentials mTask;
+	private ProgressDialog mProgDialog;
 	private static final String TAG = "IdenticaAccountSetup";
 	EditText mUserNameText;
 	EditText mPasswordText;
@@ -105,6 +109,10 @@ public class IdenticaAccountSetupActivity extends Activity {
 		setContentView(R.layout.account_setup);
 		doBindIdenticaHandler();
 		
+		//Create Progress Dialogs for later use.
+		mProgDialog = new ProgressDialog(this);
+		mProgDialog.setMessage(getString(R.string.verify_creds));
+		
 		OnClickListener OKButtonListener =  new OnClickListener() {
 			
 			@Override
@@ -112,17 +120,11 @@ public class IdenticaAccountSetupActivity extends Activity {
 				final String username = mUserNameText.getText().toString();
 				final String password = mPasswordText.getText().toString();
 				mIdenticaHandler.setCredentials(username, password);
-				
-				if (!mIdenticaHandler.verifyCredentials()){
-					Log.d(TAG, "Cannot verify credentials!");
-					Toast.makeText(IdenticaAccountSetupActivity.this, R.string.credentials_not_verified, Toast.LENGTH_SHORT).show();
-					mIdenticaHandler.setCredentials("", "");
-					
-				} else {
-					finish();
-				}
+				mTask = new VerifyCredentials();
+				mTask.execute();
 			}
 		};
+		
 		OnClickListener CancelButtonListener = new OnClickListener() {
 			
 			@Override
@@ -146,9 +148,53 @@ public class IdenticaAccountSetupActivity extends Activity {
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+		//Dismiss dialog now or it will leak.
+		if (mProgDialog.isShowing()){
+			mProgDialog.dismiss();
+		}
 		doUnbindIdenticaHandler();
 	}
 	
 
-	
+	private class VerifyCredentials extends AsyncTask<Void, Void, Integer> {
+		
+		@Override
+		protected void onPreExecute() {
+			mProgDialog.show();
+		}
+		
+		@Override
+		protected Integer doInBackground(Void... unused) {
+			Integer status = mIdenticaHandler.verifyCredentials();
+			return status;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer status) {
+			mProgDialog.hide();
+			switch (status) {
+			case 999:
+				Log.d(TAG,"Credentials verified");
+				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.login_successful,Toast.LENGTH_LONG).show();
+				finish();
+				break;
+			case 1:
+				Log.d(TAG,"ClientProtocolException thrown");
+				Toast.makeText(IdenticaAccountSetupActivity.this, "ClientProtocolException",Toast.LENGTH_LONG).show();
+				break;
+			case 2:
+				Log.d(TAG,"Identi.ca is offline");
+				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.identica_offline,Toast.LENGTH_LONG).show();
+				break;
+			case 3:
+				Log.d(TAG,"Credentials Not Verified");
+				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.credentials_not_verified,Toast.LENGTH_LONG).show();
+				break;
+			case 4:
+				Log.d(TAG,"No internet connection");
+				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
+				break;
+			}
+		}
+	}
 }
