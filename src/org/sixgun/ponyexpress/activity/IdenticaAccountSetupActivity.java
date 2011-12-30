@@ -173,26 +173,30 @@ public class IdenticaAccountSetupActivity extends Activity {
 		protected void onPostExecute(Integer status) {
 			mProgDialog.hide();
 			switch (status) {
-			case 999:
+			case IdenticaHandler.ACCOUNT_VERIFIED:
 				Log.d(TAG,"Credentials verified");
 				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.login_successful,Toast.LENGTH_LONG).show();
 				finish();
 				break;
-			case 1:
+			case IdenticaHandler.CLIENTPROTOCOLEXCEPTION:
 				Log.d(TAG,"ClientProtocolException thrown");
 				Toast.makeText(IdenticaAccountSetupActivity.this, "ClientProtocolException",Toast.LENGTH_LONG).show();
+				mIdenticaHandler.setCredentials("", "");
 				break;
-			case 2:
-				Log.d(TAG,"Identi.ca is offline");
+			case IdenticaHandler.IO_EXCEPTION:
+				Log.d(TAG,"Identi.ca is offline, or internet connectivity has been lost");
 				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.identica_offline,Toast.LENGTH_LONG).show();
+				mIdenticaHandler.setCredentials("", "");
 				break;
-			case 3:
+			case IdenticaHandler.UNAUTHORIZED:
 				Log.d(TAG,"Credentials Not Verified");
 				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.credentials_not_verified,Toast.LENGTH_LONG).show();
+				mIdenticaHandler.setCredentials("", "");
 				break;
-			case 4:
+			case IdenticaHandler.NO_CONNECTIVITY:
 				Log.d(TAG,"No internet connection");
 				Toast.makeText(IdenticaAccountSetupActivity.this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
+				mIdenticaHandler.setCredentials("", "");
 				break;
 			}
 		}

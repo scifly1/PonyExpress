@@ -79,6 +79,12 @@ public class IdenticaHandler extends Service {
 	private final IBinder mBinder = new IdenticaHandlerBinder();
 	private String mUserName = "";
 	private String mPassword = "";
+	//Error return codes
+	public static final int CLIENTPROTOCOLEXCEPTION = 1;
+	public static final int IO_EXCEPTION = 2;
+	public static final int UNAUTHORIZED = 3;
+	public static final int NO_CONNECTIVITY = 4;
+	public static final int ACCOUNT_VERIFIED = 999;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -135,7 +141,7 @@ public class IdenticaHandler extends Service {
 
 	public int verifyCredentials() {
 		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()) {
-			return 4;
+			return NO_CONNECTIVITY;
 		}
 		DefaultHttpClient httpClient = setUpClient();
 		HttpGet get = new HttpGet(VERIFY_API);
@@ -144,16 +150,16 @@ public class IdenticaHandler extends Service {
 		try {
 			response = httpClient.execute(get);
 		} catch (ClientProtocolException e) {
-			return 1;
+			return CLIENTPROTOCOLEXCEPTION;
 		} catch (IOException e) {
-			return 2;
+			return IO_EXCEPTION;
 		}
 		int statusCode = response.getStatusLine().getStatusCode();
 		if (statusCode == HttpStatus.SC_UNAUTHORIZED){
-			return 3;
+			return UNAUTHORIZED;
 		}
 		Log.d(TAG, "Status Code: " + statusCode);
-		return 999;
+		return ACCOUNT_VERIFIED;
 		
 	}
 	
