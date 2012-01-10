@@ -16,6 +16,7 @@
 	<string name="Episodes_title">
 		<b>Episodes</b>
 	</string>
+	<string name="Playlist_title">Playlist</string>
 	<string name="Identica_group_title">Group Dents</string>
 	<string name="Identica_episode_title">Episode Dents</string>
 	<string name="sixgun">Sixgun Productions</string>
@@ -114,6 +115,8 @@
 	<string name="r_seek_time">Rewind Seek Time</string>
 	<string name="ff_seek_time_summary">The amount of time to skip forward when the fast forward button is pushed</string>
 	<string name="ff_seek_time">Fast Forward Seek Time</string>
+	<string name="no_episodes">The playlist is empty.</string>
+	<string name="playlist_subtitle_pod">Select podcast...</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
