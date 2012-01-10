@@ -776,4 +776,9 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return mCheckDatabase;	
 	}
+
+	public Cursor getPlaylist() {
+		//TODO Implement this properly
+		return getAllEpisodeNames("Linux Outlaws");
+	}
 }
