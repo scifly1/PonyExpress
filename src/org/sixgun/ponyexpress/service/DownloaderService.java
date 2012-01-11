@@ -182,6 +182,7 @@ public class DownloaderService extends Service {
 			
 			@Override
 			public void run() {
+				boolean IOe = false;
 				final URL url = episode.getLink();
 				final String podcastPath = episode.getPodcastPath();
 				if (url != null && isSDCardWritable()){
@@ -192,58 +193,59 @@ public class DownloaderService extends Service {
 							&& outFile != null){
 						//Begin download
 						mCurrentDownloads++;
-						InputStream inFile;
+						InputStream inFile = null;
 						int totalDownloaded = 0;
 						try {
 							inFile = url.openStream();
 						} catch (IOException e) {
-							// TODO Improve this error handling.  Check network up etc.. 
-							throw new RuntimeException(e);
+							IOe = true;
 						}
-						byte[] buffer = new byte[1024];
-						int size = 0;
+						if (!IOe){
+							byte[] buffer = new byte[1024];
+							int size = 0;
 
-						Log.d(TAG,"Writing " + url.getFile());
-						try {
-							while ((size = inFile.read(buffer)) > 0 && !episode.downloadCancelled()) {
-								outFile.write(buffer,0, size);
-								totalDownloaded  += size;
-								mEpisodes.get(index).setDownloadProgress(totalDownloaded);
-							}
-							if (episode.downloadCancelled()){
-								Log.d(TAG, "Podcast download cancelled.");
-								//Delete partial download.
-								deleteEpisode(podcastPath, url);
-							}
-							else {
-								Log.d(TAG,"Podcast written to SD card.");
-								mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
-										episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
-							}
-							episode.resetDownloadCancelled();
-							//Decrease mCurrentDownloads which will kill 
-							//the notifications of it getes to <1
-							mCurrentDownloads--;
+							Log.d(TAG,"Writing " + url.getFile());
+							try {
+								while ((size = inFile.read(buffer)) > 0 && !episode.downloadCancelled()) {
+									outFile.write(buffer,0, size);
+									totalDownloaded  += size;
+									mEpisodes.get(index).setDownloadProgress(totalDownloaded);
+								}
+								if (episode.downloadCancelled()){
+									Log.d(TAG, "Podcast download cancelled.");
+									//Delete partial download.
+									deleteEpisode(podcastPath, url);
+								}
+								else {
+									Log.d(TAG,"Podcast written to SD card.");
+									mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
+											episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
+								}
+								episode.resetDownloadCancelled();
+								//Decrease mCurrentDownloads which will kill 
+								//the notifications of it getes to <1
+								mCurrentDownloads--;
 							
-						} catch (IOException e) {
-							//Error downloading so reset the Activity
-							Log.e(TAG, "Error reading/writing to file.", e);
+							} catch (IOException e) {
+								//Error downloading so reset the Activity
+								Log.e(TAG, "Error reading/writing to file.", e);
+								setDownloadFailed(index);
+							}
+
+						} else {
+							Log.d(TAG, "No Internet Connection or outFile error.");
 							setDownloadFailed(index);
-						}
+							mHandler.post(new Runnable(){
 
-					} else {
-						Log.d(TAG, "No Internet Connection or outFile error.");
-						setDownloadFailed(index);
-						mHandler.post(new Runnable(){
-
-							@Override
-							public void run() {
-								Toast.makeText(getApplicationContext(), R.string.no_internet_connection,
+								@Override
+								public void run() {
+									Toast.makeText(getApplicationContext(), R.string.no_internet_connection,
 										Toast.LENGTH_SHORT).show();
 								
-							}
+								}
 							
-						});
+							});
+						}
 					}
 				}
 			}			
