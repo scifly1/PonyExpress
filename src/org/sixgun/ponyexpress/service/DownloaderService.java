@@ -461,10 +461,15 @@ public class DownloaderService extends Service {
 	public double getProgress(final int index) {
 		// look up podcast in array and return percent progress
 		final DownloadingEpisode episode = mEpisodes.get(index);
-		final int size = episode.getSize();
-		final int progress = episode.getDownloadProgress();
-		double percent = progress/(double)size * 100; 
-		return percent;
+		final boolean downloading = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(episode.getRowID(), episode.getPodcastName());
+		if (downloading){
+			return 100.0;
+		}else{
+			final int size = episode.getSize();
+			final int progress = episode.getDownloadProgress();
+			final double percent = progress/(double)size * 100; 
+			return percent;
+		}
 	}
 
 	public boolean checkForDownloadError(final int index) {
