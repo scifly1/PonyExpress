@@ -658,7 +658,9 @@ public class PonyExpressActivity extends ListActivity {
 							mPonyExpressApp.getDbHelper().insertEpisode(episodes.get(i), podcast);
 						}
 					}catch(IndexOutOfBoundsException e){
+						//The feed has fewer episodes than the number to keep so log and break
 						Log.d(TAG, "Number of episodes in this feed is less than the number to keep");
+						break;
 					}
 				}
 				
