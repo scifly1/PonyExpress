@@ -500,6 +500,8 @@ public class PonyExpressActivity extends ListActivity {
 			if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
         		albumArt.setRemoteURI(albumArtUrl);
         		albumArt.loadImage();
+			} else {
+				albumArt.loadDefault();
 			}
 			final String unlistenedString = Utils.formUnlistenedString(context, unlistened);
 			unlistenedText.setText(unlistenedString);

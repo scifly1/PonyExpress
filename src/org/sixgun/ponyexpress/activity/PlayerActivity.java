@@ -397,14 +397,21 @@ public class PlayerActivity extends Activity {
 		}
 		
 		//Get Album art url and set image.
-		RemoteImageView album_art = (RemoteImageView)findViewById(R.id.album_art);
-		mAlbumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
-		if (mAlbumArtUrl != null && !"".equals(mAlbumArtUrl) 
-				&& !"null".equalsIgnoreCase(mAlbumArtUrl) && album_art !=null){
-    		album_art.setRemoteURI(mAlbumArtUrl);
-    		album_art.loadImage();
+		//Get the orientation
+		final int orientation = getResources().getConfiguration().orientation;
+		//Skip if orientation is landscape
+		if (orientation != 2) {
+			//Set the image
+			RemoteImageView album_art = (RemoteImageView)findViewById(R.id.album_art);
+			mAlbumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
+			if (mAlbumArtUrl != null && !"".equals(mAlbumArtUrl) 
+					&& !"null".equalsIgnoreCase(mAlbumArtUrl) && album_art !=null){
+				album_art.setRemoteURI(mAlbumArtUrl);
+				album_art.loadImage();
+			} else {
+				album_art.loadDefault();
+			}
 		}
-		
 		//Create an Intent to use to start playback.
 		mPlayerIntent = new Intent(mPonyExpressApp,PodcastPlayer.class);
 		mPlayerIntent.putExtra(RemoteControlReceiver.ACTION, 

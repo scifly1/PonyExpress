@@ -55,6 +55,10 @@ public class RemoteImageView extends ImageView {
 		}
 	}
 
+	public void loadDefault() {
+		setImageResource(R.drawable.pony_icon);
+	}
+	
 	public void loadImage(int resource) {
 		mResource=resource;
 		if (mRemote != null) {
