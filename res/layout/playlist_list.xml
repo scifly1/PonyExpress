@@ -18,6 +18,7 @@
             android:divider="#00000001"
             android:dividerHeight="1dp"
             android:paddingTop="2dp" 
-            />
+            android:transcriptMode="alwaysScroll"
+			android:stackFromBottom="true"/>
         
 </LinearLayout>

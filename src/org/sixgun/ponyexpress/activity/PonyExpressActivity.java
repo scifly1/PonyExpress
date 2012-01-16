@@ -301,12 +301,11 @@ public class PonyExpressActivity extends ListActivity {
 	
 
 	/**
-	 * Starts the PodcastTabs activity with the selected podcast
+	 * Starts the EpisodesActivity with the selected podcast
 	 * @param id row_id of the podcast in the database
 	 */
-	private void selectPodcast(View v, long id) {
+	protected void selectPodcast(View v, long id) {
 		//Get the podcast name and album art url and number of unlistened episodes.
-
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
 		//Store in an intent and send to EpisodesActivity

@@ -64,13 +64,13 @@ public class EpisodesActivity extends ListActivity {
 	private static final int MARK_ALL_LISTENED = 0;
 	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private static final int DOWNLOAD_ALL = MARK_ALL_NOT_LISTENED +1;
-	private PonyExpressApp mPonyExpressApp;
-	private String mPodcastName;
-	private String mAlbumArtUrl;
-	private String mPodcastNameStripped; 
-	private TextView mUnlistenedText;
-	private ViewGroup mBackground;
-	private int mNumberUnlistened;
+	protected PonyExpressApp mPonyExpressApp;
+	protected String mPodcastName;
+	protected String mAlbumArtUrl;
+	protected String mPodcastNameStripped; 
+	protected TextView mUnlistenedText;
+	protected ViewGroup mBackground;
+	protected int mNumberUnlistened;
 
 	
 	@Override

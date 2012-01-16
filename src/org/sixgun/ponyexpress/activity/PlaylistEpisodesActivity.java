@@ -20,47 +20,88 @@ package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
-import org.sixgun.ponyexpress.PodcastKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.Utils;
+
 import android.content.Context;
-import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
 
-public class PlaylistActivity extends PonyExpressActivity implements PlaylistInterface {
+public class PlaylistEpisodesActivity extends EpisodesActivity implements PlaylistInterface{
 
-	private ListView mPlaylist;
 	
+	
+	private ListView mPlaylist;
+
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreate(android.os.Bundle)
+	 */
+	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.playlist);
+		setContentView(R.layout.playlist_episodes);
 		
 		//Get the playlist listview as we need to manage it.
 		mPlaylist = (ListView) findViewById(R.id.playlist_list);
-		
+				
 		listPlaylist();
+				
+		registerForContextMenu(getListView());
+		
+		((TextView) findViewById(R.id.playlist_subtitle)).setText(R.string.playlist_subtitle_eps);
+		
+		//Set the background of the episode list
+		mBackground = (ViewGroup) findViewById(R.id.episode_list);
+		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+
+			@Override
+			public void onGlobalLayout() {
+				Resources res = getResources();
+				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
+				if (image != null){
+					int new_height = mBackground.getHeight();
+					int new_width = mBackground.getWidth();
+					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+							(res, image, new_height, new_width);
+					mBackground.setBackgroundDrawable(new_background);
+				}
+			}
+		});
 	}
 	
-	
-	/**
-	 * Return to the standard view from the Playlist view
-	 * @param v
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.Playlist#goBack(android.view.View)
 	 */
+	@Override
 	public void goBack(View v) {
 		finish();
 	}
-		
+	
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.Playlist#startPlaylist(android.view.View)
+	 */
+	@Override
+	public void startPlaylist(View v) {
+		//TODO Start EpisodeTabs as happens from EpisodeActivity
+		// but hand over a flag to indicate to play from the playlist.
+	}
+
 	/**
 	 * This method lists the podcasts currently in the playlist.
 	 */
@@ -74,50 +115,65 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		//register the playlist to have a context menu
 		//TODO There is only one context menu per activity, so some logic
 		// will be reqired to determine which list has been long pressed.
-		registerForContextMenu(mPlaylist);
+		registerForContextMenu(mPlaylist);	
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreateOptionsMenu(android.view.Menu)
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		//TODO Playlist specific menu although some entries from the main
-		//menu will also be needed here. eg: settings
-		return false;
+		// TODO Auto-generated method stub
+		return super.onCreateOptionsMenu(menu);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onPrepareOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		// TODO Auto-generated method stub
+		return super.onPrepareOptionsMenu(menu);
+	}
+
 	
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		//TODO Handle menu
-		return true;
+		// TODO Auto-generated method stub
+		return super.onOptionsItemSelected(item);
 	}
 	
-	
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
-		//TODO uncomment call to super when this is implemented
-		//Some logic will be needed to determine which list the menu is for.
-		//super.onCreateContextMenu(menu, v, menuInfo);
-		
+		// TODO Auto-generated method stub
+		super.onCreateContextMenu(menu, v, menuInfo);
 	}
-	
+
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onContextItemSelected(android.view.MenuItem)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onContextItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		//TODO 
-		return false;
+		// TODO Auto-generated method stub
+		return super.onContextItemSelected(item);
 	}
-	
+
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
+	 */
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		// TODO Auto-generated method stub
+		super.onListItemClick(l, v, position, id);
+	}
+
 	/**
 	 * We subclass CursorAdapter to handle our display the results from our Playlist cursor. 
 	 * Overide newView to create/inflate a view to bind the data to.
@@ -160,31 +216,4 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		
 	}
 	
-	/* 
-	 * Starts the PlaylistEpisodesActivity to select the required episodes
-	 * @param id row_id of the podcast in the database
-	 */
-	@Override
-	protected void selectPodcast(View v, long id) {
-		//Get the podcast name and album art url and number of unlistened episodes.
-		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
-		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
-		//Store in an intent and send to PlaylistEpisodesActivity
-		Intent intent = new Intent(this,PlaylistEpisodesActivity.class);
-		intent.putExtra(PodcastKeys.NAME, name);
-		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
-		startActivity(intent);
-	}
-
-
-	/**
-	 * Starts EpisdodeTabs with the Player etc.. with a playlist
-	 * @param v
-	 */
-	public void startPlaylist(View v) {
-		//TODO Start EpisodeTabs as happens from EpisodeActivity
-		// but hand over a flag to indicate to play from the playlist.
-	}
-	
-
 }
