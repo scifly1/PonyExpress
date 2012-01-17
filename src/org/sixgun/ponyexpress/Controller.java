@@ -24,7 +24,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 import android.content.Context;
 import android.os.Process;
-import android.util.Config;
 import android.util.Log;
 
 public class Controller implements Runnable {
@@ -75,9 +74,7 @@ public class Controller implements Runnable {
 				}
 			}
 			catch (Exception e) {
-				if (Config.LOGD) {
-					Log.d(TAG, "Error running command", e);
-				}
+				Log.d(TAG, "Error running command", e);
 			}
 			mBusy = false;
 		}
