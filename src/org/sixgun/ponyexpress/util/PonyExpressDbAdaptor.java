@@ -665,7 +665,24 @@ public class PonyExpressDbAdaptor {
 	public String getAlbumArtUrl(long row_ID){
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
-				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+				columns, PodcastKeys._ID + "=" + row_ID, null, null, null, null, null);
+		String url = "";
+		if (cursor != null  && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			url = cursor.getString(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getAlbumArtUrl()");
+		}
+		cursor.close();
+		return url;
+	}
+	
+	public String getAlbumArtUrl(String podcast_name){
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
+		//Use double quote here for the podcastName as it is an identifier.
+		final String quoted_name = "\"" + podcast_name + "\"";
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, PodcastKeys.NAME + "=" + quoted_name, null, null, null, null, null);
 		String url = "";
 		if (cursor != null  && cursor.getCount() > 0){
 			cursor.moveToFirst();
