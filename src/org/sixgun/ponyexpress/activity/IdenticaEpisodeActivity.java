@@ -23,7 +23,6 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
-import org.sixgun.ponyexpress.service.IdenticaHandler;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.ProgressDialog;
@@ -32,7 +31,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -172,49 +170,6 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 		//Dismiss dialog now or it will leak.
 		if (mProgDialog.isShowing()){
 			mProgDialog.dismiss();
-		}
-	}
-	
-	private class PostDent extends AsyncTask<String, Void, Integer> {
-		
-		@Override
-		protected void onPreExecute() {
-			mProgDialog.show();
-		}
-
-		@Override
-		protected Integer doInBackground(String... dent) {
-			Integer status = mIdenticaHandler.postDent(dent);
-			//mIdenticaHandler.new PostDent().execute(text);
-			return status;
-		}
-		
-		@Override
-		protected void onPostExecute(Integer status) {
-			mProgDialog.hide();
-			switch (status) {
-			case IdenticaHandler.NO_CONNECTIVITY:
-				Log.d(TAG,"No internet connection");
-				Toast.makeText(IdenticaEpisodeActivity.this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
-				break;
-			case IdenticaHandler.CLIENTPROTOCOLEXCEPTION:
-				Log.d(TAG,"ClientProtocolException thrown");
-				Toast.makeText(IdenticaEpisodeActivity.this, "ClientProtocolException",Toast.LENGTH_LONG).show();
-				break;
-			case IdenticaHandler.IO_EXCEPTION:
-				Log.d(TAG,"Identi.ca is offline, or internet connectivity has been lost");
-				Toast.makeText(IdenticaEpisodeActivity.this, R.string.identica_offline,Toast.LENGTH_LONG).show();
-				break;
-			case IdenticaHandler.CANNOT_ENCODE_DENT:
-				Log.d(TAG,"Can not encode the dent!");
-				Toast.makeText(IdenticaEpisodeActivity.this, R.string.can_not_encode_dent,Toast.LENGTH_LONG).show();
-				break;
-			case IdenticaHandler.SUCCESSFUL_DENT:
-				Log.d(TAG,"Dent sent");
-				Toast.makeText(IdenticaEpisodeActivity.this, R.string.successful_dent,Toast.LENGTH_LONG).show();
-				break;
-			
-			}
 		}
 	}
 }

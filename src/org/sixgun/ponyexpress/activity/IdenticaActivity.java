@@ -71,7 +71,8 @@ public class IdenticaActivity extends ListActivity {
 	protected boolean mIdenticaHandlerBound;
 	protected Bundle mData;
 	protected ProgressDialog mProgDialog;
-		
+	private PostDent mTask;
+	
 	protected EditText mDentText;
 	protected TextView mCharCounter;
 	protected Button mDentButton;
@@ -181,17 +182,14 @@ public class IdenticaActivity extends ListActivity {
 				if (mIdenticaHandler.credentialsSet()){
 					if (mDentText.getText().length() != 0) {
 						final String text = mDentText.getText().toString();
-						Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
-								Toast.LENGTH_SHORT).show();
-						//TODO 
-						//Need to redo for new dent structure
-						//mIdenticaHandler.new PostDent().execute(text);
+						mTask = new PostDent();
+						mTask.execute(text);
 						mDentText.setText(mTagText);
 						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
 						new GetLatestDents().execute();
 					}
 				} else {
-					Toast.makeText(IdenticaActivity.this, R.string.login_failed, 
+					Toast.makeText(IdenticaActivity.this, R.string.credentials_not_verified, 
 							Toast.LENGTH_LONG).show();
 					//Fire off AccountSetup screen
 					startActivity(new Intent(
@@ -287,8 +285,55 @@ public class IdenticaActivity extends ListActivity {
 	@Override
 	protected void onDestroy() {
 	    super.onDestroy();
+	    //Dismiss dialog now or it will leak.
+	  	if (mProgDialog.isShowing()){
+	  		mProgDialog.dismiss();
+	  	}
 	    doUnbindIdenticaHandler();
 	}
+	
+	public class PostDent extends AsyncTask<String, Void, Integer> {
+		
+		@Override
+		protected void onPreExecute() {
+			mProgDialog.show();
+		}
+
+		@Override
+		protected Integer doInBackground(String... dent) {
+			Integer status = mIdenticaHandler.postDent(dent);
+			return status;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer status) {
+			mProgDialog.hide();
+			switch (status) {
+			case IdenticaHandler.NO_CONNECTIVITY:
+				Log.d(TAG,"No internet connection");
+				Toast.makeText(IdenticaActivity.this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
+				break;
+			case IdenticaHandler.CLIENTPROTOCOLEXCEPTION:
+				Log.d(TAG,"ClientProtocolException thrown");
+				Toast.makeText(IdenticaActivity.this, "ClientProtocolException",Toast.LENGTH_LONG).show();
+				break;
+			case IdenticaHandler.IO_EXCEPTION:
+				Log.d(TAG,"Identi.ca is offline, or internet connectivity has been lost");
+				Toast.makeText(IdenticaActivity.this, R.string.identica_offline,Toast.LENGTH_LONG).show();
+				break;
+			case IdenticaHandler.CANNOT_ENCODE_DENT:
+				Log.d(TAG,"Can not encode the dent!");
+				Toast.makeText(IdenticaActivity.this, R.string.can_not_encode_dent,Toast.LENGTH_LONG).show();
+				break;
+			case IdenticaHandler.SUCCESSFUL_DENT:
+				Log.d(TAG,"Dent sent");
+				Toast.makeText(IdenticaActivity.this, R.string.successful_dent,Toast.LENGTH_LONG).show();
+				break;
+			
+			}
+		}
+	}
+	
 	/**
 	 * We subclass ArrayAdapter to handle our specific Dent ListArray.  The override of
 	 * getView() provides a mapping between the fields of a Dent we want to view and the 
