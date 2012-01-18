@@ -25,7 +25,6 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.util.Utils;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -50,9 +49,7 @@ import android.widget.Toast;
  *
  */
 public class IdenticaEpisodeActivity extends IdenticaActivity {
-	
-	protected PostDent mTask;
-	
+		
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.IdenticaActivity#onCreate(android.os.Bundle)
 	 */
@@ -63,10 +60,6 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 		setContentView(R.layout.identica_episodes);
 		mIdenticaTag = mData.getString(PodcastKeys.TAG);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
-		
-		//Create Progress Dialogs for later use.
-		mProgDialog = new ProgressDialog(this);
-		mProgDialog.setMessage(getString(R.string.sending_dent));
 		
 		OnClickListener DentButtonListener = new OnClickListener() {
 			
@@ -92,7 +85,7 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 						new GetLatestDents().execute();
 					}
 				} else {
-					Toast.makeText(IdenticaEpisodeActivity.this, R.string.login_failed, 
+					Toast.makeText(IdenticaEpisodeActivity.this, R.string.credentials_not_verified, 
 							Toast.LENGTH_LONG).show();
 					//Fire off AccountSetup screen
 					startActivity(new Intent(
@@ -162,14 +155,5 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 				
 			}
 		});
-	}
-	
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		//Dismiss dialog now or it will leak.
-		if (mProgDialog.isShowing()){
-			mProgDialog.dismiss();
-		}
 	}
 }

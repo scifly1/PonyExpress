@@ -53,6 +53,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -71,7 +72,7 @@ public class IdenticaActivity extends ListActivity {
 	protected boolean mIdenticaHandlerBound;
 	protected Bundle mData;
 	protected ProgressDialog mProgDialog;
-	private PostDent mTask;
+	protected PostDent mTask;
 	
 	protected EditText mDentText;
 	protected TextView mCharCounter;
@@ -311,7 +312,13 @@ public class IdenticaActivity extends ListActivity {
 		
 		@Override
 		protected void onPostExecute(Integer status) {
+			//Hide the dialog
 			mProgDialog.hide();
+			
+			//Hide the soft keyboard
+			((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE))
+			.hideSoftInputFromWindow(mDentText.getWindowToken(), 0);
+			
 			switch (status) {
 			case IdenticaHandler.NO_CONNECTIVITY:
 				Log.d(TAG,"No internet connection");
