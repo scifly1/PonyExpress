@@ -156,6 +156,10 @@ public class IdenticaActivity extends ListActivity {
 		final String podcastName = mData.getString(PodcastKeys.NAME);
 		title.setText(podcastName);
 		
+		//Create Progress Dialogs for later use.
+		mProgDialog = new ProgressDialog(this);
+		mProgDialog.setMessage(getString(R.string.sending_dent));
+				
 		//Set the background
 		mBackground = (ViewGroup) findViewById(R.id.identica_body);
 		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
