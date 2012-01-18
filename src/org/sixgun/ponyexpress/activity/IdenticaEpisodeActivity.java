@@ -85,9 +85,6 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 							editor.commit();
 							Log.d(TAG,"Easter egg activated");
 						} else {
-							//Toast.makeText(IdenticaEpisodeActivity.this, R.string.sending_dent, 
-							//		 Toast.LENGTH_SHORT).show();
-							//Execute the PostDent Async to send the dent. 
 							mTask = new PostDent();
 							mTask.execute(text);
 							
@@ -209,12 +206,12 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 				Toast.makeText(IdenticaEpisodeActivity.this, R.string.identica_offline,Toast.LENGTH_LONG).show();
 				break;
 			case IdenticaHandler.CANNOT_ENCODE_DENT:
-				//TODO Log.d(TAG,"No internet connection");
-				//TODO Toast.makeText(IdenticaEpisodeActivity.this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
+				Log.d(TAG,"Can not encode the dent!");
+				Toast.makeText(IdenticaEpisodeActivity.this, R.string.can_not_encode_dent,Toast.LENGTH_LONG).show();
 				break;
 			case IdenticaHandler.SUCCESSFUL_DENT:
-				//TODO Log.d(TAG,"No internet connection");
-				//TODO Toast.makeText(IdenticaEpisodeActivity.this, R.string.no_internet_connection,Toast.LENGTH_LONG).show();
+				Log.d(TAG,"Dent sent");
+				Toast.makeText(IdenticaEpisodeActivity.this, R.string.successful_dent,Toast.LENGTH_LONG).show();
 				break;
 			
 			}

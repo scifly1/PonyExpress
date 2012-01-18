@@ -36,6 +36,8 @@
 	<string name="searching_dents">Searching for dents..."</string>
 	<string name="no_dents">No dents for this episode yet! Go on, be the first!
 	</string>
+	<string name="can_not_encode_dent">Can not encode your dent.</string>
+	<string name="successful_dent">Successful dent!</string>
 	<string name="dent_here">Type new dent here:</string>
 	<string name="dent_ok">Dent!</string>
 	<string name="conn_err_query_failed">Connection error! Cannot get dents.</string>

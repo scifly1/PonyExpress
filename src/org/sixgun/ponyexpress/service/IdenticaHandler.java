@@ -55,7 +55,6 @@ import org.sixgun.ponyexpress.util.DentParser;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -244,7 +243,7 @@ public class IdenticaHandler extends Service {
 		try {
 			data = new UrlEncodedFormEntity(params,HTTP.UTF_8);
 		} catch (UnsupportedEncodingException e) {
-			Log.e(TAG, "Cannot encode your dent!", e);
+			Log.e(TAG, "Cannot encode the dent!", e);
 			return null;
 		}
 		post.setEntity(data);
