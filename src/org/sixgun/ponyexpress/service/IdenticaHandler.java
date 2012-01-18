@@ -191,11 +191,6 @@ public class IdenticaHandler extends Service {
 		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()) {
 			return NO_CONNECTIVITY;
 		}	
-		//Check credentials are set up
-		if (mUserName.equals("")){
-				Log.d(TAG,"No user details found!");			
-				return UNAUTHORIZED;
-		}
 		//Send dent 
 		DefaultHttpClient httpClient = setUpClient();
 		
@@ -212,9 +207,6 @@ public class IdenticaHandler extends Service {
 			return IO_EXCEPTION;
 		}
 		int statusCode = response.getStatusLine().getStatusCode();
-		if (statusCode == HttpStatus.SC_UNAUTHORIZED){
-			return UNAUTHORIZED;
-		}
 		Log.d(TAG, "Status Code: " + statusCode);
 		return SUCCESSFUL_DENT;
 	}
