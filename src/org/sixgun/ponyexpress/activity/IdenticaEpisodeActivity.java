@@ -25,11 +25,13 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.util.Utils;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.text.Editable;
@@ -49,7 +51,9 @@ import android.widget.Toast;
  *
  */
 public class IdenticaEpisodeActivity extends IdenticaActivity {
-
+	
+	protected PostDent mTask;
+	
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.IdenticaActivity#onCreate(android.os.Bundle)
 	 */
@@ -60,6 +64,10 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 		setContentView(R.layout.identica_episodes);
 		mIdenticaTag = mData.getString(PodcastKeys.TAG);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
+		
+		//Create Progress Dialogs for later use.
+		mProgDialog = new ProgressDialog(this);
+		mProgDialog.setMessage(getString(R.string.sending_dent));
 		
 		OnClickListener DentButtonListener = new OnClickListener() {
 			
@@ -76,9 +84,12 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 							editor.commit();
 							Log.d(TAG,"Easter egg activated");
 						} else {
-							Toast.makeText(IdenticaEpisodeActivity.this, R.string.sending_dent, 
-									 Toast.LENGTH_SHORT).show();
-							mIdenticaHandler.new PostDent().execute(text);
+							//Toast.makeText(IdenticaEpisodeActivity.this, R.string.sending_dent, 
+							//		 Toast.LENGTH_SHORT).show();
+							//Execute the PostDent Async to send the dent. 
+							mTask = new PostDent();
+							mTask.execute(text);
+							
 						}
 						mDentText.setText(mTagText);
 						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
@@ -157,5 +168,25 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 		});
 	}
 	
-	
+	private class PostDent extends AsyncTask<String, Void, Integer> {
+		
+		@Override
+		protected void onPreExecute() {
+			mProgDialog.show();
+		}
+
+		@Override
+		protected Integer doInBackground(String... text) {
+			//Integer status = mIdenticaHandler.postDent();
+			//mIdenticaHandler.new PostDent().execute(text);
+			//return status;
+			return null;
+		}
+		
+		@Override
+		protected void onPostExecute(Integer status) {
+			mProgDialog.hide();
+			//TODO Error handling
+		}
+	}
 }

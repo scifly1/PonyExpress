@@ -31,6 +31,7 @@ import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -69,7 +70,8 @@ public class IdenticaActivity extends ListActivity {
 	protected IdenticaHandler mIdenticaHandler;
 	protected boolean mIdenticaHandlerBound;
 	protected Bundle mData;
-	
+	protected ProgressDialog mProgDialog;
+		
 	protected EditText mDentText;
 	protected TextView mCharCounter;
 	protected Button mDentButton;
