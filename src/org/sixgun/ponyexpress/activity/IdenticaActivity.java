@@ -183,7 +183,7 @@ public class IdenticaActivity extends ListActivity {
 						final String text = mDentText.getText().toString();
 						Toast.makeText(IdenticaActivity.this, R.string.sending_dent, 
 								Toast.LENGTH_SHORT).show();
-						mIdenticaHandler.new PostDent().execute(text);
+						//mIdenticaHandler.new PostDent().execute(text);
 						mDentText.setText(mTagText);
 						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
 						new GetLatestDents().execute();

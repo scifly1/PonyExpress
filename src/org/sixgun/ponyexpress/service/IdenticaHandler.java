@@ -84,6 +84,8 @@ public class IdenticaHandler extends Service {
 	public static final int IO_EXCEPTION = 2;
 	public static final int UNAUTHORIZED = 3;
 	public static final int NO_CONNECTIVITY = 4;
+	public static final int CANNOT_ENCODE_DENT = 5;
+	public static final int SUCCESSFUL_DENT = 888;
 	public static final int ACCOUNT_VERIFIED = 999;
 	
 	/**
@@ -184,41 +186,38 @@ public class IdenticaHandler extends Service {
 		return dents;
 	}
 	
-	
-	/**
-	 * AsyncTask that posts the String dent on Identica.
-	 * Takes a string[] of dents (only index 0 read) and returns via its get() method 
-	 * true if successful and false if there was an error (account not setup).
-	 */
-	public class PostDent extends AsyncTask<String, Void, Boolean>{
-
-		@Override
-		protected Boolean doInBackground(String... dent) {
-			//Check credentials are set up
-			if (mUserName.equals("")){
+	public int postDent(String[] dent) {
+		//Check for internet connectivity
+		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()) {
+			return NO_CONNECTIVITY;
+		}	
+		//Check credentials are set up
+		if (mUserName.equals("")){
 				Log.d(TAG,"No user details found!");			
-				return false;
-			}
-			//Send dent 
-			DefaultHttpClient httpClient = setUpClient();
-			HttpPost post = setUpPOST(dent);
-			
-			//TODO Catch errors using the response
-			HttpResponse response = null;
-			try {
-				response = httpClient.execute(post);
-			} catch (ClientProtocolException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return true;
+				return UNAUTHORIZED;
 		}
+		//Send dent 
+		DefaultHttpClient httpClient = setUpClient();
 		
+		HttpPost post = setUpPOST(dent);
+		if (post == null){
+			return CANNOT_ENCODE_DENT;
+		}
+		HttpResponse response = null;
+		try {
+			response = httpClient.execute(post);
+		} catch (ClientProtocolException e) {
+			return CLIENTPROTOCOLEXCEPTION;
+		} catch (IOException e) {
+			return IO_EXCEPTION;
+		}
+		int statusCode = response.getStatusLine().getStatusCode();
+		if (statusCode == HttpStatus.SC_UNAUTHORIZED){
+			return UNAUTHORIZED;
+		}
+		Log.d(TAG, "Status Code: " + statusCode);
+		return SUCCESSFUL_DENT;
 	}
-
 	
 	/**
 	 * Sets up a new HttpClient with the correct username and password.
@@ -254,6 +253,7 @@ public class IdenticaHandler extends Service {
 			data = new UrlEncodedFormEntity(params,HTTP.UTF_8);
 		} catch (UnsupportedEncodingException e) {
 			Log.e(TAG, "Cannot encode your dent!", e);
+			return null;
 		}
 		post.setEntity(data);
 		return post;

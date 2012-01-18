@@ -176,11 +176,10 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 		}
 
 		@Override
-		protected Integer doInBackground(String... text) {
-			//Integer status = mIdenticaHandler.postDent();
+		protected Integer doInBackground(String... dent) {
+			Integer status = mIdenticaHandler.postDent(dent);
 			//mIdenticaHandler.new PostDent().execute(text);
-			//return status;
-			return null;
+			return status;
 		}
 		
 		@Override
