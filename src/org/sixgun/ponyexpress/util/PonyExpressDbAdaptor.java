@@ -17,6 +17,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -27,9 +28,10 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 12;
+	private static final int DATABASE_VERSION = 13;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String PODCAST_TABLE = "Podcasts";
+    private static final String PLAYLIST_TABLE = "Playlist";
     private static final String TEMP_TABLE_NAME = "Temp_Episodes";
     private static final String EPISODE_TABLE_FIELDS =
                 " (" +
@@ -63,6 +65,13 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.TABLE_NAME + " TEXT," + 
     	PodcastKeys.TAG + " TEXT," +
     	PodcastKeys.GROUP + " TEXT);";
+    
+    private static final String PLAYLIST_TABLE_CREATE =
+    		"CREATE TABLE " + PLAYLIST_TABLE + " (" +
+    		PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
+    		PodcastKeys.NAME + " TEXT," + 
+    		EpisodeKeys.ROW_ID + " INTEGER," + 
+    		PodcastKeys.PLAY_ORDER + " INTEGER);";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
 	private PonyExpressDbHelper mDbHelper;
@@ -92,11 +101,10 @@ public class PonyExpressDbAdaptor {
     		Log.w("PonyExpress", "Upgrading database from version " + oldVersion + " to "
                     + newVersion);
     		
-    		//TODO DROP all episode tables that are empty and not listed in the
-    		//podcast table.
-    		
     		// Copy old data across to new table
     		switch (newVersion) {
+    		//This is commented out as no devices exist with a db < version 12.
+    		//It is retained as an example of how to lay out an upgrade switch/case etc.. 
 //			case 12:
 //				//Begin transaction
 //				db.beginTransaction();
@@ -121,12 +129,76 @@ public class PonyExpressDbAdaptor {
 //				db.endTransaction();
 //				}
 //				break;
+    		case 13:
+    			//Begin transaction
+    			db.beginTransaction();
+    			try {
+    				//Drop empty tables for old podcasts
+    				List <String> empty_tables = findEmptyTables(db);
+    				for (String table : empty_tables){
+    					db.execSQL("DROP TABLE IF EXISTS " + table + ";");
+    				}
+    				//Create new playlist table
+					db.execSQL(PLAYLIST_TABLE_CREATE);
+					//No need to set mDatabaseUpgraded to true as the 
+					//feeds do not need updating with this db upgrade.
+					db.setTransactionSuccessful();
+				} catch (SQLException e) {
+					Log.e(TAG, "SQLException on db upgrade", e);
+				} finally {
+					db.endTransaction();
+				}
+    			break;    			
 
 			default:
 				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
 				break;
 			}
     	}
+		
+		/**
+		 * Find empty tables from where Podcasts have been deleted
+		 *  and drop them during a database upgrade.
+		 */
+		private List<String> findEmptyTables(SQLiteDatabase db){
+			List<String> empty_tables = new ArrayList<String>();
+			//Get a list of all PodEps* tables
+			final String[] columns = {"name"};
+			final String selection = "type='table' AND name LIKE 'PodEps%'";
+			Cursor c = db.query("sqlite_master", columns, selection, null, null, null, null);
+			
+			//Find the tables that are empty and do not appear in the 
+			//podcast table.
+			//First get a list of all current podcasts
+			String[] cols = {PodcastKeys.TABLE_NAME};
+			Cursor d = db.query(PODCAST_TABLE, cols, null, null, null, null, null);
+			List<String> podcasts = new ArrayList<String>();
+			d.moveToFirst();
+			if (d != null && d.getCount() != 0){
+				for (int i = 0; i < d.getCount(); i++){
+					podcasts.add(d.getString(0));
+					d.moveToNext();
+				}
+			}
+			//Now find the names of empty tables
+			if (c != null && c.getCount() > 0){
+				c.moveToFirst();
+				for (int i = 0; i < c.getCount(); i++){
+					long num = DatabaseUtils.queryNumEntries(db, c.getString(0));
+					Log.d(TAG, c.getString(0) + " has " + num + "rows");
+					//if empty check the name isn't in the podcasts list.
+					if (num == 0 && !podcasts.contains(c.getString(0))){
+						Log.d(TAG, "Table " + c.getString(0) + " is to be dropped");
+						empty_tables.add(c.getString(0));
+					}
+					c.moveToNext();
+				}
+			}
+			d.close();
+			c.close();
+			
+			return empty_tables;
+		}
     }
     
     /**
@@ -798,4 +870,69 @@ public class PonyExpressDbAdaptor {
 		//TODO Implement this properly
 		return getAllEpisodeNames("Linux Outlaws");
 	}
+	
+	/**
+	 * Adds an episode to the playlist.
+	 * @return the row_id if successful or -1.
+	 */
+	public long addEpisodeToPlaylist(String podcast_name, long row_id){
+		//TODO
+		return -1;
+	}
+	
+	/**
+	 * Deletes an episode from the playlist.
+	 * @param podcast_name
+	 * @param row_id
+	 */
+	public void removeEpisodeFromPlaylist(String podcast_name, long row_id){
+		//TODO
+	}
+	
+	/**
+	 * Empties the playlist.
+	 */
+	public void clearPlaylist() {
+		//TODO
+	}
+	
+	/**
+	 * Moves the selected episode up one in the running order.
+	 * @param row_id
+	 * @return true if successful.
+	 */
+	public boolean moveUpPlaylist(long row_id){
+		//TODO
+		return false;
+	}
+	
+	/**
+	 * Moves the selected episode down one in the running order.
+	 * @param row_id
+	 * @return true if successful.
+	 */
+	public boolean moveDownPlaylist(long row_id){
+		//TODO
+		return false;
+	}
+	
+	/**
+	 * Moves the selected episode to the top of the playlist.
+	 * @return true if successful
+	 */
+	public boolean moveToTop(long row_id){
+		//TODO
+		return false;
+	}
+	
+	/**
+	 * Moves the selected episode to the bottom of the playlist.
+	 * @return true if successful
+	 */
+	public boolean moveToBotoom(long row_id){
+		//TODO
+		return false;
+	}
+	
+	
 }

@@ -32,4 +32,5 @@ public class PodcastKeys implements BaseColumns {
 	public static final String TAG = "identica_tag";
 	public static final String GROUP = "identica_group";
 	public static final String UNLISTENED = "unlistened";
+	public static final String PLAY_ORDER = "play_order";
 }
