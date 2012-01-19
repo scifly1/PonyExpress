@@ -263,7 +263,9 @@ public class PlayerActivity extends Activity {
 					mPaused = true;
 					mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
-					
+					//Set playlist to false to stop auto playback if we re-start pony
+					//on the PlayerActivity.
+					mData.putBoolean(PodcastKeys.PLAYLIST, false);
 				} else {
 					// Play episdode
 					startService(mPlayerIntent);
@@ -410,7 +412,6 @@ public class PlayerActivity extends Activity {
 		mPlayerIntent.putExtra(RemoteControlReceiver.ACTION, 
 				PodcastPlayer.PLAY_PAUSE);
 		
-		
 	}
 
 	/* (non-Javadoc)
@@ -482,7 +483,7 @@ public class PlayerActivity extends Activity {
 				text = (int)freeSpace + text;
 				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_SHORT).show();
 			}
-		}
+		} 
 	}
 
 
@@ -558,6 +559,11 @@ public class PlayerActivity extends Activity {
 			mPaused = false;
 			mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
 			startSeekBar();
+		} else if (mPaused && mEpisodeDownloaded){
+			//if playing from a playlist auto start playback.
+			if (mData.getBoolean(PodcastKeys.PLAYLIST)){
+				mPlayPauseButton.performClick();
+			}
 		}
 		
 	}

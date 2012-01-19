@@ -23,9 +23,13 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -36,7 +40,9 @@ import android.widget.TextView;
  */
 public class EpisodeTabs extends GeneralOptionsMenuActivity {
 
+	public static final String TAG = "EpisodeTabs";
 	private CharSequence mTitleText;
+	private PlaybackCompleted mPlaybackCompletedReceiver;
 
 	/* (non-Javadoc)
 	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
@@ -53,8 +59,10 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
 			final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
 			bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+			bundle.putBoolean(PodcastKeys.PLAYLIST, true);
 		} else {
-			bundle = data.getExtras(); 
+			bundle = data.getExtras();
+			bundle.putBoolean(PodcastKeys.PLAYLIST, false);
 		}
 		
 		TextView title = (TextView) findViewById(R.id.TitleText);
@@ -93,7 +101,43 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    
 	    tabHost.setCurrentTab(0);
 	    
-		
+		mPlaybackCompletedReceiver = new PlaybackCompleted();
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onStart()
+	 */
+	@Override
+	protected void onStart() {
+		super.onStart();
+		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+		registerReceiver(mPlaybackCompletedReceiver, filter);
+	}
+
+
+	/* (non-Javadoc)
+	 * @see android.app.ActivityGroup#onStop()
+	 */
+	@Override
+	protected void onStop() {
+		super.onStop();
+		unregisterReceiver(mPlaybackCompletedReceiver);
+	}
+
+
+	/**
+	 * This broadcast receiver receives the intent sent by PodcastPlayer
+	 * to signal playback of the playlist episode has completed.	 *
+	 */
+	public class PlaybackCompleted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			EpisodeTabs.this.setResult(RESULT_OK);
+			Log.d(TAG, "Closing Episode Tabs");
+			finish();
+		}
+		
+	}
 }

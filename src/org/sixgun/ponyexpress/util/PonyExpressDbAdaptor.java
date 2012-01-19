@@ -986,6 +986,32 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return episode_id;
 	}
+
+	/**
+	 * Removes the top episode from the playlist table
+	 * and reorders the remaining episodes
+	 */
+	public void popPlaylist() {
+		mDb.delete(PLAYLIST_TABLE, PodcastKeys.PLAY_ORDER + "=" + 1, null);
+		//Query the table for all the current play_orders
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		int old_order = 0;
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Get the old play_order
+				old_order = c.getInt(1);
+				cv.put(PodcastKeys.PLAY_ORDER, old_order - 1);
+				//Update the play_order by -1
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}
+		c.close();
+	}
 	
 	
 }

@@ -163,16 +163,22 @@ public class PodcastPlayer extends Service {
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				mp.start();
-				Log.d(TAG,"Playback re-started");
-				mp.pause();
 				hideNotification();
+				//unregister HeadPhone reciever
+				if (mHeadPhoneReciever != null){
+					unregisterReceiver(mHeadPhoneReciever);
+					mHeadPhoneReciever = null;
+				}
 				//Set Listened to 0
 				boolean res = mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
 						EpisodeKeys.LISTENED, 0);
 				if (res) {
-					Log.d(TAG, "Updated listened to position to 0");
+					Log.d(TAG, "Updated listened to position to " + 0);
 				}
+				//Send a broadcast intent to stop EpisodeTabs
+				//and allow it to restart with the next in the playlist.
+				Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+				getApplicationContext().sendBroadcast(intent);
 			}
 			
 		};

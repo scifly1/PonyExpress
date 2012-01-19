@@ -43,6 +43,7 @@ import android.widget.TextView;
 
 public class PlaylistActivity extends PonyExpressActivity implements PlaylistInterface {
 
+	private static final int START_PLAYBACK = 0;
 	private ListView mPlaylist;
 	
 	protected void onCreate(Bundle savedInstanceState) {
@@ -225,11 +226,28 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		if (!mPonyExpressApp.getDbHelper().playlistEmpty()){
 			//TODO Check if all episodes in list are downloaded.
 			
-			//TODO Start EpisodeTabs as happens from EpisodeActivity
+			//Start EpisodeTabs as happens from EpisodeActivity
 			// but hand over a flag to indicate to play from the playlist.
 			Intent intent = new Intent(this,EpisodeTabs.class);
 			intent.putExtra(PodcastKeys.PLAYLIST, true);
-			startActivity(intent);
+			startActivityForResult(intent, START_PLAYBACK);
+		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity#onActivityResult(int, int, android.content.Intent)
+	 */
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (requestCode == START_PLAYBACK){
+			if (resultCode == RESULT_OK) {
+				//Playback completed
+				//Pop top episode off list.
+				mPonyExpressApp.getDbHelper().popPlaylist();
+				
+				startPlaylist(null);
+			}
 		}
 	}
 	
