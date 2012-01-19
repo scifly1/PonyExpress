@@ -18,26 +18,23 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.Dent.DentKeys;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.Button;
 import android.widget.EditText;
