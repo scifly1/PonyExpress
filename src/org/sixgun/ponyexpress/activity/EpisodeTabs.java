@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
@@ -46,8 +47,18 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 		setContentView(R.layout.episode_tabs);
 		
 		Intent data = getIntent();
+		Bundle bundle = new Bundle();
+		if (data.getExtras().getBoolean(PodcastKeys.PLAYLIST)){
+			//get first episode from playlist
+			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
+			final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+			bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+		} else {
+			bundle = data.getExtras(); 
+		}
+		
 		TextView title = (TextView) findViewById(R.id.TitleText);
-		mTitleText = data.getExtras().getString(EpisodeKeys.TITLE);
+		mTitleText = bundle.getString(EpisodeKeys.TITLE);
 		title.setText(mTitleText);
 		
 		Resources res = getResources(); // Resource object to get Drawables
@@ -57,7 +68,7 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    
 	    
 	    intent = new Intent(this,PlayerActivity.class);
-	    intent.putExtras(data);
+	    intent.putExtras(bundle);
 	    spec = tabHost.newTabSpec("episode").setIndicator
 	    (res.getText(R.string.play),res.getDrawable(R.drawable.ic_tab_play)).setContent(intent);
 	    tabHost.addTab(spec);
@@ -65,15 +76,15 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	  //Add Episode Notes Activity
 	    intent = new Intent(this,EpisodeNotesActivity.class);
 	    //Pass on the Extras
-	    intent.putExtras(data);
+	    intent.putExtras(bundle);
 	    spec = tabHost.newTabSpec("notes").setIndicator
 	    (res.getText(R.string.show_notes),res.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
 	    tabHost.addTab(spec);
 	    
 	    //Add Identi.ca feed Activity if a tag has been set.
-	    if (data.getExtras().containsKey(PodcastKeys.TAG)){
+	    if (bundle.containsKey(PodcastKeys.TAG)){
 	    	intent = new Intent(this,IdenticaEpisodeActivity.class);
-	    	intent.putExtras(data);
+	    	intent.putExtras(bundle);
 	    	
 	    	spec = tabHost.newTabSpec("identica").setIndicator
 	    	(res.getText(R.string.comment),res.getDrawable(R.drawable.ic_tab_dent)).setContent(intent);

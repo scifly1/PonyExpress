@@ -954,6 +954,38 @@ public class PonyExpressDbAdaptor {
 		//TODO
 		return false;
 	}
+
+	public String getPodcastFromPlaylist() {
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.NAME};
+		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
+				columns, PodcastKeys.PLAY_ORDER + "=" + 1 ,
+				null, null, null, null, null);
+		String podcast_name = "";
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			podcast_name = cursor.getString(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getPodcastFromPlaylist()");
+		}
+		cursor.close();
+		return podcast_name;
+	}
+
+	public long getEpisodeFromPlaylist() {
+		final String[] columns = {PodcastKeys._ID, EpisodeKeys.ROW_ID};
+		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
+				columns, PodcastKeys.PLAY_ORDER + "=" + 1 ,
+				null, null, null, null, null);
+		long episode_id = 0;
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			episode_id = cursor.getLong(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
+		}
+		cursor.close();
+		return episode_id;
+	}
 	
 	
 }

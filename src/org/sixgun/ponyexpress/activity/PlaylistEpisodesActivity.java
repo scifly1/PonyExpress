@@ -101,8 +101,13 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	public void startPlaylist(View v) {
+		//TODO Check if all episodes in list are downloaded.
+
 		//TODO Start EpisodeTabs as happens from EpisodeActivity
 		// but hand over a flag to indicate to play from the playlist.
+		Intent intent = new Intent(this,EpisodeTabs.class);
+		intent.putExtra(PodcastKeys.PLAYLIST, true);
+		startActivity(intent);
 	}
 
 	/**
