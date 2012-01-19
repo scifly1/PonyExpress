@@ -69,17 +69,8 @@ public class IdenticaEpisodeActivity extends IdenticaActivity {
 					if (mDentText.getText().length() != 0) {
 						//Easter egg for the observant :)
 						String text = mDentText.getText().toString();
-						if (text.equals("alloneword")){
-							SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
-							SharedPreferences.Editor editor = prefs.edit();
-							editor.putBoolean(getString(R.string.add_podcasts), true);
-							editor.commit();
-							Log.d(TAG,"Easter egg activated");
-						} else {
-							mTask = new PostDent();
-							mTask.execute(text);
-							
-						}
+						mTask = new PostDent();
+						mTask.execute(text);
 						mDentText.setText(mTagText);
 						mDentText.setSelection(mDentText.length()); //Moves cursor to the end
 						new GetLatestDents().execute();
