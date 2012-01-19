@@ -20,11 +20,13 @@ package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -34,8 +36,10 @@ import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.CursorAdapter;
@@ -45,7 +49,6 @@ import android.widget.TextView;
 
 public class PlaylistEpisodesActivity extends EpisodesActivity implements PlaylistInterface{
 
-	
 	
 	private ListView mPlaylist;
 
@@ -123,8 +126,10 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
-		return super.onCreateOptionsMenu(menu);
+		//TODO Add more entries.
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.playlist_options_menu, menu);
+		return true;
 	}
 
 	/* (non-Javadoc)
@@ -132,8 +137,11 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		// TODO Auto-generated method stub
-		return super.onPrepareOptionsMenu(menu);
+		super.onPrepareOptionsMenu(menu);
+		if (mPonyExpressApp.getDbHelper().playlistEmpty()){
+			menu.removeItem(R.id.clear_playlist);
+		}
+		return true;
 	}
 
 	
@@ -142,8 +150,18 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
-		return super.onOptionsItemSelected(item);
+		switch (item.getItemId()) {
+		case R.id.settings_menu:
+	    	startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
+	        return true;
+		case R.id.clear_playlist:
+			mPonyExpressApp.getDbHelper().clearPlaylist();
+			listPlaylist();
+			return true;
+		default: 
+			return super.onOptionsItemSelected(item);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -170,8 +188,9 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
-		// TODO Auto-generated method stub
-		super.onListItemClick(l, v, position, id);
+		//This detects clicks on the ListActivity list which is the episode list.
+		mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
+		listPlaylist();
 	}
 
 	/**
@@ -189,8 +208,12 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		public void bindView(View view, Context context, Cursor cursor) {
 			String episode_title = "";
 			if (cursor != null){
-				final int columnIndex = cursor.getColumnIndex(EpisodeKeys.TITLE);
-				episode_title = cursor.getString(columnIndex);
+				final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
+				final int podcast_name_column_index = cursor.getColumnIndex(PodcastKeys.NAME);
+				final long row_id = cursor.getLong(row_id_column_index);
+				final String podcast_name = cursor.getString(podcast_name_column_index);
+				episode_title = mPonyExpressApp.getDbHelper().
+						getEpisodeTitle(row_id, podcast_name);
 			}
 			
 			TextView episodeName = (TextView) view.findViewById(R.id.episode_text);
@@ -200,6 +223,15 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 			} else {
 				episodeName.setText(episode_title);
 			}
+			
+			view.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					//TODO handle clicks on the playlist item
+					
+				}
+			});
 			
 			//TODO add long click listener to the row so context menus work.
 		

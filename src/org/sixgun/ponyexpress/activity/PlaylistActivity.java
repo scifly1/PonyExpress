@@ -22,17 +22,20 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
+
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -82,18 +85,42 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	 */
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		//TODO Playlist specific menu although some entries from the main
-		//menu will also be needed here. eg: settings
-		return false;
+		//TODO Add more entries.
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.playlist_options_menu, menu);
+	    return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPrepareOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		super.onPrepareOptionsMenu(menu);
+		if (mPonyExpressApp.getDbHelper().playlistEmpty()){
+			menu.removeItem(R.id.clear_playlist);
+		}
+		return true;
+	}
+
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
 	 */
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		//TODO Handle menu
-		return true;
+		switch (item.getItemId()) {
+		case R.id.settings_menu:
+	    	startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
+	        return true;
+		case R.id.clear_playlist:
+			mPonyExpressApp.getDbHelper().clearPlaylist();
+			listPlaylist();
+			return true;
+		default: 
+			return super.onOptionsItemSelected(item);
+		}
 	}
 	
 	
@@ -133,8 +160,12 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		public void bindView(View view, Context context, Cursor cursor) {
 			String episode_title = "";
 			if (cursor != null){
-				final int columnIndex = cursor.getColumnIndex(EpisodeKeys.TITLE);
-				episode_title = cursor.getString(columnIndex);
+				final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
+				final int podcast_name_column_index = cursor.getColumnIndex(PodcastKeys.NAME);
+				final long row_id = cursor.getLong(row_id_column_index);
+				final String podcast_name = cursor.getString(podcast_name_column_index);
+				episode_title = mPonyExpressApp.getDbHelper().
+						getEpisodeTitle(row_id, podcast_name);
 			}
 			
 			TextView episodeName = (TextView) view.findViewById(R.id.episode_text);
@@ -144,6 +175,15 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 			} else {
 				episodeName.setText(episode_title);
 			}
+			
+			view.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					//TODO handle clicks on the playlist item
+					
+				}
+			});
 			
 			//TODO add long click listener to the row so context menus work.
 		

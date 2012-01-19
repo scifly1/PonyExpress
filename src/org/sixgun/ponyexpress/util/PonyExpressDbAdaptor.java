@@ -94,18 +94,23 @@ public class PonyExpressDbAdaptor {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(PODCAST_TABLE_CREATE);
+            //Call onUpgrade to ensure new users get the updated db
+            onUpgrade(db,1,DATABASE_VERSION);
         }
 
 		@Override
     	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     		Log.w("PonyExpress", "Upgrading database from version " + oldVersion + " to "
                     + newVersion);
-    		
-    		// Copy old data across to new table
-    		switch (newVersion) {
-    		//This is commented out as no devices exist with a db < version 12.
+    		switch (oldVersion) {
+    		case 1: //New installs have version 1.
+    		//Fallthrough 
+    			
+    		//This is commented out as no devices exist with a db version 11.
     		//It is retained as an example of how to lay out an upgrade switch/case etc.. 
-//			case 12:
+    			
+    		//Copy old data across to new table
+//			case 11:
 //				//Begin transaction
 //				db.beginTransaction();
 //				try {
@@ -128,8 +133,9 @@ public class PonyExpressDbAdaptor {
 //				mDatabaseUpgraded = true;
 //				db.endTransaction();
 //				}
-//				break;
-    		case 13:
+    		
+    		//NOTE: no break; Fallthrough
+    		case 12:
     			//Begin transaction
     			db.beginTransaction();
     			try {
@@ -148,8 +154,7 @@ public class PonyExpressDbAdaptor {
 				} finally {
 					db.endTransaction();
 				}
-    			break;    			
-
+    			break; //Only the final upgrade case has a break.   			
 			default:
 				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
 				break;
@@ -502,7 +507,6 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			title = cursor.getString(1);
-			Log.d(TAG, "Title of Episode is: "+ title);
 		} else{
 			Log.e(TAG, "Empty cursor at getEpisodeTitle()");
 		}
@@ -865,10 +869,21 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return mCheckDatabase;	
 	}
-
+	/**
+	 * Gets the Podcast name and episode row id of all episodes in
+	 * the playlist.
+	 * @return cursor over the playlist table
+	 */
 	public Cursor getPlaylist() {
-		//TODO Implement this properly
-		return getAllEpisodeNames("Linux Outlaws");
+		final String[] columns = {EpisodeKeys._ID, PodcastKeys.NAME, EpisodeKeys.ROW_ID};
+		return mDb.query(
+				true,PLAYLIST_TABLE,columns,null,null,null,null,PodcastKeys.PLAY_ORDER +" ASC" ,null);
+	}
+	
+	public boolean playlistEmpty(){
+		if (DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE) == 0 ){
+			return true;
+		} else return false;
 	}
 	
 	/**
@@ -876,8 +891,14 @@ public class PonyExpressDbAdaptor {
 	 * @return the row_id if successful or -1.
 	 */
 	public long addEpisodeToPlaylist(String podcast_name, long row_id){
-		//TODO
-		return -1;
+		ContentValues episodeValues = new ContentValues();
+		episodeValues.put(PodcastKeys.NAME, podcast_name);
+		episodeValues.put(EpisodeKeys.ROW_ID, row_id);
+		//Find number of episodes already in playlist and add 1 to get
+		//next play order.
+		long next_order = DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE);
+		episodeValues.put(PodcastKeys.PLAY_ORDER, next_order +1);
+		return mDb.insert(PLAYLIST_TABLE, null, episodeValues);
 	}
 	
 	/**
@@ -893,7 +914,7 @@ public class PonyExpressDbAdaptor {
 	 * Empties the playlist.
 	 */
 	public void clearPlaylist() {
-		//TODO
+		mDb.delete(PLAYLIST_TABLE, null, null);
 	}
 	
 	/**

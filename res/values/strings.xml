@@ -116,6 +116,7 @@
 	<string name="ff_seek_time_summary">The amount of time to skip forward when the fast forward button is pushed</string>
 	<string name="ff_seek_time">Fast Forward Seek Time</string>
 	<string name="no_episodes">The playlist is empty.</string>
+	<string name="clear_playlist">Clear the playlist</string>
 	<string name="playlist_subtitle_pod">Select podcast...</string>
 	<string name="playlist_subtitle_eps">Select episodes...</string>
 	<string name="about_message">
