@@ -71,6 +71,11 @@
 	<string name="http">http://</string>
 	<string name="exclamation">!</string>
 	<string name="hash">#</string>
+	<string name="move_up">Move up one</string>
+	<string name="move_down">Move down one</string>
+	<string name="move_top">Move to the top</string>
+	<string name="move_bottom">Move to the bottom</string>
+	<string name="remove_from_playlist">Remove from playlist</string>	
 	<!--
 		Do not change these numbers without also changing the corresponding
 		numbers in the "values" string array !!

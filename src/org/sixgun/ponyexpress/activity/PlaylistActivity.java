@@ -35,10 +35,13 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 public class PlaylistActivity extends PonyExpressActivity implements PlaylistInterface {
@@ -131,10 +134,17 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
-		//TODO uncomment call to super when this is implemented
-		//Some logic will be needed to determine which list the menu is for.
-		//super.onCreateContextMenu(menu, v, menuInfo);
-		
+		if (v.getId() == R.id.playlist_list){
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.playlist_context, menu);
+			
+			//Set the title of the menu
+			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
+			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
+			menu.setHeaderTitle(episode_name.getText());
+		}else{
+			super.onCreateContextMenu(menu, v, menuInfo);
+		}		
 	}
 	
 	/* (non-Javadoc)
@@ -187,7 +197,14 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 			});
 			
 			//TODO add long click listener to the row so context menus work.
-		
+			view.setOnLongClickListener(new OnLongClickListener() {
+				
+				@Override
+				public boolean onLongClick(View v) {
+					openContextMenu(v);
+					return true;
+				}
+			});
 		}
 
 		@Override
