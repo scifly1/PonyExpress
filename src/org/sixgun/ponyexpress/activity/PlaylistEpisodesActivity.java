@@ -32,6 +32,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -131,7 +132,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		// will be reqired to determine which list has been long pressed.
 		registerForContextMenu(mPlaylist);	
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreateOptionsMenu(android.view.Menu)
 	 */
@@ -174,7 +175,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
@@ -199,8 +200,20 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		// TODO Auto-generated method stub
-		return super.onContextItemSelected(item);
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		//Log.e("TAG",Integer.toString(item.getItemId()));
+		switch (item.getItemId()){
+		case R.id.move_top:
+			mPonyExpressApp.getDbHelper().moveToTop(info.position);
+			listPlaylist();
+			return true;
+		case R.id.move_bottom:
+			mPonyExpressApp.getDbHelper().moveToBottom(info.position);
+			listPlaylist();
+		//TODO move_up, move_down, and remove
+		}
+		return true;
+		//return super.onContextItemSelected(item);
 	}
 
 	/* (non-Javadoc)
