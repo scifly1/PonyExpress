@@ -152,8 +152,25 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	 */
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		//TODO 
-		return false;
+		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+		switch (item.getItemId()){
+		case R.id.move_top:
+			mPonyExpressApp.getDbHelper().moveToTop(info.position);
+			listPlaylist();
+			return true;
+		case R.id.move_bottom:
+			mPonyExpressApp.getDbHelper().moveToBottom(info.position);
+			listPlaylist();
+			return true;
+		case R.id.remove_from_playlist:
+			mPonyExpressApp.getDbHelper().moveToTop(info.position);
+			mPonyExpressApp.getDbHelper().popPlaylist();
+			listPlaylist();
+			return true;
+		//TODO move_up, move_down
+		}
+		return true;
+		//return super.onContextItemSelected(item);
 	}
 	
 	/**
