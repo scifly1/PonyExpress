@@ -32,7 +32,6 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -201,7 +200,6 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
-		//Log.e("TAG",Integer.toString(item.getItemId()));
 		switch (item.getItemId()){
 		case R.id.move_top:
 			mPonyExpressApp.getDbHelper().moveToTop(info.position);
@@ -210,7 +208,13 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		case R.id.move_bottom:
 			mPonyExpressApp.getDbHelper().moveToBottom(info.position);
 			listPlaylist();
-		//TODO move_up, move_down, and remove
+			return true;
+		case R.id.remove_from_playlist:
+			mPonyExpressApp.getDbHelper().moveToTop(info.position);
+			mPonyExpressApp.getDbHelper().popPlaylist();
+			listPlaylist();
+			return true;
+		//TODO move_up, move_down
 		}
 		return true;
 		//return super.onContextItemSelected(item);
