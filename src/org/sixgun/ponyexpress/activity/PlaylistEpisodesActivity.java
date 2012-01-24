@@ -281,10 +281,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == START_PLAYBACK){
 			if (resultCode == RESULT_OK) {
-				//Playback completed
-				//Pop top episode off list.
-				mPonyExpressApp.getDbHelper().popPlaylist();
-				
+				//Playback completed get next episode
 				startPlaylist(null);
 			}
 		}

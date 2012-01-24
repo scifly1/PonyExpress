@@ -259,10 +259,7 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (requestCode == START_PLAYBACK){
 			if (resultCode == RESULT_OK) {
-				//Playback completed
-				//Pop top episode off list.
-				mPonyExpressApp.getDbHelper().popPlaylist();
-				
+				//Playback completed get next episode
 				startPlaylist(null);
 			}
 		}

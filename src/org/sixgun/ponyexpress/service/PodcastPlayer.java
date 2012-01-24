@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -104,6 +105,8 @@ public class PodcastPlayer extends Service {
 	
 	SharedPreferences mPrefs;
 
+	private boolean mPlayingPlaylist;
+
 	
 	
 	/**
@@ -163,22 +166,35 @@ public class PodcastPlayer extends Service {
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				hideNotification();
-				//unregister HeadPhone reciever
-				if (mHeadPhoneReciever != null){
-					unregisterReceiver(mHeadPhoneReciever);
-					mHeadPhoneReciever = null;
-				}
 				//Set Listened to 0
 				boolean res = mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
 						EpisodeKeys.LISTENED, 0);
 				if (res) {
 					Log.d(TAG, "Updated listened to position to " + 0);
 				}
-				//Send a broadcast intent to stop EpisodeTabs
-				//and allow it to restart with the next in the playlist.
-				Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
-				getApplicationContext().sendBroadcast(intent);
+				
+				//Get next episode in playlist.
+				if (mPlayingPlaylist && !mPonyExpressApp.getDbHelper().playlistEnding())
+				{
+					mPonyExpressApp.getDbHelper().popPlaylist();
+					final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
+					final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+					Bundle bundle = new Bundle();
+					bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+					initPlayer(bundle);
+					play();
+					//Send a broadcast intent to EpisodeTabs
+					//telling it to refresh with the new episode
+					Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+					getApplicationContext().sendBroadcast(intent);
+				} else { //Just stop
+					hideNotification();
+					//unregister HeadPhone reciever
+					if (mHeadPhoneReciever != null){
+						unregisterReceiver(mHeadPhoneReciever);
+						mHeadPhoneReciever = null;
+					}
+				}
 			}
 			
 		};
@@ -280,6 +296,7 @@ public class PodcastPlayer extends Service {
 		registerRemoteControl();
 		
 		mData = data;
+		mPlayingPlaylist = mData.getBoolean(PodcastKeys.PLAYLIST);
 		mEpisodeName = mData.getString(EpisodeKeys.TITLE);
 		mPodcastNameQueued = mData.getString(PodcastKeys.NAME);
 		final String file = mData.getString(EpisodeKeys.FILENAME);
@@ -343,9 +360,11 @@ public class PodcastPlayer extends Service {
 	public void play() {
 		
 		//Register HeadPhone receiver
-		mHeadPhoneReciever = new HeadPhoneReceiver();
-		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-		registerReceiver(mHeadPhoneReciever, filter);
+		if (mHeadPhoneReciever == null){
+			mHeadPhoneReciever = new HeadPhoneReceiver();
+			IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+			registerReceiver(mHeadPhoneReciever, filter);
+		}
 		registerRemoteControl();
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//We want to play a different episode so stop any currently playing
@@ -463,6 +482,14 @@ public class PodcastPlayer extends Service {
 	
 	public String getEpisodeTitle(){
 		return mEpisodePlaying;
+	}
+	
+	public String getPodcastName(){
+		return mPodcastName;
+	}
+	
+	public long getEpisodeRow(){
+		return mRowID;
 	}
 	
 	public boolean isPlaying() {

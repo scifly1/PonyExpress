@@ -22,16 +22,20 @@ import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.PodcastPlayer;
 
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.IBinder;
 import android.widget.TabHost;
 import android.widget.TextView;
+
 
 /**
  * Tabbed Activity to hold the applicable IdenticaActivity (PlayerActivity or DownloadActivity),
@@ -43,6 +47,48 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	public static final String TAG = "EpisodeTabs";
 	private CharSequence mTitleText;
 	private PlaybackCompleted mPlaybackCompletedReceiver;
+	private String mPodcastName;
+	private long mEpisodeId;
+	protected PodcastPlayer mPodcastPlayer;
+	private boolean mPodcastPlayerBound;
+	private boolean mPlayingPlaylist = false;
+	private TabHost mTabHost;
+	private Resources mRes;
+	
+	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
+		private ServiceConnection mPlayerConnection = new ServiceConnection() {
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+		        mPodcastPlayer = null;
+				
+			}
+			
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service) {
+				mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
+				queryPlayer();
+			}
+		};
+	
+		
+		protected void doBindPodcastPlayer() {
+		    // Establish a connection with the service.  We use an explicit
+		    // class name because we want a specific service implementation that
+		    // we know will be running in our own process (and thus won't be
+		    // supporting component replacement by other applications).
+			
+		    bindService(new Intent(this, 
+		            PodcastPlayer.class), mPlayerConnection, Context.BIND_AUTO_CREATE);
+		    mPodcastPlayerBound = true;
+		}
+
+		protected void doUnbindPodcastPlayer() {
+		    if (mPodcastPlayerBound) {
+		        // Detach our existing connection.
+		        unbindService(mPlayerConnection);
+		        mPodcastPlayerBound = false;
+		    }
+		}
 
 	/* (non-Javadoc)
 	 * @see android.app.ActivityGroup#onCreate(android.os.Bundle)
@@ -55,75 +101,81 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 		Intent data = getIntent();
 		Bundle bundle = new Bundle();
 		if (data.getExtras().getBoolean(PodcastKeys.PLAYLIST)){
+			mPlayingPlaylist = true;
 			//get first episode from playlist
-			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
-			final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
-			bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+			mPodcastName = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
+			mEpisodeId = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+			bundle = Episode.packageEpisode(mPonyExpressApp, mPodcastName, mEpisodeId);
 			bundle.putBoolean(PodcastKeys.PLAYLIST, true);
 		} else {
 			bundle = data.getExtras();
 			bundle.putBoolean(PodcastKeys.PLAYLIST, false);
 		}
 		
+		mRes = getResources(); // Resource object to get Drawables
+	    mTabHost = getTabHost();  // The activity TabHost
+	    populateTabs(bundle);
+	    
+		mPlaybackCompletedReceiver = new PlaybackCompleted();
+	}
+
+	private void populateTabs(Bundle bundle) {
 		TextView title = (TextView) findViewById(R.id.TitleText);
 		mTitleText = bundle.getString(EpisodeKeys.TITLE);
 		title.setText(mTitleText);
 		
-		Resources res = getResources(); // Resource object to get Drawables
-	    TabHost tabHost = getTabHost();  // The activity TabHost
-	    TabHost.TabSpec spec;  // Resusable TabSpec for each tab
+		TabHost.TabSpec spec;  // Resusable TabSpec for each tab
 	    Intent intent;  // Reusable Intent for each tab
-	    
 	    
 	    intent = new Intent(this,PlayerActivity.class);
 	    intent.putExtras(bundle);
-	    spec = tabHost.newTabSpec("episode").setIndicator
-	    (res.getText(R.string.play),res.getDrawable(R.drawable.ic_tab_play)).setContent(intent);
-	    tabHost.addTab(spec);
+	    spec = mTabHost.newTabSpec("episode").setIndicator
+	    (mRes.getText(R.string.play),mRes.getDrawable(R.drawable.ic_tab_play)).setContent(intent);
+	    mTabHost.addTab(spec);
 	    
 	  //Add Episode Notes Activity
 	    intent = new Intent(this,EpisodeNotesActivity.class);
 	    //Pass on the Extras
 	    intent.putExtras(bundle);
-	    spec = tabHost.newTabSpec("notes").setIndicator
-	    (res.getText(R.string.show_notes),res.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
-	    tabHost.addTab(spec);
+	    spec = mTabHost.newTabSpec("notes").setIndicator
+	    (mRes.getText(R.string.show_notes),mRes.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
+	    mTabHost.addTab(spec);
 	    
 	    //Add Identi.ca feed Activity if a tag has been set.
 	    if (bundle.containsKey(PodcastKeys.TAG)){
 	    	intent = new Intent(this,IdenticaEpisodeActivity.class);
 	    	intent.putExtras(bundle);
 	    	
-	    	spec = tabHost.newTabSpec("identica").setIndicator
-	    	(res.getText(R.string.comment),res.getDrawable(R.drawable.ic_tab_dent)).setContent(intent);
-	    	tabHost.addTab(spec);
+	    	spec = mTabHost.newTabSpec("identica").setIndicator
+	    	(mRes.getText(R.string.comment),mRes.getDrawable(R.drawable.ic_tab_dent)).setContent(intent);
+	    	mTabHost.addTab(spec);
 	    }
 	    
-	    tabHost.setCurrentTab(0);
+	    mTabHost.setCurrentTab(0);
 	    
-		mPlaybackCompletedReceiver = new PlaybackCompleted();
 	}
-	
-	
+
 	/* (non-Javadoc)
-	 * @see android.app.Activity#onStart()
+	 * @see android.app.ActivityGroup#onResume()
 	 */
 	@Override
-	protected void onStart() {
-		super.onStart();
+	protected void onResume() {
+		super.onResume();
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
 		registerReceiver(mPlaybackCompletedReceiver, filter);
+		doBindPodcastPlayer();
 	}
-
 
 	/* (non-Javadoc)
-	 * @see android.app.ActivityGroup#onStop()
+	 * @see android.app.ActivityGroup#onPause()
 	 */
 	@Override
-	protected void onStop() {
-		super.onStop();
+	protected void onPause() {
+		super.onPause();
 		unregisterReceiver(mPlaybackCompletedReceiver);
+		doUnbindPodcastPlayer();
 	}
+
 
 
 	/**
@@ -135,9 +187,28 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			EpisodeTabs.this.setResult(RESULT_OK);
-			Log.d(TAG, "Closing Episode Tabs");
 			finish();
 		}
 		
 	}
+	
+	protected void queryPlayer() {
+		if (mPodcastPlayer != null && mPlayingPlaylist){
+			final String podcast_name = mPodcastPlayer.getPodcastName();
+			final long episode_id = mPodcastPlayer.getEpisodeRow();
+			
+			if (podcast_name != null) {
+				if (mPodcastName.equals(podcast_name)
+						&& mEpisodeId == episode_id) {
+					return;
+				} else {
+					//This is not a great way to do this, but it works.
+					//Refresh the EpisodeTabs
+					EpisodeTabs.this.setResult(RESULT_OK);
+					finish();
+				}
+			}
+		}	
+	}
+	
 }

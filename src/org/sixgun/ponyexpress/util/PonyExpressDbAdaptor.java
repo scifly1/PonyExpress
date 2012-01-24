@@ -1012,6 +1012,17 @@ public class PonyExpressDbAdaptor {
 		}
 		c.close();
 	}
+
+	/**
+	 * Returns true if there is only one episode left in the playlist.
+	 * @return
+	 */
+	public boolean playlistEnding() {
+		if (DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE) == 1 ){
+			return true;
+		} else return false;
+		
+	}
 	
 	
 }
