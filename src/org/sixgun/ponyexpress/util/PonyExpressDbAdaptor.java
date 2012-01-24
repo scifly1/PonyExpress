@@ -987,8 +987,8 @@ public class PonyExpressDbAdaptor {
 		ContentValues cv = new ContentValues();
 		if (c != null && c.getCount() > 0){
 			int last = c.getCount();
+			//Check and return if already on the bottom
 			if (last == position){
-				Log.e(TAG,"Already at the bottom");
 				c.close();
 				return true;
 			}
