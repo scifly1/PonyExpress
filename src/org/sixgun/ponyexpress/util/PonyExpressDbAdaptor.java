@@ -67,7 +67,7 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.GROUP + " TEXT);";
     
     private static final String PLAYLIST_TABLE_CREATE =
-    		"CREATE TABLE " + PLAYLIST_TABLE + " (" +
+    		"CREATE TABLE IF NOT EXISTS " + PLAYLIST_TABLE + " (" +
     		PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
     		PodcastKeys.NAME + " TEXT," + 
     		EpisodeKeys.ROW_ID + " INTEGER," + 
