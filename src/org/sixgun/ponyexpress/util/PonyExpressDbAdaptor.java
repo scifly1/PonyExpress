@@ -910,26 +910,95 @@ public class PonyExpressDbAdaptor {
 	
 	/**
 	 * Moves the selected episode up one in the running order.
-	 * @param row_id
+	 * @param position
 	 * @return true if successful.
 	 */
-	public boolean moveUpPlaylist(long row_id){
-		//TODO
-		return false;
+	public boolean moveUpPlaylist(long position){
+		//Already at the top, just return
+		if (position == 0) {
+			return true;
+		}
+		
+		//Add 1 so that we are using counting numbers like the play order.
+		position++;
+		
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Move up one
+				if (c.getInt(1) == position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
+				}else if (c.getInt(1) == position - 1){
+					//Move down one	
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) + 1);
+				}else{
+					//Keep the same position
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1));
+				}
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at moveUpPlaylist()");
+			c.close();
+			return false;
+		}
+		c.close();
+		return true;
 	}
 	
 	/**
 	 * Moves the selected episode down one in the running order.
-	 * @param row_id
+	 * @param position
 	 * @return true if successful.
 	 */
-	public boolean moveDownPlaylist(long row_id){
-		//TODO
-		return false;
+	public boolean moveDownPlaylist(long position){
+						
+		//Add 1 so that we are using counting numbers like the play order.
+		position++;
+		
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			int last = c.getCount();
+			//Check and return if already on the bottom
+			if (last == position){
+				c.close();
+				return true;
+			}
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Move down one
+				if (c.getInt(1) == position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) + 1);
+				}else if (c.getInt(1) == position + 1){
+					//Move down one	
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
+				}else{
+					//Keep the same position
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1));
+				}
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at moveDownPlaylist()");
+			c.close();
+			return false;
+		}
+		c.close();
+		return true;
 	}
 	
 	/**
 	 * Moves the selected episode to the top of the playlist.
+	 * @param position
 	 * @return true if successful
 	 */
 	public boolean moveToTop(long position){
@@ -974,6 +1043,7 @@ public class PonyExpressDbAdaptor {
 	
 	/**
 	 * Moves the selected episode to the bottom of the playlist.
+	 * @param position
 	 * @return true if successful
 	 */
 	public boolean moveToBottom(long position){

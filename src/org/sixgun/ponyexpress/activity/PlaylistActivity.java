@@ -167,10 +167,17 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 			mPonyExpressApp.getDbHelper().popPlaylist();
 			listPlaylist();
 			return true;
-		//TODO move_up, move_down
+		case R.id.move_up:
+			mPonyExpressApp.getDbHelper().moveUpPlaylist(info.position);
+			listPlaylist();
+			return true;
+		case R.id.move_down:
+			mPonyExpressApp.getDbHelper().moveDownPlaylist(info.position);
+			listPlaylist();
+			return true;
+		default:
+			return super.onContextItemSelected(item);
 		}
-		return true;
-		//return super.onContextItemSelected(item);
 	}
 	
 	/**
