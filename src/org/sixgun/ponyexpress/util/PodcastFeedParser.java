@@ -43,9 +43,9 @@ public class PodcastFeedParser extends BaseFeedParser {
     private static final String NAME = "title";
     private static final String ALBUM_ART_URL = "image";
 	private static final String TAG = "Pony/PodcastFeedParser";
-   
-    
-    
+	private static final String URL = "url";
+
+
 	public PodcastFeedParser(Context ctx, String feedUrl) {
 		super(ctx, feedUrl);
 		
@@ -65,6 +65,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 		//Set up the required elements.
 		RootElement root = new RootElement("rss");
 		Element channel = root.requireChild("channel");
+		Element image = channel.getChild("image");
 		
 		/*Set up the ElementListeners.
 		 * 
@@ -82,9 +83,10 @@ public class PodcastFeedParser extends BaseFeedParser {
 				new_podcast.setName(body);
 			}
 		});
-		//This Listener catches the album art url of the podcast.
+
+		//This Listener catches the album art url from itunes namespace.
 		channel.getChild(MEDIA_NS, ALBUM_ART_URL).setStartElementListener(new StartElementListener() {
-			
+
 			@Override
 			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "href");
@@ -93,6 +95,18 @@ public class PodcastFeedParser extends BaseFeedParser {
 			}
 		});
 		
+		//This Listener catches the album art url from xml if itunes is not set.
+		image.getChild(URL).setEndTextElementListener(new EndTextElementListener() {
+
+			@Override
+			public void end(String body) {
+				if (new_podcast.getArt_Url() == null){
+					Log.d(TAG,"Podcast art from: " + body);
+					new_podcast.setArt_Url(body);
+				}
+			}
+		});
+
 		//Finally, now the listeners are set up we can parse the XML file.
 		
 		InputStream istream = getInputStream();	    
@@ -121,13 +135,14 @@ public class PodcastFeedParser extends BaseFeedParser {
 		//Set up the required elements.
 		RootElement root = new RootElement("rss");
 		Element channel = root.requireChild("channel");
+		Element image = channel.getChild("image");
 		
 		//Use a podcast instance as it can hold the url and we need to use a final
 		//object here.
 		final Podcast new_podcast = new Podcast();
 		
 		//Set up the ElementListener.
-		//This Listener catches the album art url of the podcast.
+		//This Listener catches the album art url from itunes namespace.
 		channel.getChild(MEDIA_NS, ALBUM_ART_URL).setStartElementListener(new StartElementListener() {
 			
 			@Override
@@ -137,6 +152,19 @@ public class PodcastFeedParser extends BaseFeedParser {
 				new_podcast.setArt_Url(url);				
 			}
 		});
+
+		//This Listener catches the album art url from xml if itunes is not set.
+		image.getChild(URL).setEndTextElementListener(new EndTextElementListener() {
+
+			@Override
+			public void end(String body) {
+				if (new_podcast.getArt_Url() == null){
+					Log.d(TAG,"Podcast art from: " + body);
+					new_podcast.setArt_Url(body);
+				}
+			}
+		});
+
 		//Finally, now the listeners are set up we can parse the XML file.
 		
 		InputStream istream = getInputStream();	    
