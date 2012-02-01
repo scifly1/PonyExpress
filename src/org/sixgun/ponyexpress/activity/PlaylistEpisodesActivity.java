@@ -18,11 +18,13 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.AlertDialog;
@@ -250,9 +252,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 				showDialog(NOT_DOWNLOADED_DIALOG, episode);
 			} else {
 				//Auto-download ok
-				//TODO start download
-				
-				
+				startDownload(id);
 				mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
 				listPlaylist();
 			}
@@ -297,7 +297,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 					editor.commit();
 					mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, mRowIdForNotDownloadedDialog);			
 					listPlaylist();
-					//TODO start download
+					startDownload(mRowIdForNotDownloadedDialog);
 					
 				}
 			});
@@ -390,6 +390,14 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 				startPlaylist(null);
 			}
 		}
+	}
+	
+	private void startDownload(long id){
+		Intent intent = new Intent(this,DownloaderService.class);
+		Bundle bundle = Episode.packageEpisode(mPonyExpressApp, mPodcastName, id);
+		intent.putExtras(bundle);
+		intent.putExtra("action", DownloaderService.DOWNLOAD);
+		startService(intent);
 	}
 	
 }
