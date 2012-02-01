@@ -78,9 +78,7 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
 		
 		mPlaylist.setAdapter(adapter);
-		//register the playlist to have a context menu
-		//TODO There is only one context menu per activity, so some logic
-		// will be reqired to determine which list has been long pressed.
+		
 		registerForContextMenu(mPlaylist);
 	}
 	
@@ -220,7 +218,6 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 				}
 			});
 			
-			//TODO add long click listener to the row so context menus work.
 			view.setOnLongClickListener(new OnLongClickListener() {
 				
 				@Override

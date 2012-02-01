@@ -25,13 +25,19 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.Utils;
 
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -44,17 +50,20 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 public class PlaylistEpisodesActivity extends EpisodesActivity implements PlaylistInterface{
 
-	
 	private static final int START_PLAYBACK = 0;
+	private static final int NOT_DOWNLOADED_DIALOG = 0;
 	private ListView mPlaylist;
+	private CheckBox mAlwaysDownloadCheckbox;
+	private long mRowIdForNotDownloadedDialog;
 
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreate(android.os.Bundle)
@@ -90,6 +99,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 				}
 			}
 		});
+		
 	}
 	
 	/* (non-Javadoc)
@@ -106,8 +116,6 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	@Override
 	public void startPlaylist(View v) {
 		if (!mPonyExpressApp.getDbHelper().playlistEmpty()){
-			//TODO Check if all episodes in list are downloaded.
-
 			//Start EpisodeTabs as happens from EpisodeActivity
 			// but hand over a flag to indicate to play from the playlist.
 			Intent intent = new Intent(this,EpisodeTabs.class);
@@ -126,9 +134,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
 		
 		mPlaylist.setAdapter(adapter);
-		//register the playlist to have a context menu
-		//TODO There is only one context menu per activity, so some logic
-		// will be reqired to determine which list has been long pressed.
+		
 		registerForContextMenu(mPlaylist);	
 	}
 	
@@ -233,9 +239,85 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		//This detects clicks on the ListActivity list which is the episode list.
-		mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
-		listPlaylist();
+		//is episode downloaded?
+		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName)){
+			//TODO && isDownloadPossible() (Connectivity ok and allowed) if no show toast to say so
+			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+			final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
+			if (!auto_download){
+				Bundle episode = new Bundle();
+				episode.putLong(EpisodeKeys.ROW_ID, id);
+				showDialog(NOT_DOWNLOADED_DIALOG, episode);
+			} else {
+				//Auto-download ok
+				//TODO start download
+				
+				
+				mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
+				listPlaylist();
+			}
+		} else {
+			mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
+			listPlaylist();
+		}
+		
 	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		AlertDialog dialog;
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		final SharedPreferences.Editor editor = prefs.edit();
+		//If more dialogs are added this should be a switch case block.
+		if (id == NOT_DOWNLOADED_DIALOG){
+			AlertDialog.Builder builder = new Builder(this);
+			LayoutInflater inflater = this.getLayoutInflater();
+			View message = inflater.inflate(R.layout.auto_download_dialog,(ViewGroup) findViewById(R.id.auto_download_dialog_root));
+			mAlwaysDownloadCheckbox = (CheckBox) message.findViewById(R.id.always_download_checkBox);
+			
+			builder.setView(message);
+			builder.setCancelable(false)
+			.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			})
+			.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (mAlwaysDownloadCheckbox.isChecked()){
+						editor.putBoolean(getString(R.string.auto_download_key), true);
+					} else {
+						editor.putBoolean(getString(R.string.auto_download_key), false);
+					}
+					editor.commit();
+					mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, mRowIdForNotDownloadedDialog);			
+					listPlaylist();
+					//TODO start download
+					
+				}
+			});
+			dialog = builder.create();
+		} else dialog = null;
+		return dialog;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPrepareDialog(int, android.app.Dialog)
+	 */
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog, Bundle episode) {
+		super.onPrepareDialog(id, dialog, episode);
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
+		mAlwaysDownloadCheckbox.setChecked(auto_download);
+		mRowIdForNotDownloadedDialog = episode.getLong(EpisodeKeys.ROW_ID);
+	}
+
 
 	/**
 	 * We subclass CursorAdapter to handle our display the results from our Playlist cursor. 
@@ -277,7 +359,6 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 				}
 			});
 			
-			//TODO add long click listener to the row so context menus work.
 			view.setOnLongClickListener(new OnLongClickListener() {
 				
 				@Override
