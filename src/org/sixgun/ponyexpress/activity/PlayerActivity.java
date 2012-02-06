@@ -244,6 +244,11 @@ public class PlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mData = getIntent().getExtras();
+		if (savedInstanceState != null){
+			//if we are coming back after a config change the original 
+			//bundle may have PLAYLIST true, which we don't want. 
+			mData.putBoolean(PodcastKeys.PLAYLIST, false);
+		}
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		mPodcastName = (mData.getString(PodcastKeys.NAME));
@@ -263,9 +268,6 @@ public class PlayerActivity extends Activity {
 					mPaused = true;
 					mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
-					//Set playlist to false to stop auto playback if we re-start pony
-					//on the PlayerActivity.
-					mData.putBoolean(PodcastKeys.PLAYLIST, false);
 				} else {
 					// Play episdode
 					startService(mPlayerIntent);
@@ -563,6 +565,7 @@ public class PlayerActivity extends Activity {
 			//if playing from a playlist auto start playback.
 			if (mData.getBoolean(PodcastKeys.PLAYLIST)){
 				mPlayPauseButton.performClick();
+				mData.putBoolean(PodcastKeys.PLAYLIST, false);
 			}
 		}
 		
