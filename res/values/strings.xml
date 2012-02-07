@@ -25,6 +25,9 @@
 	\n<b>New media. New rules.</b></string>
 	<string name="no_internet_connection">Cannot connect to the Internet. Check your
 		connectivity.</string>
+	<string  name="not_downloaded_no_internet">Episode not yet downloaded and you have no connectivity.</string>
+	<string name="not_downloaded_wrong_network_type">Episode not yet downloaded and you are on a mobile network and have disabled
+		downloads unless on WiFi</string>
 	<string name="download">Download</string>
 	<string name="re_download">Re-download</string>
 	<string name="listen">Listen</string>

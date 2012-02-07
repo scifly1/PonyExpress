@@ -38,12 +38,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -53,9 +50,9 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
  * Handles the media player service.
@@ -348,16 +345,13 @@ public class PlayerActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				//Check user wants to download on the current network type
-				final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
-				final boolean onlyOnWiFi = prefs.getBoolean(getString(R.string.wifi_only_key), true);
-				if (onlyOnWiFi && mPonyExpressApp.getInternetHelper().getConnectivityType() 
-						== ConnectivityManager.TYPE_MOBILE){
+				if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
 					Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
 				} else {
 					mIsDownloading = true;
 					activateDownloadCancelButton();
 					startDownload();
-				}				
+				}			
 			}
 		};
 		

@@ -25,6 +25,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
+import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.AlertDialog;
@@ -40,6 +41,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -57,12 +59,14 @@ import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class PlaylistEpisodesActivity extends EpisodesActivity implements PlaylistInterface{
 
 	private static final int START_PLAYBACK = 0;
 	private static final int NOT_DOWNLOADED_DIALOG = 0;
+	private static final String TAG = "PlaylistEpisodesActivity";
 	private ListView mPlaylist;
 	private CheckBox mAlwaysDownloadCheckbox;
 	private long mRowIdForNotDownloadedDialog;
@@ -243,18 +247,31 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		//This detects clicks on the ListActivity list which is the episode list.
 		//is episode downloaded?
 		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName)){
-			//TODO && isDownloadPossible() (Connectivity ok and allowed) if no show toast to say so
-			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-			final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
-			if (!auto_download){
-				Bundle episode = new Bundle();
-				episode.putLong(EpisodeKeys.ROW_ID, id);
-				showDialog(NOT_DOWNLOADED_DIALOG, episode);
-			} else {
-				//Auto-download ok
-				startDownload(id);
-				mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
-				listPlaylist();
+			// is Connectivity ok and are downloads allowed?
+			switch (mPonyExpressApp.getInternetHelper().isDownloadPossible()){
+			case InternetHelper.NO_CONNECTION:
+				Toast.makeText(mPonyExpressApp, R.string.not_downloaded_no_internet, Toast.LENGTH_SHORT).show();
+				return;
+			case InternetHelper.MOBILE_NOT_ALLOWED:
+				Toast.makeText(mPonyExpressApp, R.string.not_downloaded_wrong_network_type, Toast.LENGTH_SHORT).show();
+				return;
+			case InternetHelper.DOWNLOAD_OK:
+				final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+				final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
+				if (!auto_download){
+					Bundle episode = new Bundle();
+					episode.putLong(EpisodeKeys.ROW_ID, id);
+					showDialog(NOT_DOWNLOADED_DIALOG, episode);
+				} else {
+					//Auto-download ok
+					startDownload(id);
+					mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
+					listPlaylist();
+				}
+				break;
+			default:
+				Log.e(TAG, "Unkown return from InternetHelper.isDownloadPossible");
+				return;
 			}
 		} else {
 			mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			

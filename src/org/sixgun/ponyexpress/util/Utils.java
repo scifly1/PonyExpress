@@ -267,5 +267,6 @@ public class Utils {
 		String new_string =  string.replace("'", "''");
 		return "'" + new_string + "'";
 	}
+
 	
 }
