@@ -22,6 +22,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.PonyExpressActivity.PodcastCursorAdapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -101,6 +102,21 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity#listPodcasts(boolean)
+	 */
+	@Override
+	protected void listPodcasts(boolean addFooter) {
+		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
+		startManagingCursor(c);
+		//Create a CursorAdapter to map podcast title and art to the ListView.
+		PlaylistPodcastCursorAdapter adapter = new PlaylistPodcastCursorAdapter(mPonyExpressApp, c);
+		
+		setListAdapter(adapter);
+		
+		registerForContextMenu(getListView());
+	}
+
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
 	 */
@@ -258,6 +274,25 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		}
 		
 	}
+	
+	private class PlaylistPodcastCursorAdapter extends PodcastCursorAdapter{
+
+		public PlaylistPodcastCursorAdapter(Context context, Cursor c) {
+			super(context, c);
+		}
+
+		/* (non-Javadoc)
+		 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity.PodcastCursorAdapter#newView(android.content.Context, android.database.Cursor, android.view.ViewGroup)
+		 */
+		@Override
+		public View newView(Context context, Cursor cursor, ViewGroup parent) {
+			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+			View v = new View(context);
+			v = vi.inflate(R.layout.playlist_podcast_row, parent, false);
+			return v;
+		}
+	}
+	
 	
 	/* 
 	 * Starts the PlaylistEpisodesActivity to select the required episodes

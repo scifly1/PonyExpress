@@ -484,7 +484,7 @@ public class PonyExpressActivity extends ListActivity {
 	 * Overide newView to create/inflate a view to bind the data to.
 	 * Overide bindView to determine how the data is bound to the view.
 	 */
-	private class PodcastCursorAdapter extends CursorAdapter{
+	protected class PodcastCursorAdapter extends CursorAdapter{
 
 		public PodcastCursorAdapter(Context context, Cursor c) {
 			super(context, c);

@@ -6,8 +6,8 @@
 
 	<org.sixgun.ponyexpress.view.RemoteImageView
 		android:id="@+id/album_art"
-		android:layout_width="115dp"
-		android:layout_height="115dp"
+		android:layout_width="95dp"
+		android:layout_height="95dp"
 		android:layout_alignParentLeft="true"
 		android:adjustViewBounds="true"
 		android:paddingBottom="2dp"
@@ -21,7 +21,7 @@
 		android:layout_height="wrap_content"
 		android:layout_toRightOf="@+id/album_art"
 		android:paddingLeft="10dp"
-		android:paddingTop="20dp"
+		android:paddingTop="15dp"
 		android:textSize="20sp"
 		android:textStyle="bold" />
 
