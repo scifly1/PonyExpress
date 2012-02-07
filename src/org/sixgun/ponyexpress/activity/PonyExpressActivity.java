@@ -29,18 +29,16 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
-import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.util.EpisodeFeedParser;
-import org.sixgun.ponyexpress.util.PodcastFeedParser;
-import org.sixgun.ponyexpress.util.SixgunPodcastsParser;
+import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
+import android.app.ActivityManager;
+import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -85,6 +83,9 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String TAG = "PonyExpressActivity";
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
+	//Update codes
+	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update Sixgun";
+	public static final String UPDATE_ALL = "Update all";
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
 	private PonyExpressApp mPonyExpressApp; 
@@ -389,7 +390,7 @@ public class PonyExpressActivity extends ListActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 	    case R.id.update_feeds:
-	        updateFeeds();
+	        updateFeed(UPDATE_ALL);
 	        return true;
 	    case R.id.settings_menu:
 	    	startActivity(new Intent(
@@ -407,7 +408,7 @@ public class PonyExpressActivity extends ListActivity {
 	    	showDialog(ABOUT_DIALOG);
 	    	return true;
 	    case R.id.add_sixgun:
-	        updateFeed("peCheckForNewShows");
+	        updateFeed(UPDATE_SIXGUN_SHOW_LIST);
 	        return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
@@ -429,7 +430,7 @@ public class PonyExpressActivity extends ListActivity {
 	}
 	
 	private void updateFeeds() {
-		updateFeed("");
+		updateFeed(UPDATE_ALL);
 	}
 	
 	private void updateFeed(String podcastName){
@@ -586,10 +587,10 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 
-	/**
-	 * Parse the RSS feed and update the database with new episodes in a background thread.
-	 * 
-	 */
+	/** 
+	* Parse the RSS feed and update the database with new episodes in a background thread.
+	* 
+	*/
 	private class UpdateEpisodes extends AsyncTask <String,Void,Void>{
 		
 		/*
@@ -598,9 +599,7 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			if (mPonyExpressApp.getInternetHelper().checkConnectivity()){
-				mProgDialog.show();
-			} else {
+			if (!mPonyExpressApp.getInternetHelper().checkConnectivity()){
 				Toast.makeText(mPonyExpressApp, 
 						R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
 				cancel(true);
@@ -610,142 +609,44 @@ public class PonyExpressActivity extends ListActivity {
 		 * This is done in a new thread,
 		 */
 		@Override
-		protected Void doInBackground(String... name) {
-			//FIXME this method is too long, break it up into smaller chuncks.
+		protected Void doInBackground(String... input_string) {
 			
-			boolean checkAll = true;
-			if (!name[0].equals("")){
-				checkAll = false;
-				mPodcastBeingUpdated = name[0];
-			}
-			if (name[0].equals("peCheckForNewShows")){
-				checkAll = true;
-				CheckForNewSixgunShows();
-			}
-			//Check mEpisodesToHold hasn't been changed since Activity was created.
-			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-			mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
-			Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
+			//Start UpdaterSevice with the input_string[0]
+			Intent intent = new Intent(mPonyExpressApp,UpdaterService.class);
+			intent.putExtra(input_string[0], true);
 			
-			//Check if this is the first time run.
-			CheckForFirstRun(prefs);
-			
-			//Get each podcast name if not updating a specific feed,
-			//then its feed url, and update each.
-			List<String> podcast_names;
-			if (checkAll){
-				podcast_names = 
-					mPonyExpressApp.getDbHelper().listAllPodcasts();
-			} else {
-				podcast_names = new ArrayList<String>(Arrays.asList(mPodcastBeingUpdated));
-			}
-			
-			for (String podcast: podcast_names){
-				String podcast_url = 
-					mPonyExpressApp.getDbHelper().getPodcastUrl(podcast);
+			startService(intent);
+						
+			//Pause until all UpdaterServices are done
+			while (isUpdaterServiceRunning()){
 				
-				checkForNewArt(podcast_url);
-				
-				EpisodeFeedParser parser = new EpisodeFeedParser(mPonyExpressApp,
-						podcast_url);
-				List<Episode> episodes = parser.parse();
-				
-				//Stops adding episodes once mEpisodesToHold is reached
-				for (int i = 0; i < (mEpisodesToHold) ; i++){
-					//Add any episodes not already in database
-					try{
-						if (!mPonyExpressApp.getDbHelper().containsEpisode(episodes.get(i).getTitle(),podcast)) {
-							mPonyExpressApp.getDbHelper().insertEpisode(episodes.get(i), podcast);
-						}
-					}catch(IndexOutOfBoundsException e){
-						//The feed has fewer episodes than the number to keep so log and break
-						Log.d(TAG, "Number of episodes in this feed is less than the number to keep");
-						break;
-					}
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					Log.e(TAG, "UpdateEpisodes failed to sleep");
 				}
 				
-				//Determine how many episodes to remove to maintain mEpisodesToHold
-				final int rows = mPonyExpressApp.getDbHelper().getNumberOfRows(podcast);
-				final int episodesToDelete = rows - mEpisodesToHold;
-				//Remove correct number of episodes from oldest episodes to maintain required number.
-				for (int i = episodesToDelete; i > 0; i--){
-					final long rowID = 
-						mPonyExpressApp.getDbHelper().getOldestEpisode(podcast);
-					if (rowID != -1){
-						if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast)){
-							//delete from SD Card
-							Utils.deleteFile(mPonyExpressApp, rowID, podcast);
-						}
-						//remove from database after deleting.
-						mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast);
-					} else {Log.e(TAG, "Cannot find oldest episode");}
+				Log.e(TAG,"Sleeping");
+				if (!isUpdaterServiceRunning()){
+					break;
 				}
 			}
+			
+			//Log.e(TAG, Boolean.toString(test));
 			return null;
-		}
-		private void CheckForFirstRun(SharedPreferences prefs) {
-			//Checks if this is the first run and adds the Sixgun.org shows if it is.
-			final boolean first = prefs.getBoolean("first", true);
-			if (first == true){
-				//Calls the method that checks for Sixgun.org shows
-				CheckForNewSixgunShows();
-				//Sets the preference to false so this doesn't get called again.
-				final SharedPreferences.Editor editor = prefs.edit();
-				editor.putBoolean("first", false);
-				editor.commit();
-			}
-		}
-		private void CheckForNewSixgunShows() {
-			Log.d(TAG,"Checking for new Sixgun podcasts");
-			//Get server list of sixgun podcasts and create list of urls
-			final Context ctx = mPonyExpressApp.getApplicationContext();
-			SixgunPodcastsParser parser = 
-				new SixgunPodcastsParser(ctx, getString(R.string.sixgun_feeds));
-			ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
-			//Sixgun.org cannot be contacted
-			if (sixgun_podcasts.isEmpty()){
-				Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
-				String[] default_feed = ctx.getResources().getStringArray(R.array.default_lo_feed);
-				PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
-				Podcast default_podcast = default_parser.parse();
-				if (default_podcast != null){
-					default_podcast.setIdenticaTag(default_feed[1]);
-					default_podcast.setIdenticaGroup(default_feed[2]);
-					boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(default_podcast);
-					if (checkdb == false) {
-						//Add any new podcasts to the podcasts table
-						Log.d(TAG, "Adding new Podcasts!");
-						mPonyExpressApp.getDbHelper().addNewPodcast(default_podcast);
-					}	
-				}
-			}		
-			//Check if any podcast is already in the Database
-			for (Podcast podcast:sixgun_podcasts) {
-				boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-				if (checkdb == false) {
-					//Add any new podcasts to the podcasts table
-					Log.d(TAG, "Adding new Podcasts!");
-					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
-				}
-			}
+			
 		}
 		
-		
-		private void checkForNewArt(String podcast_url){
-			PodcastFeedParser parser = new PodcastFeedParser(mPonyExpressApp,podcast_url);
-			String art_url;
-			try
-			{
-				art_url = parser.parseAlbumArtURL();
-			}
-			catch (NullPointerException ex)
-			{
-				// No album art.  Just return.
-				return;
-			}
-			mPonyExpressApp.getDbHelper().updateAlbumArtUrl(podcast_url, art_url);
+		private boolean isUpdaterServiceRunning() {
+		    ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+		        if (UpdaterService.class.getName().equals(service.service.getClassName())) {
+		            return true;
+		        }
+		    }
+		    return false;
 		}
-		
+
 		/* 
 		 */
 		@Override
@@ -757,7 +658,6 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			mProgDialog.hide();
 			//Set mLastUpdate and store in shared preferences
 			mLastUpdate = new GregorianCalendar(Locale.US);
 			SharedPreferences updateStatus = getSharedPreferences(UPDATEFILE, 0);

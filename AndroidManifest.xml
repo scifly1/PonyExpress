@@ -54,6 +54,7 @@
 
 		</activity>
 
+		<service android:name=".service.UpdaterService" />
 		<service android:name=".service.IdenticaHandler" />
 		<service android:name=".service.PodcastPlayer" />
 		<service android:name=".service.DownloaderService" />
