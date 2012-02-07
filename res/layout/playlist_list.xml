@@ -21,4 +21,13 @@
             android:transcriptMode="alwaysScroll"
 			android:stackFromBottom="true"/>
         
+        <TextView
+            android:id="@+id/no_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:text="@string/no_episodes"
+            android:textStyle="bold" 
+            android:paddingLeft="10dp"
+            android:textSize="16dp"/>
+        
 </LinearLayout>

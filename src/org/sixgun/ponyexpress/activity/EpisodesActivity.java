@@ -57,7 +57,6 @@ import android.widget.TextView;
 
 public class EpisodesActivity extends ListActivity {
 
-	private static final String TAG = "EpisodesActivity";
 	private static final int MARK_ALL_LISTENED = 0;
 	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private static final int DOWNLOAD_ALL = MARK_ALL_NOT_LISTENED +1;

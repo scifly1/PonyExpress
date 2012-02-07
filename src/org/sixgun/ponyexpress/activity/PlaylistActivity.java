@@ -26,6 +26,7 @@ import org.sixgun.ponyexpress.R;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -48,6 +49,7 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 
 	private static final int START_PLAYBACK = 0;
 	private ListView mPlaylist;
+	private View mNoPlaylist;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -55,11 +57,21 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		
 		//Get the playlist listview as we need to manage it.
 		mPlaylist = (ListView) findViewById(R.id.playlist_list);
-		
+		mNoPlaylist = (TextView) findViewById(R.id.no_list);
 		listPlaylist();
 	}
-	
-	
+		
+	/* (non-Javadoc)
+	 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity#onResume()
+	 */
+	@Override
+	protected void onResume() {
+		super.onResume();
+		//Re-list playlist to ensure it is updated if it was empty before 
+		listPlaylist();
+	}
+
+
 	/**
 	 * Return to the standard view from the Playlist view
 	 * @param v
@@ -73,13 +85,20 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	 */
 	public void listPlaylist() {
 		Cursor c = mPonyExpressApp.getDbHelper().getPlaylist();
-		startManagingCursor(c);
-		//Create a cursor adaptor to populate the ListView
-		PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
-		
-		mPlaylist.setAdapter(adapter);
-		
-		registerForContextMenu(mPlaylist);
+		if (c.getCount() > 0){
+			mPlaylist.setVisibility(View.VISIBLE);
+			mNoPlaylist.setVisibility(View.GONE);
+			startManagingCursor(c);
+			//Create a cursor adaptor to populate the ListView
+			PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
+
+			mPlaylist.setAdapter(adapter);
+
+			registerForContextMenu(mPlaylist);
+		} else {
+			mPlaylist.setVisibility(View.GONE);
+			mNoPlaylist.setVisibility(View.VISIBLE);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -192,6 +211,7 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			String episode_title = "";
+			int listened = -1;
 			if (cursor != null){
 				final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
 				final int podcast_name_column_index = cursor.getColumnIndex(PodcastKeys.NAME);
@@ -199,15 +219,15 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 				final String podcast_name = cursor.getString(podcast_name_column_index);
 				episode_title = mPonyExpressApp.getDbHelper().
 						getEpisodeTitle(row_id, podcast_name);
+				listened = mPonyExpressApp.getDbHelper().getListened(row_id, podcast_name);
 			}
 			
 			TextView episodeName = (TextView) view.findViewById(R.id.episode_text);
-			
-			if (episode_title.equals("")) {
-				episodeName.setText(R.string.no_episodes);
-			} else {
-				episodeName.setText(episode_title);
-			}
+			episodeName.setText(episode_title);
+			if (listened == -1){ //not listened == -1
+				episodeName.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+			} else episodeName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+
 			
 			view.setOnClickListener(new OnClickListener() {
 

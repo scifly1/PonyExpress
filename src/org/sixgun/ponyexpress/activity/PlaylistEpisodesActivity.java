@@ -38,6 +38,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -70,6 +71,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	private ListView mPlaylist;
 	private CheckBox mAlwaysDownloadCheckbox;
 	private long mRowIdForNotDownloadedDialog;
+	private TextView mNoPlaylist;
 
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.EpisodesActivity#onCreate(android.os.Bundle)
@@ -81,6 +83,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		
 		//Get the playlist listview as we need to manage it.
 		mPlaylist = (ListView) findViewById(R.id.playlist_list);
+		mNoPlaylist = (TextView) findViewById(R.id.no_list);
 				
 		listPlaylist();
 				
@@ -135,13 +138,22 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	public void listPlaylist() {
 		Cursor c = mPonyExpressApp.getDbHelper().getPlaylist();
-		startManagingCursor(c);
-		//Create a cursor adaptor to populate the ListView
-		PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
+		if (c.getCount() > 0){
+			mPlaylist.setVisibility(View.VISIBLE);
+			mNoPlaylist.setVisibility(View.GONE);
+			startManagingCursor(c);
+			//Create a cursor adaptor to populate the ListView
+			PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
+			
+			mPlaylist.setAdapter(adapter);
+			
+			registerForContextMenu(mPlaylist);	
+		} else {
+			mPlaylist.setVisibility(View.GONE);
+			mNoPlaylist.setVisibility(View.VISIBLE);
+		}
 		
-		mPlaylist.setAdapter(adapter);
 		
-		registerForContextMenu(mPlaylist);	
 	}
 	
 	/* (non-Javadoc)
@@ -201,6 +213,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
 			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
 			menu.setHeaderTitle(episode_name.getText());
+			//TODO Correct the episode_list context menu.
 		}else{
 			super.onCreateContextMenu(menu, v, menuInfo);
 		}		
@@ -350,6 +363,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
 			String episode_title = "";
+			int listened = -1;
 			if (cursor != null){
 				final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
 				final int podcast_name_column_index = cursor.getColumnIndex(PodcastKeys.NAME);
@@ -357,15 +371,16 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 				final String podcast_name = cursor.getString(podcast_name_column_index);
 				episode_title = mPonyExpressApp.getDbHelper().
 						getEpisodeTitle(row_id, podcast_name);
+				listened = mPonyExpressApp.getDbHelper().getListened(row_id, podcast_name);
 			}
 			
 			TextView episodeName = (TextView) view.findViewById(R.id.episode_text);
 			
-			if (episode_title.equals("")) {
-				episodeName.setText(R.string.no_episodes);
-			} else {
-				episodeName.setText(episode_title);
-			}
+			episodeName.setText(episode_title);
+			if (listened == -1){ //not listened == -1
+				episodeName.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
+			} else episodeName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
+
 			
 			view.setOnClickListener(new OnClickListener() {
 
