@@ -362,7 +362,7 @@ public class PodcastPlayer extends Service {
 		//Register HeadPhone receiver
 		if (mHeadPhoneReciever == null){
 			mHeadPhoneReciever = new HeadPhoneReceiver();
-			IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+			IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 			registerReceiver(mHeadPhoneReciever, filter);
 		}
 		registerRemoteControl();
@@ -408,8 +408,12 @@ public class PodcastPlayer extends Service {
 	
 	public void pause() {
 		//unregister HeadPhone reciever
-		unregisterReceiver(mHeadPhoneReciever);
-		mHeadPhoneReciever = null;
+		if (mHeadPhoneReciever != null){
+			unregisterReceiver(mHeadPhoneReciever);
+			mHeadPhoneReciever = null;
+		} else {
+			Log.e(TAG, "Attempt to unregister null Headphone reciever");
+		}
 		
 		mPlayer.pause();
 		hideNotification();
@@ -544,28 +548,7 @@ public class PodcastPlayer extends Service {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			//FIXME This caching of the previous headphone state could be avoided 
-			//if we used Android 2.0 (API level 5) as we could 
-			//use isInitialStickyBroadcast()
-			boolean prevHeadPhonesIn = mHeadPhonesIn;
-			Bundle data = intent.getExtras();
-			final int state = data.getInt("state");
-			switch (state) {
-			case 0:
-				mHeadPhonesIn = false;
-				break;
-			case 1:
-				//Fall through.  Some headsets cause state 1 some 2..
-			case 2:
-				mHeadPhonesIn = true;
-				break;
-			default:
-				Log.w(TAG, "Headphone state unknown: " + state);
-				break;
-			}
-			if (prevHeadPhonesIn && !mHeadPhonesIn){
-				pause();
-			}
+			pause();
 		}
 		
 	}
