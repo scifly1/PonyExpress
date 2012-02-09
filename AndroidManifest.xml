@@ -29,9 +29,10 @@
 		        <action android:name="android.intent.action.VIEW" />
 		        <category android:name="android.intent.category.DEFAULT" />
 		        <category android:name="android.intent.category.BROWSABLE" />
-		        <data android:host="feeds.feedburner.com" android:scheme="http"/>
-		        <data android:host="feeds2.feedburner.com" android:scheme="http"/>
+		        <data android:scheme="http" android:host="*.feedburner.com" />
+		    	<data android:pathPattern=".*" />
 		    </intent-filter>
+		   
 			<intent-filter >
 			    <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -67,7 +68,12 @@
 		<activity android:name=".activity.IdenticaEpisodeActivity"
 			android:windowSoftInputMode="adjustPan" />
 		<activity android:name=".activity.IdenticaAccountSetupActivity" />
-		<activity android:name=".activity.PreferencesActivity" />
+		<activity android:name=".activity.PreferencesActivity" >
+		   <intent-filter>
+       			<action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />
+       			<category android:name="android.intent.category.DEFAULT" />
+    		</intent-filter>
+    	</activity>
 		<activity android:name=".activity.AddNewPodcastFeedActivity" />
 		<activity android:name=".activity.PlaylistActivity" />
 		<activity android:name=".activity.PlaylistEpisodesActivity" />
