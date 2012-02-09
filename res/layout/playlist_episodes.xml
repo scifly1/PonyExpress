@@ -1,24 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:orientation="vertical"
-        android:background="@drawable/background" >
-        
-        <include layout="@layout/playlist_header"/>
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical"
+	android:background="@drawable/background">
 
-<LinearLayout android:layout_weight="3" 
-                    android:layout_height="fill_parent" 
-                    android:layout_width="fill_parent">
-					<include layout="@layout/playlist_list"  />
+	<include layout="@layout/playlist_header" />
 
-    </LinearLayout>
+	<LinearLayout
+		android:layout_weight="3"
+		android:layout_height="fill_parent"
+		android:layout_width="fill_parent">
+		<include layout="@layout/playlist_list" />
 
-<LinearLayout android:layout_weight="2" 
-    			android:id="@+id/episode_list"
-                android:layout_height="fill_parent" 
-                android:layout_width="fill_parent">
-				<include layout="@layout/episode_list"  />
+	</LinearLayout>
+	<TextView
+		android:background="@drawable/divider"
+		android:layout_height="wrap_content"
+		android:layout_width="fill_parent" />
+	<LinearLayout
+		android:layout_weight="2"
+		android:id="@+id/episode_list"
+		android:layout_height="fill_parent"
+		android:layout_width="fill_parent">
+		<include layout="@layout/episode_list" />
 
 	</LinearLayout>
 </LinearLayout>
