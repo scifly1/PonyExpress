@@ -83,9 +83,13 @@ public class PonyExpressActivity extends ListActivity {
 	private static final String TAG = "PonyExpressActivity";
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
+	public static final String FIRST = "first";
+	
 	//Update codes
-	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update Sixgun";
-	public static final String UPDATE_ALL = "Update all";
+	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update_Sixgun";
+	public static final String UPDATE_ALL = "Update_all";
+	public static final String UPDATE_SINGLE = "Update_single";
+			
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
 	private PonyExpressApp mPonyExpressApp; 
@@ -183,7 +187,13 @@ public class PonyExpressActivity extends ListActivity {
 		
 		//Create Progress Dialogs for later use.
 		mProgDialog = new ProgressDialog(this);
-		mProgDialog.setMessage("Checking for new Episodes. Please wait...");
+		mProgDialog.setMessage(getText(R.string.setting_up));
+		
+		//If this is the first run, show a dialog to say so
+		final boolean first = prefs.getBoolean(FIRST, true);
+		if (first){
+			mProgDialog.show();
+		}
 		
 		//Check SDCard contents and database match.
 		new DatabaseCheck().execute();
@@ -614,7 +624,7 @@ public class PonyExpressActivity extends ListActivity {
 			//Start UpdaterSevice with the input_string[0]
 			Intent intent = new Intent(mPonyExpressApp,UpdaterService.class);
 			intent.putExtra(input_string[0], true);
-			
+			intent.putExtra(UPDATE_SINGLE, input_string[0]);
 			startService(intent);
 						
 			//Pause until all UpdaterServices are done
@@ -664,6 +674,7 @@ public class PonyExpressActivity extends ListActivity {
 			SharedPreferences.Editor editor = updateStatus.edit();
 			editor.putLong(LASTUPDATE, mLastUpdate.getTimeInMillis());
 			editor.commit();
+			mProgDialog.hide();
 			//re-list podcasts to update new episode counts
 			listPodcasts(false);
 		}
