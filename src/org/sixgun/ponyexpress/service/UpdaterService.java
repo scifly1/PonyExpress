@@ -64,17 +64,27 @@ public class UpdaterService extends IntentService {
 		super("UpdaterService");
 	}
 
+	/**
+	 * This method is called first when UpdaterService is started. It parses an input intent
+	 * and calls the other methods as appropriate.
+	 */
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		//TODO Add comments...
+		// Get the application, and Log that this service has started.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		Log.d(TAG,"Updater Service started");
 		
+		// Initialize and show the status notification
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		showStatusNotification();
 				
+		// This calls the method that checks if this is the first time Pony 
+		// has been run, and calls checkForNewSixgunShows() if this is 
+		// indeed the first run.
 		checkFirstRun();
 		
+		// Get the input data from the intent and parse it, starting the various
+		// updater methods as needed.
 		Bundle data = intent.getExtras();
 		final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
 		final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
@@ -93,9 +103,14 @@ public class UpdaterService extends IntentService {
 			updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
 		}
 		
+		// This method is done at this point, so cancel the notification and log. 
 		mNM.cancel(NOTIFY_1);
 		Log.d(TAG,"Updater Service stopped");
 	}
+	
+	/**
+	 * This method checks Sixgun.org for new shows, and adds anything new to the database
+	 */
 	
 	//TODO Rework to be more efficient
 	public void checkForNewSixgunShows() {
@@ -133,6 +148,11 @@ public class UpdaterService extends IntentService {
 		}
 	}
 	
+	/**
+	 * This method uses a for loop to send all the shows in the database to the updateFeed()
+	 * method one by one.  It also checks a return code to see if internet connectivity 
+	 * has been lost and breaks if need be.
+	 */
 	private void updateAllFeeds(){
 		Log.d(TAG,"Updating all episodes");
 		List<String> podcast_names = mPonyExpressApp.getDbHelper().listAllPodcasts();
@@ -213,6 +233,12 @@ public class UpdaterService extends IntentService {
 		}
 	}
 
+	/**
+	 * This method pings a podcast url and returns the ALL_OK return code
+	 * if the http response code is 200.
+	 * @param podcast_url
+	 * @return Return code int
+	 */
 	private int pingUrl(String podcast_url) {
 		try {
             URL url = new URL(podcast_url);
@@ -277,7 +303,7 @@ public class UpdaterService extends IntentService {
 	}
 		
 	/**
-     * Show this notification while this service is running.
+     * Show this notification while UpdaterService service is running.
      */
     private void showStatusNotification() {
     	// TODO Set the proper text for the notify with R.string....
