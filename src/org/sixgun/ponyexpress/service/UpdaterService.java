@@ -74,32 +74,34 @@ public class UpdaterService extends IntentService {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		Log.d(TAG,"Updater Service started");
 		
-		// Initialize and show the status notification
+		// Initialize the status notification
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		showStatusNotification();
-				
+						
 		// This calls the method that checks if this is the first time Pony 
 		// has been run, and calls checkForNewSixgunShows() if this is 
 		// indeed the first run.
 		checkFirstRun();
 		
 		// Get the input data from the intent and parse it, starting the various
-		// updater methods as needed.
+		// updater methods and setting notification text as needed.
 		Bundle data = intent.getExtras();
 		final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
 		final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
 		final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
 				
 		if (update_sixgun){
+			showStatusNotification(getText(R.string.checking_sixgun));
 			checkForNewSixgunShows();
 			updateAllFeeds();
 		}
 		
 		if (update_all) {
+			showStatusNotification(getText(R.string.checking_all));
 			updateAllFeeds();
 		}
 		
 		if (!update_sixgun && !update_all && update_single != null) {
+			showStatusNotification(getText(R.string.checking) + " " + update_single);
 			updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
 		}
 		
@@ -304,11 +306,10 @@ public class UpdaterService extends IntentService {
 		
 	/**
      * Show this notification while UpdaterService service is running.
+	 * @param text 
      */
-    private void showStatusNotification() {
-    	// TODO Set the proper text for the notify with R.string....
-    	CharSequence text = "//TODO";
-
+    private void showStatusNotification(CharSequence text) {
+    	
     	// Set the icon, scrolling text and timestamp
         Notification notification = new Notification(R.drawable.pony_icon, text,
                 System.currentTimeMillis());

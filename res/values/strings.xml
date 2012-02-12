@@ -24,7 +24,10 @@
 	\n<b>New media. New rules.</b></string>
 	<string name="no_internet_connection">Cannot connect to the Internet. Check your
 		connectivity.</string>
-	<string name="setting_up">Setting up PonyExpress. Please wait...</string>
+	<string name="setting_up">Setting up PonyExpress. Please wait.</string>
+	<string name="checking_sixgun">Checking for new Sixgun.org shows.</string>
+	<string name="checking_all">Checking all the feeds for new episodes.</string>
+	<string name="checking">Checking</string>
 	<string name="interent_lost">Internet connectivity was lost during the update.</string>
 	<string name="url_offline"> appears to be offline. Please try again later.</string>
 	<string name="download">Download</string>
