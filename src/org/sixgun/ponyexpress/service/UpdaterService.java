@@ -109,7 +109,6 @@ public class UpdaterService extends IntentService {
 	 * This method checks Sixgun.org for new shows, and adds anything new to the database
 	 */
 	
-	//TODO Rework to be more efficient
 	public void checkForNewSixgunShows() {
 		Log.d(TAG,"Checking for new Sixgun podcasts");
 		//Get server list of sixgun podcasts and create list of urls
@@ -119,32 +118,37 @@ public class UpdaterService extends IntentService {
 		ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
 		//Sixgun.org cannot be contacted
 		if (sixgun_podcasts.isEmpty()){
-			Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
-			String[] default_feed = ctx.getResources().getStringArray(R.array.default_lo_feed);
-			PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
-			Podcast default_podcast = default_parser.parse();
-			if (default_podcast != null){
-				default_podcast.setIdenticaTag(default_feed[1]);
-				default_podcast.setIdenticaGroup(default_feed[2]);
-				boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(default_podcast);
-				if (checkdb == false) {
-					//Add any new podcasts to the podcasts table
-					Log.d(TAG, "Adding new Podcasts!");
-					mPonyExpressApp.getDbHelper().addNewPodcast(default_podcast);
-				}	
-			}
-		}
-		//Check if any podcast is already in the Database
-		for (Podcast podcast:sixgun_podcasts) {
-			boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-			if (checkdb == false) {
-				//Add any new podcasts to the podcasts table
-				Log.d(TAG, "Adding new Podcasts!");
-				mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
+			loadDefaultShow();
+			
+		}else{
+			for (Podcast podcast:sixgun_podcasts) {
+				addSixgunShow(podcast);
 			}
 		}
 	}
 	
+	private void addSixgunShow(Podcast podcast) {
+		boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+		if (checkdb == false) {
+			//Add any new podcasts to the podcasts table
+			Log.d(TAG, "Adding new Podcasts!");
+			mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
+		}
+	}
+
+	private void loadDefaultShow() {
+		Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
+		final Context ctx = mPonyExpressApp.getApplicationContext();
+		String[] default_feed = ctx.getResources().getStringArray(R.array.default_lo_feed);
+		PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
+		Podcast default_podcast = default_parser.parse();
+		if (default_podcast != null){
+			default_podcast.setIdenticaTag(default_feed[1]);
+			default_podcast.setIdenticaGroup(default_feed[2]);
+			addSixgunShow(default_podcast);
+			}	
+		}
+
 	/**
 	 * This method uses a for loop to send all the shows in the database to the updateFeed()
 	 * method one by one.  It also checks a return code to see if internet connectivity 
