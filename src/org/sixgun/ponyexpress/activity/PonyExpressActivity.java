@@ -647,7 +647,6 @@ public class PonyExpressActivity extends ListActivity {
 					Log.e(TAG, "UpdateEpisodes failed to sleep");
 				}
 				
-				Log.e(TAG,"Sleeping");
 				if (!isUpdaterServiceRunning()){
 					break;
 				}
