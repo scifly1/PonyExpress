@@ -189,10 +189,10 @@ public class PonyExpressActivity extends ListActivity {
 		mProgDialog = new ProgressDialog(this);
 		mProgDialog.setMessage(getText(R.string.setting_up));
 		
-		//If this is the first run, show a dialog to say so
+		//Is this the first run?
 		final boolean first = prefs.getBoolean(FIRST, true);
 		if (first){
-			mProgDialog.show();
+			onFirstRun(prefs);
 		}
 		
 		//Check SDCard contents and database match.
@@ -223,6 +223,17 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 	
+	// This method shows a dialog, and calls updateFeed() if this is the first time Pony 
+	// has been run.  The SharedPrefrences then get changed to false.
+	private void onFirstRun(SharedPreferences prefs) {
+		mProgDialog.show();
+		updateFeed(UPDATE_SIXGUN_SHOW_LIST);
+		//Sets the preference to false so this doesn't get called again.
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("first", false);
+        editor.commit();
+	}
+
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -662,6 +673,7 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onCancelled() {
 			super.onCancelled();
+			mProgDialog.hide();
 		}
 		/* 
 		 */

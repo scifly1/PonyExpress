@@ -77,11 +77,6 @@ public class UpdaterService extends IntentService {
 		// Initialize the status notification
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 						
-		// This calls the method that checks if this is the first time Pony 
-		// has been run, and calls checkForNewSixgunShows() if this is 
-		// indeed the first run.
-		checkFirstRun();
-		
 		// Get the input data from the intent and parse it, starting the various
 		// updater methods and setting notification text as needed.
 		Bundle data = intent.getExtras();
@@ -270,22 +265,6 @@ public class UpdaterService extends IntentService {
 	private int getEpisodesToHold(){
 		SharedPreferences prefs = getPreferences();
 		return Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
-	}
-	
-	private void checkFirstRun() {
-		//Checks if this is the first run and adds the Sixgun.org shows if it is.
-		SharedPreferences prefs = getPreferences();
-		final boolean first = prefs.getBoolean(PonyExpressActivity.FIRST, true);
-			if (first == true){
-				//Log that this is the first run
-				Log.d(TAG,"First run!");
-				//Calls the method that checks for Sixgun.org shows
-				checkForNewSixgunShows();
-				//Sets the preference to false so this doesn't get called again.
-				final SharedPreferences.Editor editor = prefs.edit();
-				editor.putBoolean(PonyExpressActivity.FIRST, false);
-				editor.commit();
-			}
 	}
 	
 	//Called from updateFeed()
