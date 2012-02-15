@@ -106,7 +106,8 @@ public class UpdaterService extends IntentService {
 	}
 	
 	/**
-	 * This method checks Sixgun.org for new shows, and adds anything new to the database
+	 * This method checks Sixgun.org for new shows, and adds anything new to the database.
+	 * It will also call loadDefaultShow() if sixgun.org is offline.
 	 */
 	
 	public void checkForNewSixgunShows() {
@@ -118,15 +119,21 @@ public class UpdaterService extends IntentService {
 		ArrayList<Podcast> sixgun_podcasts =(ArrayList<Podcast>) parser.parse();
 		//Sixgun.org cannot be contacted
 		if (sixgun_podcasts.isEmpty()){
+			//Sixgun.org is offline so load the default.
 			loadDefaultShow();
 			
 		}else{
+			//sixgun.org is online so load the sixgun.org shows
 			for (Podcast podcast:sixgun_podcasts) {
 				addSixgunShow(podcast);
 			}
 		}
 	}
 	
+	/**
+	 * This method adds a Sixgun podcast to the database, if it is not already in the database.
+	 * @param podcast
+	 */
 	private void addSixgunShow(Podcast podcast) {
 		boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
 		if (checkdb == false) {
@@ -136,6 +143,10 @@ public class UpdaterService extends IntentService {
 		}
 	}
 
+	/**
+	 * This method loads a default Linux Outlaws feed that is stored in strings.xml.
+	 * It should only be called if sixgun.org is offline during a first run.
+	 */
 	private void loadDefaultShow() {
 		Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
 		final Context ctx = mPonyExpressApp.getApplicationContext();
@@ -167,6 +178,11 @@ public class UpdaterService extends IntentService {
 		}
 	}
 	
+	/**
+	 * This method updates a feed.
+	 * @param podcast_name
+	 * @return
+	 */
 	private int updateFeed(String podcast_name){
 		Log.d(TAG, "Updating " + podcast_name);
 		
@@ -201,6 +217,11 @@ public class UpdaterService extends IntentService {
 		return ReturnCodes.ALL_OK;
 	}
 	
+	/**
+	 * This method adds and/or deletes episodes in the database as needed.
+	 * @param episodes
+	 * @param podcast_name
+	 */
 	private void addAndRemoveEpisodes(List<Episode> episodes, String podcast_name) {
 		for (int i = 0; i < (getEpisodesToHold()) ; i++){
 			//Add any episodes not already in database
@@ -270,7 +291,10 @@ public class UpdaterService extends IntentService {
 		return Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 	}
 	
-	//Called from updateFeed()
+	/**
+	 * This method is used to check and update the album art.
+	 * @param podcast_url
+	 */
 	private void checkForNewArt(String podcast_url){
 		PodcastFeedParser parser = new PodcastFeedParser(mPonyExpressApp,podcast_url);
 		String art_url;
