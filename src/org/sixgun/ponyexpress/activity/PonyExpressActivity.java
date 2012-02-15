@@ -622,7 +622,12 @@ public class PonyExpressActivity extends ListActivity {
 			super.onPreExecute();
 			if (!mPonyExpressApp.getInternetHelper().checkConnectivity()){
 				Toast.makeText(mPonyExpressApp, 
-						R.string.no_internet_connection, Toast.LENGTH_SHORT).show();
+						R.string.no_internet_connection, Toast.LENGTH_LONG).show();
+				cancel(true);
+			}
+			if (isUpdaterServiceRunning()){
+				Toast.makeText(mPonyExpressApp, 
+						R.string.please_wait, Toast.LENGTH_LONG).show();
 				cancel(true);
 			}
 		}
