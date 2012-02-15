@@ -50,7 +50,6 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
-import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -78,8 +77,6 @@ import android.widget.Toast;
  */
 public class PonyExpressActivity extends ListActivity {
 
-	private static final String UPDATE_IN_PROGRESS = "ponyexpress.update.inprogress";
-	private static final String PODCAST_BEING_UPDATED = "ponyexpress.podcast.being.updated";
 	private static final String TAG = "PonyExpressActivity";
 	private static final String UPDATEFILE = "Updatestatus";
 	private static final String LASTUPDATE = "lastupdate";
@@ -93,9 +90,6 @@ public class PonyExpressActivity extends ListActivity {
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
 	private PonyExpressApp mPonyExpressApp; 
-	private UpdateEpisodes mUpdateTask; 
-	private String mPodcastBeingUpdated;
-	private Bundle mSavedState;
 	private ProgressDialog mProgDialog;
 	private int mEpisodesToHold;
 	private int mUpdateDelta;
@@ -240,9 +234,6 @@ public class PonyExpressActivity extends ListActivity {
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PODCAST_DELETED");
 		registerReceiver(mPodcastDeletedReceiver, filter);
 		listPodcasts(false);
-		if (mSavedState != null){
-			restoreLocalState(mSavedState);
-		}
 	}
 	
 	/* (non-Javadoc)
@@ -264,60 +255,7 @@ public class PonyExpressActivity extends ListActivity {
 		if (mProgDialog.isShowing()){
 			mProgDialog.dismiss();
 		}
-		onUpdateEpisodesClose();
 	}
-	
-	/** Restores the state of the Activity including any previously running Updates.
-	 */
-	@Override
-	protected void onRestoreInstanceState(Bundle state) {
-		super.onRestoreInstanceState(state);
-		restoreLocalState(state);
-		mSavedState = null;
-	}
-
-	private void restoreLocalState(Bundle state) {
-		if (state.getBoolean(UPDATE_IN_PROGRESS)){
-			String podcast_name = state.getString(PODCAST_BEING_UPDATED);
-			if (podcast_name == null){
-				podcast_name = "";
-			}
-			mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute(podcast_name);
-		}
-	}
-
-	/** If Episodes are being updated then save this status, so it can be restarted.
-	 */
-	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
-		saveUpdateInProgress(outState);
-		mSavedState = outState;
-	}
-
-	private void saveUpdateInProgress(Bundle outState) {
-		final UpdateEpisodes task = mUpdateTask;
-		if (task != null && task.getStatus() != Status.FINISHED){
-			task.cancel(true);
-			outState.putBoolean(UPDATE_IN_PROGRESS, true);
-			outState.putString(PODCAST_BEING_UPDATED, mPodcastBeingUpdated);
-		} else {
-			outState.putBoolean(UPDATE_IN_PROGRESS, false);
-		}
-		mUpdateTask = null;
-		
-	}
-
-	/**
-	 * Cancels a running update task (if any).  Called when the activity is destroyed.
-	 */
-	private void onUpdateEpisodesClose() {
-		if (mUpdateTask != null && mUpdateTask.getStatus() == Status.RUNNING){
-			mUpdateTask.cancel(true);
-			mUpdateTask = null;
-		}
-	}
-	
 
 	/**
 	 * Starts the PodcastTabs activity with the selected podcast
@@ -455,10 +393,9 @@ public class PonyExpressActivity extends ListActivity {
 	}
 	
 	private void updateFeed(String podcastName){
-		mUpdateTask = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
-		if (mUpdateTask.isCancelled()){
+		UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
+		if (task.isCancelled()){
 			Log.d(TAG, "Cancelled Update, No Connectivity");
-			mUpdateTask = null;
 		}
 	}
 	/**
@@ -657,7 +594,6 @@ public class PonyExpressActivity extends ListActivity {
 				}
 			}
 			
-			//Log.e(TAG, Boolean.toString(test));
 			return null;
 			
 		}
