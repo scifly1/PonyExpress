@@ -48,6 +48,7 @@
 	<string name="dent_ok">Dent!</string>
 	<string name="conn_err_query_failed">Connection error! Cannot get dents.</string>
 	<string name="error_generic">Sorry, something has gone wrong..</string>
+	<string name="parse_error">There was a parsing error</string>
 	<string name="feed_error">There was an error getting a feed..</string>
 	<string name="malformed_feed">The RSS feed is malformed, data is missing!</string>
 	<string name="sending_dent">Sending message, please wait.</string>

@@ -191,8 +191,7 @@ public class UpdaterService extends IntentService {
 		try{
 			episodes = parser.parse();
 		}catch (RuntimeException e){
-			//TODO Set proper R.String
-			showErrorNotification("ERROR");
+			showErrorNotification(getString(R.string.parse_error));
 			Log.e(TAG, podcast_url + " - RuntimeException during feed parse");
 			return ReturnCodes.PARSING_ERROR;
 		}
