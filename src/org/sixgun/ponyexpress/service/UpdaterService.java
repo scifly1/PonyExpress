@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Paul Elms
+ * Copyright 2012 James Daws
  *
  *  This file is part of PonyExpress.
  *
