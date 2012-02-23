@@ -70,8 +70,9 @@
 		<activity android:name=".activity.IdenticaAccountSetupActivity" />
 		<activity android:name=".activity.PreferencesActivity" />
 		<activity android:name=".activity.AddNewPodcastFeedActivity" />
+		<receiver android:name=".receiver.UpdateAlarmReceiver" />
 		<receiver android:name=".receiver.RemoteControlReceiver">
-    		<intent-filter >
+		    <intent-filter >
         		<action android:name="android.intent.action.MEDIA_BUTTON" />
     		</intent-filter>
 </receiver>
