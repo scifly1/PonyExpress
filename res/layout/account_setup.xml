@@ -20,6 +20,7 @@
 		android:id="@+id/username_entry"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
+		android:textColor="#ff000000"
 		android:background="@android:drawable/editbox_background"
 		android:layout_below="@id/username_label" />
 	<TextView
@@ -32,6 +33,7 @@
 		android:id="@+id/password_entry"
 		android:layout_width="fill_parent"
 		android:layout_height="wrap_content"
+		android:textColor="#ff000000"
 		android:background="@android:drawable/editbox_background"
 		android:password="true"
 		android:layout_below="@id/password_label" />

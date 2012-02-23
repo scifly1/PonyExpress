@@ -390,14 +390,20 @@ public class PodcastPlayer extends Service {
 		}		
 		
 		mPlayer.start();
-		//Fix for android 2.2 HTC phones that 
-		//don't seek to the current position with mp3 and instead go to 0
+		
 		mStartPosition = mPlayer.getCurrentPosition();
 		//Adds a 10sec recap on resume if it's marked true in the prefs.
-			if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false) == true){
-				mStartPosition -= 10000;
-			}
-		mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
+		if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false) == true){
+			mStartPosition -= 10000;
+		}
+			
+		//Fix for android 2.2 HTC phones that 
+		//don't seek to the current position with mp3 and instead go to 0
+		if (mStartPosition != 0){
+			mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
+		} else {
+			mPlayer.seekTo(mStartPosition + 10);
+		}
 		mPlayer.seekTo(mStartPosition);
 		
 		showNotification();

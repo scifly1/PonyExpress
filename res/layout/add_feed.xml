@@ -59,6 +59,7 @@
 		android:layout_height="wrap_content"
 		android:inputType="textUri"
 		android:text="@string/http"
+		android:textColor="#ff000000"
 		android:background="@android:drawable/editbox_background"
 		android:layout_below="@id/feed_label" />
 	<TextView
@@ -74,6 +75,7 @@
 		android:layout_height="wrap_content"
 		android:background="@android:drawable/editbox_background"
 		android:text="@string/exclamation"
+		android:textColor="#ff000000"
 		android:layout_below="@id/feed_entry"
 		android:layout_toRightOf="@id/group_label" />
 	<TextView
@@ -89,6 +91,7 @@
 		android:layout_height="wrap_content"
 		android:background="@android:drawable/editbox_background"
 		android:text="@string/hash"
+		android:textColor="#ff000000"
 		android:layout_below="@id/group_entry"
 		android:layout_toRightOf="@id/tag_label" />
 	<Button
