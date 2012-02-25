@@ -72,7 +72,7 @@
 	<string name="version">Pony Express Version</string>
 	<string name="about">About</string>
 	<string name="refresh_feeds">Refresh feeds interval</string>
-	<string name="refresh_feeds_summary">Hours between feed refreshes</string>
+	<string name="refresh_feeds_summary">Hours between feed refreshes\nNote: This takes effect after the next update.</string>
 	<string name="refresh_dialog_title">Interval in hours</string>
 	<string name="Feed_uri" >Feed URL:</string>
 	<string name="Enter_tag">Identi.ca tag:</string>

@@ -19,48 +19,28 @@
 
 package org.sixgun.ponyexpress.receiver;
 
+
+import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.service.UpdaterService;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
+
 
 public class UpdateAlarmReceiver extends BroadcastReceiver{
 
+	private String TAG = "PonyExpress UpdaterAlarmReceiver";
+		
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		
-		checkConnectivity();
-		//TODO handle returns
+		Log.d(TAG,"Recieved update alarm!");
 		
-		checkForAnotherUpdater();
-		//TODO handle returns
-		
-		checkIfInBackground();
-		//TODO handle returns
-		
-		startUpdaterService();
-		//TODO Something productive!?!
-		
-		
+		//Start UpdaterSevice with UPDATE_ALL string
+		intent = new Intent(context,UpdaterService.class);
+		intent.putExtra(PonyExpressActivity.UPDATE_ALL, true);
+		context.startService(intent);
 	}
-
-	private void checkIfInBackground() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void startUpdaterService() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void checkForAnotherUpdater() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	private void checkConnectivity() {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

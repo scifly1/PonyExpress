@@ -21,11 +21,8 @@ package org.sixgun.ponyexpress.activity;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,29 +30,24 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.receiver.UpdateAlarmReceiver;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
-import android.app.AlarmManager;
 import android.app.Dialog;
 import android.app.ListActivity;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -82,29 +74,25 @@ import android.widget.Toast;
 public class PonyExpressActivity extends ListActivity {
 
 	private static final String TAG = "PonyExpressActivity";
-	private static final String UPDATEFILE = "Updatestatus";
-	private static final String LASTUPDATE = "lastupdate";
+	public static final String LASTUPDATE = "lastupdate";
 	public static final String FIRST = "first";
 	
 	//Update codes
 	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update_Sixgun";
 	public static final String UPDATE_ALL = "Update_all";
 	public static final String UPDATE_SINGLE = "Update_single";
-			
+		
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
 	private PonyExpressApp mPonyExpressApp; 
 	private ProgressDialog mProgDialog;
 	private int mEpisodesToHold;
-	//private int mUpdateDelta;
-	private GregorianCalendar mLastUpdate;
 	private BroadcastReceiver mPodcastDeletedReceiver;
 	OnClickListener mClickHandler;
 	private int mListSize;
 	private ViewGroup mListFooter;
 	private boolean mListingPodcasts;
-	
-	
+		
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
@@ -170,20 +158,11 @@ public class PonyExpressActivity extends ListActivity {
 		//Get the application context.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		
-		//TODO Clean this up after UpdateRxer is complete
-		//Get the update delta and number of episodes to hold from preferences
+		//Get the number of episodes to hold from preferences
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		//final String updateDelta = prefs.getString(getString(R.string.update_freqs_key), "24");
-		//final Resources res = getResources();
-		//Check if no-refresh has been set
-		//if (updateDelta.equals(res.getStringArray(R.array.update_freqs)[0])){
-		//	mUpdateDelta = 999;
-		//} else mUpdateDelta = Integer.parseInt(updateDelta);
-		
 		mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
 		Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
-		//Log.d(TAG,"update delta: " + mUpdateDelta);
-		
+				
 		//Create Progress Dialogs for later use.
 		mProgDialog = new ProgressDialog(this);
 		mProgDialog.setMessage(getText(R.string.setting_up));
@@ -194,24 +173,14 @@ public class PonyExpressActivity extends ListActivity {
 			onFirstRun(prefs);
 		}
 		
-		//Set the Background update interval
-		setupUpdateAlarm();
-		
 		//Check SDCard contents and database match.
 		new DatabaseCheck().execute();
 		
 		//Update the Episodes list if the database has been upgraded.
 		if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
-			updateFeeds();
+			updateFeed(UPDATE_ALL);
 			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
 		}
-		
-		//If the user has set an autoupdate frequency (mUpdateDelta != 999), check the 
-		//last time the database was updated and update if necessary
-		//if (mUpdateDelta != 999 && isTimeToUpdate()){
-		//	//update delta has passed and we have connectivity so update
-		//	updateFeeds();
-		//}
 		
 		mPodcastDeletedReceiver = new PodcastDeleted();
 		
@@ -225,19 +194,6 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 	
-	//TODO better comments
-	//This method is used to setup the UpdateAlarmReceiver.
-	private void setupUpdateAlarm() {
-		AlarmManager alarmMgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-		Intent intent = new Intent(this, UpdateAlarmReceiver.class);
-		PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, 0);
-		
-		//TODO add logic to setup the time and preferences
-		alarmMgr.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), 10000, pendingIntent);
-
-		
-	}
-
 	// This method shows a dialog, and calls updateFeed() if this is the first time Pony 
 	// has been run.  The SharedPrefrences then get changed to false.
 	private void onFirstRun(SharedPreferences prefs) {
@@ -245,7 +201,7 @@ public class PonyExpressActivity extends ListActivity {
 		updateFeed(UPDATE_SIXGUN_SHOW_LIST);
 		//Sets the preference to false so this doesn't get called again.
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean("first", false);
+        editor.putBoolean(FIRST, false);
         editor.commit();
 	}
 
@@ -375,7 +331,7 @@ public class PonyExpressActivity extends ListActivity {
 	    case R.id.settings_menu:
 	    	startActivity(new Intent(
 	        		mPonyExpressApp,PreferencesActivity.class));
-	        return true;
+	    	return true;
 	    case R.id.add_podcast:
 	    	addPodcast(null, "");
 	    	return true;
@@ -395,24 +351,6 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 
-//	private boolean isTimeToUpdate(){
-//		SharedPreferences updateStatus = getSharedPreferences(UPDATEFILE, 0);
-//		final long lastUpdateMillis = updateStatus.getLong(LASTUPDATE, 0);
-//		mLastUpdate = new GregorianCalendar(Locale.US);
-//		mLastUpdate.setTimeInMillis(lastUpdateMillis);
-//		//Add on the update delta and compare with now.
-//		mLastUpdate.add(Calendar.HOUR_OF_DAY, mUpdateDelta);
-//		final GregorianCalendar now = new GregorianCalendar(Locale.US);
-//		if (mLastUpdate.compareTo(now) < 0 && 
-//				(mPonyExpressApp.getInternetHelper().checkConnectivity())){
-//			return true;
-//		} else return false;
-//	}
-	
-	private void updateFeeds() {
-		updateFeed(UPDATE_ALL);
-	}
-	
 	private void updateFeed(String podcastName){
 		UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
 		if (task.isCancelled()){
@@ -641,12 +579,6 @@ public class PonyExpressActivity extends ListActivity {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			//Set mLastUpdate and store in shared preferences
-			mLastUpdate = new GregorianCalendar(Locale.US);
-			SharedPreferences updateStatus = getSharedPreferences(UPDATEFILE, 0);
-			SharedPreferences.Editor editor = updateStatus.edit();
-			editor.putLong(LASTUPDATE, mLastUpdate.getTimeInMillis());
-			editor.commit();
 			mProgDialog.hide();
 			//re-list podcasts to update new episode counts
 			listPodcasts(false);
