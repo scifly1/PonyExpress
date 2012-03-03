@@ -33,11 +33,13 @@ import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.receiver.UpdateAlarmReceiver;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import org.sixgun.ponyexpress.util.PodcastFeedParser;
 import org.sixgun.ponyexpress.util.SixgunPodcastsParser;
 import org.sixgun.ponyexpress.util.Utils;
 
+import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -106,6 +108,60 @@ public class UpdaterService extends IntentService {
 	}
 	
 	/**
+	 * This method return a boolean true if the SharedPreferences contain a number.  Otherwise, it returns false.
+	 * @return
+	 */
+	private boolean checkBackgroundUpdate() {
+		SharedPreferences prefs = getPreferences();
+		try{
+			Long.parseLong(prefs.getString(getString(R.string.update_freqs_key), "24"));
+		}catch (NumberFormatException e){
+			return false;
+		}
+		return true;
+	}
+
+	/**
+	 * This method sets the alarm manger based on the last update and the
+	 * preferences.
+	 */
+	private void setNextAlarm() {
+		final Long updateTime = getNextUpdateTime();
+		final AlarmManager alarm_mgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+		final Intent intent = new Intent(this, UpdateAlarmReceiver.class);
+		final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
+		alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
+		
+		Log.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
+				
+	}
+
+	/**
+	 * This method returns the next time an automatic update should happen based
+	 * on the last update and the preferences in the form of a long in milliseconds. 
+	 * @return
+	 */
+	private long getNextUpdateTime() {
+		SharedPreferences prefs = getPreferences();
+		final Long lastUpdate = prefs.getLong(PonyExpressActivity.LASTUPDATE, System.currentTimeMillis());
+		final Long updateDelta =  3600000 * Long.parseLong
+				(prefs.getString(getString(R.string.update_freqs_key), "24"));
+		return lastUpdate + updateDelta;
+		
+	}
+
+	/**
+	 * This method sets a preference for the last time all episodes where updated.  It sets the 
+	 * current time if this is the first run
+	 */
+	private void setLastUpdateTime() {
+		SharedPreferences prefs = getPreferences();
+		SharedPreferences.Editor editor = prefs.edit();
+		editor.putLong(PonyExpressActivity.LASTUPDATE, System.currentTimeMillis());
+		editor.commit();
+	}
+
+	/**
 	 * This method checks Sixgun.org for new shows, and adds anything new to the database.
 	 * It will also call loadDefaultShow() if sixgun.org is offline.
 	 */
@@ -163,7 +219,7 @@ public class UpdaterService extends IntentService {
 	/**
 	 * This method uses a for loop to send all the shows in the database to the updateFeed()
 	 * method one by one.  It also checks a return code to see if internet connectivity 
-	 * has been lost and breaks if need be.
+	 * has been lost and breaks if need be.  Finally, it calls the methods that handle the update alarm.
 	 */
 	private void updateAllFeeds(){
 		Log.d(TAG,"Updating all episodes");
@@ -175,6 +231,13 @@ public class UpdaterService extends IntentService {
 				//This means the internet is unreachable so this loop needs to stop
 				break;
 			}
+		}
+		//Set the next update alarm
+		setLastUpdateTime();
+		if(checkBackgroundUpdate()){
+			setNextAlarm();
+		}else{
+			Log.d(TAG,"No background updates scheduled");
 		}
 	}
 	
