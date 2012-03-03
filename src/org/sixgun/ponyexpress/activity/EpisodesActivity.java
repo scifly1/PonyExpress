@@ -18,9 +18,7 @@
 */
 package org.sixgun.ponyexpress.activity;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -40,7 +38,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -60,17 +57,16 @@ import android.widget.TextView;
 
 public class EpisodesActivity extends ListActivity {
 
-	private static final String TAG = "EpisodesActivity";
 	private static final int MARK_ALL_LISTENED = 0;
 	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private static final int DOWNLOAD_ALL = MARK_ALL_NOT_LISTENED +1;
-	private PonyExpressApp mPonyExpressApp;
-	private String mPodcastName;
-	private String mAlbumArtUrl;
-	private String mPodcastNameStripped; 
-	private TextView mUnlistenedText;
-	private ViewGroup mBackground;
-	private int mNumberUnlistened;
+	protected PonyExpressApp mPonyExpressApp;
+	protected String mPodcastName;
+	protected String mAlbumArtUrl;
+	protected String mPodcastNameStripped; 
+	protected TextView mUnlistenedText;
+	protected ViewGroup mBackground;
+	protected int mNumberUnlistened;
 
 	
 	@Override
@@ -217,44 +213,9 @@ public class EpisodesActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-		//Get all info from database and put it in an Intent for EpisodeTabs
-		final String title = mPonyExpressApp.getDbHelper().getEpisodeTitle(id, mPodcastName);
-		final String description = mPonyExpressApp.getDbHelper().getDescription(id, mPodcastName);
-		final String identicaTag = mPonyExpressApp.getDbHelper().getIdenticaTag(mPodcastName);
-		//Seperate episode number from filename for hashtag.
-		//FIXME This only works for filename with xxxxxxnn format not 
-		//for others such as xxxxxxxsnnenn
-		//If cannot be determined don't do ep specific dents, only group dents
-		Pattern digits = Pattern.compile("[0-9]+");
-		Matcher m = digits.matcher(title);
-		String epNumber = "";
-		if (m.find()){
-			epNumber = m.group(); 
-			Log.d(TAG, "Episode number: " + epNumber);
-		} 
-		
+				
 		Intent intent = new Intent(this,EpisodeTabs.class);
-		intent.putExtra(PodcastKeys.NAME, mPodcastName);
-		intent.putExtra(EpisodeKeys.TITLE, title);
-		intent.putExtra(EpisodeKeys.DESCRIPTION, description);
-		if (!identicaTag.equals("")){
-			intent.putExtra(PodcastKeys.TAG, identicaTag);
-		}
-		intent.putExtra(EpisodeKeys.EP_NUMBER, epNumber);
-		intent.putExtra(EpisodeKeys._ID, id);
-		intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
-		final String filename = mPonyExpressApp.getDbHelper().getEpisodeFilename(id, mPodcastName);
-		intent.putExtra(EpisodeKeys.FILENAME, filename);
-		final int listened = mPonyExpressApp.getDbHelper().getListened(id, mPodcastName);
-		intent.putExtra(EpisodeKeys.LISTENED, listened);
-		//Determine if Episode has been downloaded and add required extras.
-		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName);
-		if (!downloaded){
-			final String url = mPonyExpressApp.getDbHelper().getEpisodeUrl(id, mPodcastName);
-			intent.putExtra(EpisodeKeys.URL, url);
-			final int size = mPonyExpressApp.getDbHelper().getEpisodeSize(id, mPodcastName);
-			intent.putExtra(EpisodeKeys.SIZE, size);
-		}
+		intent.putExtras(Episode.packageEpisode(mPonyExpressApp, mPodcastName, id));
 		startActivity(intent);
 	}
 

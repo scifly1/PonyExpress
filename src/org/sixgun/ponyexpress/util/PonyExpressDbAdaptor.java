@@ -17,6 +17,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -27,9 +28,10 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 12;
+	private static final int DATABASE_VERSION = 13;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String PODCAST_TABLE = "Podcasts";
+    private static final String PLAYLIST_TABLE = "Playlist";
     private static final String TEMP_TABLE_NAME = "Temp_Episodes";
     private static final String EPISODE_TABLE_FIELDS =
                 " (" +
@@ -63,6 +65,13 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.TABLE_NAME + " TEXT," + 
     	PodcastKeys.TAG + " TEXT," +
     	PodcastKeys.GROUP + " TEXT);";
+    
+    private static final String PLAYLIST_TABLE_CREATE =
+    		"CREATE TABLE IF NOT EXISTS " + PLAYLIST_TABLE + " (" +
+    		PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
+    		PodcastKeys.NAME + " TEXT," + 
+    		EpisodeKeys.ROW_ID + " INTEGER," + 
+    		PodcastKeys.PLAY_ORDER + " INTEGER);";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
 	private PonyExpressDbHelper mDbHelper;
@@ -85,19 +94,23 @@ public class PonyExpressDbAdaptor {
         @Override
         public void onCreate(SQLiteDatabase db) {
             db.execSQL(PODCAST_TABLE_CREATE);
+            //Call onUpgrade to ensure new users get the updated db
+            onUpgrade(db,1,DATABASE_VERSION);
         }
 
 		@Override
     	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
     		Log.w("PonyExpress", "Upgrading database from version " + oldVersion + " to "
                     + newVersion);
-    		
-    		//TODO DROP all episode tables that are empty and not listed in the
-    		//podcast table.
-    		
-    		// Copy old data across to new table
-    		switch (newVersion) {
-//			case 12:
+    		switch (oldVersion) {
+    		case 1: //New installs have version 1.
+    		//Fallthrough 
+    			
+    		//This is commented out as no devices exist with a db version 11.
+    		//It is retained as an example of how to lay out an upgrade switch/case etc.. 
+    			
+    		//Copy old data across to new table
+//			case 11:
 //				//Begin transaction
 //				db.beginTransaction();
 //				try {
@@ -120,13 +133,77 @@ public class PonyExpressDbAdaptor {
 //				mDatabaseUpgraded = true;
 //				db.endTransaction();
 //				}
-//				break;
-
+    		
+    		//NOTE: no break; Fallthrough
+    		case 12:
+    			//Begin transaction
+    			db.beginTransaction();
+    			try {
+    				//Drop empty tables for old podcasts
+    				List <String> empty_tables = findEmptyTables(db);
+    				for (String table : empty_tables){
+    					db.execSQL("DROP TABLE IF EXISTS " + table + ";");
+    				}
+    				//Create new playlist table
+					db.execSQL(PLAYLIST_TABLE_CREATE);
+					//No need to set mDatabaseUpgraded to true as the 
+					//feeds do not need updating with this db upgrade.
+					db.setTransactionSuccessful();
+				} catch (SQLException e) {
+					Log.e(TAG, "SQLException on db upgrade", e);
+				} finally {
+					db.endTransaction();
+				}
+    			break; //Only the final upgrade case has a break.   			
 			default:
 				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
 				break;
 			}
     	}
+		
+		/**
+		 * Find empty tables from where Podcasts have been deleted
+		 *  and drop them during a database upgrade.
+		 */
+		private List<String> findEmptyTables(SQLiteDatabase db){
+			List<String> empty_tables = new ArrayList<String>();
+			//Get a list of all PodEps* tables
+			final String[] columns = {"name"};
+			final String selection = "type='table' AND name LIKE 'PodEps%'";
+			Cursor c = db.query("sqlite_master", columns, selection, null, null, null, null);
+			
+			//Find the tables that are empty and do not appear in the 
+			//podcast table.
+			//First get a list of all current podcasts
+			String[] cols = {PodcastKeys.TABLE_NAME};
+			Cursor d = db.query(PODCAST_TABLE, cols, null, null, null, null, null);
+			List<String> podcasts = new ArrayList<String>();
+			d.moveToFirst();
+			if (d != null && d.getCount() != 0){
+				for (int i = 0; i < d.getCount(); i++){
+					podcasts.add(d.getString(0));
+					d.moveToNext();
+				}
+			}
+			//Now find the names of empty tables
+			if (c != null && c.getCount() > 0){
+				c.moveToFirst();
+				for (int i = 0; i < c.getCount(); i++){
+					long num = DatabaseUtils.queryNumEntries(db, c.getString(0));
+					Log.d(TAG, c.getString(0) + " has " + num + "rows");
+					//if empty check the name isn't in the podcasts list.
+					if (num == 0 && !podcasts.contains(c.getString(0))){
+						Log.d(TAG, "Table " + c.getString(0) + " is to be dropped");
+						empty_tables.add(c.getString(0));
+					}
+					c.moveToNext();
+				}
+			}
+			d.close();
+			c.close();
+			
+			return empty_tables;
+		}
     }
     
     /**
@@ -430,7 +507,6 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			title = cursor.getString(1);
-			Log.d(TAG, "Title of Episode is: "+ title);
 		} else{
 			Log.e(TAG, "Empty cursor at getEpisodeTitle()");
 		}
@@ -665,7 +741,24 @@ public class PonyExpressDbAdaptor {
 	public String getAlbumArtUrl(long row_ID){
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
-				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
+				columns, PodcastKeys._ID + "=" + row_ID, null, null, null, null, null);
+		String url = "";
+		if (cursor != null  && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			url = cursor.getString(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getAlbumArtUrl()");
+		}
+		cursor.close();
+		return url;
+	}
+	
+	public String getAlbumArtUrl(String podcast_name){
+		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
+		//Use double quote here for the podcastName as it is an identifier.
+		final String quoted_name = "\"" + podcast_name + "\"";
+		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
+				columns, PodcastKeys.NAME + "=" + quoted_name, null, null, null, null, null);
 		String url = "";
 		if (cursor != null  && cursor.getCount() > 0){
 			cursor.moveToFirst();
@@ -776,4 +869,292 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return mCheckDatabase;	
 	}
+	/**
+	 * Gets the Podcast name and episode row id of all episodes in
+	 * the playlist.
+	 * @return cursor over the playlist table
+	 */
+	public Cursor getPlaylist() {
+		final String[] columns = {EpisodeKeys._ID, PodcastKeys.NAME, EpisodeKeys.ROW_ID};
+		return mDb.query(
+				true,PLAYLIST_TABLE,columns,null,null,null,null,PodcastKeys.PLAY_ORDER +" ASC" ,null);
+	}
+	
+	public boolean playlistEmpty(){
+		if (DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE) == 0 ){
+			return true;
+		} else return false;
+	}
+	
+	/**
+	 * Adds an episode to the playlist.
+	 * @return the row_id if successful or -1.
+	 */
+	public long addEpisodeToPlaylist(String podcast_name, long row_id){
+		ContentValues episodeValues = new ContentValues();
+		episodeValues.put(PodcastKeys.NAME, podcast_name);
+		episodeValues.put(EpisodeKeys.ROW_ID, row_id);
+		//Find number of episodes already in playlist and add 1 to get
+		//next play order.
+		long next_order = DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE);
+		episodeValues.put(PodcastKeys.PLAY_ORDER, next_order +1);
+		return mDb.insert(PLAYLIST_TABLE, null, episodeValues);
+	}
+		
+	/**
+	 * Empties the playlist.
+	 */
+	public void clearPlaylist() {
+		mDb.delete(PLAYLIST_TABLE, null, null);
+	}
+	
+	/**
+	 * Moves the selected episode up one in the running order.
+	 * @param position
+	 * @return true if successful.
+	 */
+	public boolean moveUpPlaylist(long position){
+		//Already at the top, just return
+		if (position == 0) {
+			return true;
+		}
+		
+		//Add 1 so that we are using counting numbers like the play order.
+		position++;
+		
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Move up one
+				if (c.getInt(1) == position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
+				}else if (c.getInt(1) == position - 1){
+					//Move down one	
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) + 1);
+				}else{
+					//Keep the same position
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1));
+				}
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at moveUpPlaylist()");
+			c.close();
+			return false;
+		}
+		c.close();
+		return true;
+	}
+	
+	/**
+	 * Moves the selected episode down one in the running order.
+	 * @param position
+	 * @return true if successful.
+	 */
+	public boolean moveDownPlaylist(long position){
+						
+		//Add 1 so that we are using counting numbers like the play order.
+		position++;
+		
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			int last = c.getCount();
+			//Check and return if already on the bottom
+			if (last == position){
+				c.close();
+				return true;
+			}
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Move down one
+				if (c.getInt(1) == position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) + 1);
+				}else if (c.getInt(1) == position + 1){
+					//Move down one	
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
+				}else{
+					//Keep the same position
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1));
+				}
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at moveDownPlaylist()");
+			c.close();
+			return false;
+		}
+		c.close();
+		return true;
+	}
+	
+	/**
+	 * Moves the selected episode to the top of the playlist.
+	 * @param position
+	 * @return true if successful
+	 */
+	public boolean moveToTop(long position){
+		//Already at the top, just return
+		if (position == 0) {
+			return true;
+		}
+		
+		//Add 1 so that we are using counting numbers like the play order.
+		position++;
+		
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Move to the top
+				if (c.getInt(1) == position){
+					cv.put(PodcastKeys.PLAY_ORDER, 1);
+				}
+				//Move down one
+				if(c.getInt(1) < position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) + 1);
+				}
+				//Keep the same position
+				if(c.getInt(1) > position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1));
+				}
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at moveToTop()");
+			c.close();
+			return false;
+		}
+		c.close();
+		return true;
+	}
+	
+	/**
+	 * Moves the selected episode to the bottom of the playlist.
+	 * @param position
+	 * @return true if successful
+	 */
+	public boolean moveToBottom(long position){
+		
+		//Add 1 so that we are using counting numbers like the play order.
+		position++;
+		
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			int last = c.getCount();
+			//Check and return if already on the bottom
+			if (last == position){
+				c.close();
+				return true;
+			}
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Move to the bottom
+				if (c.getInt(1) == position){
+					cv.put(PodcastKeys.PLAY_ORDER, last);
+				}
+				//Move up one
+				if(c.getInt(1) > position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
+				}
+				//Keep the same position
+				if(c.getInt(1) < position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1));
+				}
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at moveToBottom()");
+			c.close();
+			return false;
+		}
+		c.close();
+		return true;
+	}
+
+	public String getPodcastFromPlaylist() {
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.NAME};
+		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
+				columns, PodcastKeys.PLAY_ORDER + "=" + 1 ,
+				null, null, null, null, null);
+		String podcast_name = "";
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			podcast_name = cursor.getString(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getPodcastFromPlaylist()");
+		}
+		cursor.close();
+		return podcast_name;
+	}
+
+	public long getEpisodeFromPlaylist() {
+		final String[] columns = {PodcastKeys._ID, EpisodeKeys.ROW_ID};
+		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
+				columns, PodcastKeys.PLAY_ORDER + "=" + 1 ,
+				null, null, null, null, null);
+		long episode_id = 0;
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			episode_id = cursor.getLong(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
+		}
+		cursor.close();
+		return episode_id;
+	}
+
+	/**
+	 * Removes the top episode from the playlist table
+	 * and reorders the remaining episodes
+	 */
+	public void popPlaylist() {
+		mDb.delete(PLAYLIST_TABLE, PodcastKeys.PLAY_ORDER + "=" + 1, null);
+		//Query the table for all the current play_orders
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		int old_order = 0;
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				//Get the old play_order
+				old_order = c.getInt(1);
+				cv.put(PodcastKeys.PLAY_ORDER, old_order - 1);
+				//Update the play_order by -1
+				mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				c.moveToNext();
+			}
+		}
+		c.close();
+	}
+	
+	/**
+	 * Returns true if there is only one episode left in the playlist.
+	 * @return
+	 */
+	public boolean playlistEnding() {
+		if (DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE) == 1 ){
+			return true;
+		} else return false;
+		
+	}
+
 }

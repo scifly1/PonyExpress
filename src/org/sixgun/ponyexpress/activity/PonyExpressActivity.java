@@ -84,7 +84,8 @@ public class PonyExpressActivity extends ListActivity {
 		
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
-	private PonyExpressApp mPonyExpressApp; 
+
+	protected PonyExpressApp mPonyExpressApp; 
 	private ProgressDialog mProgDialog;
 	private int mEpisodesToHold;
 	private BroadcastReceiver mPodcastDeletedReceiver;
@@ -92,7 +93,8 @@ public class PonyExpressActivity extends ListActivity {
 	private int mListSize;
 	private ViewGroup mListFooter;
 	private boolean mListingPodcasts;
-		
+
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
@@ -105,7 +107,7 @@ public class PonyExpressActivity extends ListActivity {
 		            	showSettings(v);
 		                break;
 		            case R.id.playlist_button:
-		            	//TODO
+		            	showPlaylist(v);
 		                break;
 		            case R.id.footer_button:
 		            	//fallthrough
@@ -125,6 +127,7 @@ public class PonyExpressActivity extends ListActivity {
 		findViewById(R.id.playlist_button).setOnClickListener(mClickHandler);
 		//Add click listerner for the footer_button even though it may be hidden later.
 		findViewById(R.id.pony_footer).setOnClickListener(mClickHandler);
+		
 		
 		ViewGroup list_root = (ViewGroup) findViewById(R.id.podcast_list_root);
 		list_root.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
@@ -235,12 +238,11 @@ public class PonyExpressActivity extends ListActivity {
 	}
 
 	/**
-	 * Starts the PodcastTabs activity with the selected podcast
+	 * Starts the EpisodesActivity with the selected podcast
 	 * @param id row_id of the podcast in the database
 	 */
-	private void selectPodcast(View v, long id) {
+	protected void selectPodcast(View v, long id) {
 		//Get the podcast name and album art url and number of unlistened episodes.
-
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
 		//Store in an intent and send to EpisodesActivity
@@ -276,6 +278,14 @@ public class PonyExpressActivity extends ListActivity {
 		intent.putExtra(PodcastKeys.FEED_URL, url);
 		startActivityForResult(intent, ADD_FEED);
 	}
+	
+	/**
+	 * Show the playlist
+	 */
+	public void showPlaylist(View v) {
+		startActivity(new Intent(mPonyExpressApp, PlaylistActivity.class));
+	}
+
 	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
@@ -363,7 +373,7 @@ public class PonyExpressActivity extends ListActivity {
 	 * a footer, determine with the globalLayoutListener if we need a footer and then
 	 * re-call this to add a footer to the adapter.
 	 */
-	private void listPodcasts(boolean addFooter) {
+	protected void listPodcasts(boolean addFooter) {
 		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
 		startManagingCursor(c);
 		//Create a CursorAdapter to map podcast title and art to the ListView.
@@ -392,7 +402,7 @@ public class PonyExpressActivity extends ListActivity {
 	 * Overide newView to create/inflate a view to bind the data to.
 	 * Overide bindView to determine how the data is bound to the view.
 	 */
-	private class PodcastCursorAdapter extends CursorAdapter{
+	protected class PodcastCursorAdapter extends CursorAdapter{
 
 		public PodcastCursorAdapter(Context context, Cursor c) {
 			super(context, c);

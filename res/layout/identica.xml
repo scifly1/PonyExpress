@@ -109,6 +109,7 @@
 				android:layout_weight="1"
 				android:background="@android:drawable/editbox_background"
 				android:layout_alignParentBottom="true"
+				android:textColor="#ff000000"
 				android:inputType="textShortMessage|textCapSentences|textAutoCorrect|textImeMultiLine"
 				android:maxLength="150" />
 			<Button

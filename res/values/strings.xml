@@ -16,6 +16,7 @@
 	<string name="Episodes_title">
 		<b>Episodes</b>
 	</string>
+	<string name="Playlist_title">Playlist</string>
 	<string name="Identica_group_title">Group Dents</string>
 	<string name="Identica_episode_title">Episode Dents</string>
 	<string name="sixgun">Sixgun Productions</string>
@@ -31,6 +32,9 @@
 	<string name="checking">Checking</string>
 	<string name="interent_lost">Internet connectivity was lost during the update.</string>
 	<string name="url_offline"> appears to be offline. Please try again later.</string>
+	<string  name="not_downloaded_no_internet">Episode not yet downloaded and you have no connectivity.</string>
+	<string name="not_downloaded_wrong_network_type">Episode not yet downloaded and you are on a mobile network and have disabled
+		downloads unless on WiFi</string>
 	<string name="download">Download</string>
 	<string name="re_download">Re-download</string>
 	<string name="listen">Listen</string>
@@ -80,6 +84,11 @@
 	<string name="http">http://</string>
 	<string name="exclamation">!</string>
 	<string name="hash">#</string>
+	<string name="move_up">Move up one</string>
+	<string name="move_down">Move down one</string>
+	<string name="move_top">Move to the top</string>
+	<string name="move_bottom">Move to the bottom</string>
+	<string name="remove_from_playlist">Remove from playlist</string>	
 	<!--
 		Do not change these numbers without also changing the corresponding
 		numbers in the "values" string array !!
@@ -124,6 +133,14 @@
 	<string name="r_seek_time">Rewind Seek Time</string>
 	<string name="ff_seek_time_summary">The amount of time to skip forward when the fast forward button is pushed</string>
 	<string name="ff_seek_time">Fast Forward Seek Time</string>
+	<string name="auto_download">Auto-downloads</string>
+	<string name="auto_download_summary">Automatically download episodes when adding to the playlist</string>
+	<string name="no_episodes">The playlist is empty.</string>
+	<string name="clear_playlist">Clear the playlist</string>
+	<string name="playlist_subtitle_pod">Select podcast...</string>
+	<string name="playlist_subtitle_eps">Select episodes...</string>
+	<string name="not_downloaded_dialog">This episode is not downloaded. Do you want to download it now?</string>
+	<string name="always_auto_download">Always auto-download?</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
@@ -161,6 +178,7 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 	<string name="version_key">versionKey</string>
 	<string name="update_freqs_key">updateFreqsKey</string>
 	<string name="add_podcasts">ADD_PODCASTS</string>
+	<string name="auto_download_key">AutoDownloadKey</string>
 	
 	<!-- The sixgun podcasts feedlist is found at this url.  It lists all current sixgun
 	feeds and associated tags and groups 

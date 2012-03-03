@@ -19,9 +19,13 @@
 
 package org.sixgun.ponyexpress.util;
 
+import org.sixgun.ponyexpress.R;
+
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 
 /**
  * Class that provides functions for checking if internet access is
@@ -29,12 +33,16 @@ import android.net.NetworkInfo;
  *
  */
 public class InternetHelper {
+	public static final int NO_CONNECTION = -1;
+	public static final int DOWNLOAD_OK = 0;
+	public static final int MOBILE_NOT_ALLOWED = 1;
+	
 	private Context mCtx;
 	private ConnectivityManager mConnectivity;
 	private NetworkInfo mInfo;
 	
 	public InternetHelper(Context ctx){
-		mCtx = ctx;;
+		mCtx = ctx;
 		mConnectivity =  (ConnectivityManager) mCtx.getSystemService(
 				Context.CONNECTIVITY_SERVICE);
 	}
@@ -51,14 +59,40 @@ public class InternetHelper {
 	}
 	
 	/** Get the type of network connection currently active.
-	 * @return Either TYPE_WIFI or TYPE_MOBILE, or -1 if no connection.
+	 * @return Either TYPE_WIFI or TYPE_MOBILE, or NO_CONNECTION if no connection.
 	 */
 	public final int getConnectivityType(){
 		mInfo = mConnectivity.getActiveNetworkInfo();
 		if (mInfo != null){
 			return mInfo.getType();
 		} else {
-			return -1;
+			return NO_CONNECTION;
 		}
+	}
+	
+	/**
+	 * Returns true if the preferences allow download over a mobile network.
+	 * @return
+	 */
+	public boolean isDownloadAllowed() {
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mCtx);
+		final boolean onlyOnWiFi = prefs.getBoolean(mCtx.getString(R.string.wifi_only_key), true);
+		if (onlyOnWiFi && getConnectivityType() == ConnectivityManager.TYPE_MOBILE){
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Returns one of NO_CONNECTION, MOBILE_NOT_ALLOWED, DOWNLOAD_OK
+	 * @return
+	 */
+	public int isDownloadPossible(){
+		if (!checkConnectivity()){
+			return InternetHelper.NO_CONNECTION;
+		} else if (isDownloadAllowed()){
+			return InternetHelper.DOWNLOAD_OK;
+		}
+		else return InternetHelper.MOBILE_NOT_ALLOWED;
 	}
 }

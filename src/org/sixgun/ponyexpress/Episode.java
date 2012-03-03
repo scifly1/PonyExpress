@@ -23,9 +23,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.sixgun.ponyexpress.util.Utils;
 
+import android.os.Bundle;
 import android.util.Log;
 
 /*
@@ -175,6 +178,51 @@ public class Episode implements Comparable<Episode> {
 		
 	}
 
+	/**
+	 * Packages all the required data for play/downloading an episode
+	 * into a bundle for sending via intent to the player/downloader.
+	 */
+	public static Bundle packageEpisode(PonyExpressApp app, String podcast_name, long row_id){
+		final String title = app.getDbHelper().getEpisodeTitle(row_id, podcast_name);
+		final String description = app.getDbHelper().getDescription(row_id, podcast_name);
+		final String identicaTag = app.getDbHelper().getIdenticaTag(podcast_name);
+		final String album_art_url = app.getDbHelper().getAlbumArtUrl(podcast_name);
+		final String filename = app.getDbHelper().getEpisodeFilename(row_id, podcast_name);
+		final int listened = app.getDbHelper().getListened(row_id, podcast_name);
 
+		//Seperate episode number from filename for hashtag.
+		//FIXME This only works for filename with xxxxxxnn format not 
+		//for others such as xxxxxxxsnnenn
+		//If cannot be determined don't do ep specific dents, only group dents
+		Pattern digits = Pattern.compile("[0-9]+");
+		Matcher m = digits.matcher(title);
+		String epNumber = "";
+		if (m.find()){
+			epNumber = m.group(); 
+			Log.d(TAG, "Episode number: " + epNumber);
+		} 
+		Bundle bundle = new Bundle();
+		
+		bundle.putString(PodcastKeys.NAME, podcast_name);
+		bundle.putString(EpisodeKeys.TITLE, title);
+		bundle.putString(EpisodeKeys.DESCRIPTION, description);
+		if (!identicaTag.equals("")){
+			bundle.putString(PodcastKeys.TAG, identicaTag);
+		}
+		bundle.putString(EpisodeKeys.EP_NUMBER, epNumber);
+		bundle.putLong(EpisodeKeys._ID, row_id);
+		bundle.putString(PodcastKeys.ALBUM_ART_URL, album_art_url);
+		bundle.putString(EpisodeKeys.FILENAME, filename);
+		bundle.putInt(EpisodeKeys.LISTENED, listened);
+		//Determine if Episode has been downloaded and add required extras.
+		final boolean downloaded = app.getDbHelper().isEpisodeDownloaded(row_id, podcast_name);
+		if (!downloaded){
+			final String url = app.getDbHelper().getEpisodeUrl(row_id, podcast_name);
+			bundle.putString(EpisodeKeys.URL, url);
+			final int size = app.getDbHelper().getEpisodeSize(row_id, podcast_name);
+			bundle.putInt(EpisodeKeys.SIZE, size);
+		}
+		return bundle;
+	}
 	
 }

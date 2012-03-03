@@ -40,7 +40,7 @@ import android.view.MenuItem;
 
 public class GeneralOptionsMenuActivity extends TabActivity {
 
-	private PonyExpressApp mPonyExpressApp;
+	protected PonyExpressApp mPonyExpressApp;
 	
 	
 	@Override

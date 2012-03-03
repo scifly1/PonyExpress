@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+     <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/gradient" />
+
+        <ListView
+            android:id="@+id/playlist_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/gradient"
+            android:cacheColorHint="#00000000"
+            android:divider="#00000001"
+            android:dividerHeight="1dp"
+            android:paddingTop="2dp" 
+            android:transcriptMode="alwaysScroll"
+			android:stackFromBottom="true"/>
+        
+        <TextView
+            android:id="@+id/no_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:text="@string/no_episodes"
+            android:textStyle="bold" 
+            android:paddingLeft="10dp"
+            android:textSize="16dp"/>
+        
+</LinearLayout>

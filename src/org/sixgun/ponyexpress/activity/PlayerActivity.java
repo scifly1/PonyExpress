@@ -38,12 +38,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -53,9 +50,9 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.SeekBar.OnSeekBarChangeListener;
 
 /**
  * Handles the media player service.
@@ -244,6 +241,11 @@ public class PlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mData = getIntent().getExtras();
+		if (savedInstanceState != null){
+			//if we are coming back after a config change the original 
+			//bundle may have PLAYLIST true, which we don't want. 
+			mData.putBoolean(PodcastKeys.PLAYLIST, false);
+		}
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		mPodcastName = (mData.getString(PodcastKeys.NAME));
@@ -263,7 +265,6 @@ public class PlayerActivity extends Activity {
 					mPaused = true;
 					mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
-					
 				} else {
 					// Play episdode
 					startService(mPlayerIntent);
@@ -344,16 +345,13 @@ public class PlayerActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				//Check user wants to download on the current network type
-				final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
-				final boolean onlyOnWiFi = prefs.getBoolean(getString(R.string.wifi_only_key), true);
-				if (onlyOnWiFi && mPonyExpressApp.getInternetHelper().getConnectivityType() 
-						== ConnectivityManager.TYPE_MOBILE){
+				if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
 					Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
 				} else {
 					mIsDownloading = true;
 					activateDownloadCancelButton();
 					startDownload();
-				}				
+				}			
 			}
 		};
 		
@@ -416,7 +414,6 @@ public class PlayerActivity extends Activity {
 		mPlayerIntent = new Intent(mPonyExpressApp,PodcastPlayer.class);
 		mPlayerIntent.putExtra(RemoteControlReceiver.ACTION, 
 				PodcastPlayer.PLAY_PAUSE);
-		
 		
 	}
 
@@ -489,7 +486,7 @@ public class PlayerActivity extends Activity {
 				text = (int)freeSpace + text;
 				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_SHORT).show();
 			}
-		}
+		} 
 	}
 
 
@@ -565,6 +562,12 @@ public class PlayerActivity extends Activity {
 			mPaused = false;
 			mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
 			startSeekBar();
+		} else if (mPaused && mEpisodeDownloaded){
+			//if playing from a playlist auto start playback.
+			if (mData.getBoolean(PodcastKeys.PLAYLIST)){
+				mPlayPauseButton.performClick();
+				mData.putBoolean(PodcastKeys.PLAYLIST, false);
+			}
 		}
 		
 	}

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -104,6 +105,8 @@ public class PodcastPlayer extends Service {
 	
 	SharedPreferences mPrefs;
 
+	private boolean mPlayingPlaylist;
+
 	
 	
 	/**
@@ -163,15 +166,34 @@ public class PodcastPlayer extends Service {
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				mp.start();
-				Log.d(TAG,"Playback re-started");
-				mp.pause();
-				hideNotification();
 				//Set Listened to 0
 				boolean res = mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
 						EpisodeKeys.LISTENED, 0);
 				if (res) {
-					Log.d(TAG, "Updated listened to position to 0");
+					Log.d(TAG, "Updated listened to position to " + 0);
+				}
+				
+				//Get next episode in playlist.
+				if (mPlayingPlaylist && !mPonyExpressApp.getDbHelper().playlistEnding())
+				{
+					mPonyExpressApp.getDbHelper().popPlaylist();
+					final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
+					final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+					Bundle bundle = new Bundle();
+					bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+					initPlayer(bundle);
+					play();
+					//Send a broadcast intent to EpisodeTabs
+					//telling it to refresh with the new episode
+					Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+					getApplicationContext().sendBroadcast(intent);
+				} else { //Just stop
+					hideNotification();
+					//unregister HeadPhone reciever
+					if (mHeadPhoneReciever != null){
+						unregisterReceiver(mHeadPhoneReciever);
+						mHeadPhoneReciever = null;
+					}
 				}
 			}
 			
@@ -274,6 +296,7 @@ public class PodcastPlayer extends Service {
 		registerRemoteControl();
 		
 		mData = data;
+		mPlayingPlaylist = mData.getBoolean(PodcastKeys.PLAYLIST);
 		mEpisodeName = mData.getString(EpisodeKeys.TITLE);
 		mPodcastNameQueued = mData.getString(PodcastKeys.NAME);
 		final String file = mData.getString(EpisodeKeys.FILENAME);
@@ -337,9 +360,11 @@ public class PodcastPlayer extends Service {
 	public void play() {
 		
 		//Register HeadPhone receiver
-		mHeadPhoneReciever = new HeadPhoneReceiver();
-		IntentFilter filter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
-		registerReceiver(mHeadPhoneReciever, filter);
+		if (mHeadPhoneReciever == null){
+			mHeadPhoneReciever = new HeadPhoneReceiver();
+			IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+			registerReceiver(mHeadPhoneReciever, filter);
+		}
 		registerRemoteControl();
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//We want to play a different episode so stop any currently playing
@@ -365,14 +390,20 @@ public class PodcastPlayer extends Service {
 		}		
 		
 		mPlayer.start();
-		//Fix for android 2.2 HTC phones that 
-		//don't seek to the current position with mp3 and instead go to 0
+		
 		mStartPosition = mPlayer.getCurrentPosition();
 		//Adds a 10sec recap on resume if it's marked true in the prefs.
-			if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false) == true){
-				mStartPosition -= 10000;
-			}
-		mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
+		if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false) == true){
+			mStartPosition -= 10000;
+		}
+			
+		//Fix for android 2.2 HTC phones that 
+		//don't seek to the current position with mp3 and instead go to 0
+		if (mStartPosition != 0){
+			mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
+		} else {
+			mPlayer.seekTo(mStartPosition + 10);
+		}
 		mPlayer.seekTo(mStartPosition);
 		
 		showNotification();
@@ -383,8 +414,12 @@ public class PodcastPlayer extends Service {
 	
 	public void pause() {
 		//unregister HeadPhone reciever
-		unregisterReceiver(mHeadPhoneReciever);
-		mHeadPhoneReciever = null;
+		if (mHeadPhoneReciever != null){
+			unregisterReceiver(mHeadPhoneReciever);
+			mHeadPhoneReciever = null;
+		} else {
+			Log.e(TAG, "Attempt to unregister null Headphone reciever");
+		}
 		
 		mPlayer.pause();
 		hideNotification();
@@ -459,6 +494,14 @@ public class PodcastPlayer extends Service {
 		return mEpisodePlaying;
 	}
 	
+	public String getPodcastName(){
+		return mPodcastName;
+	}
+	
+	public long getEpisodeRow(){
+		return mRowID;
+	}
+	
 	public boolean isPlaying() {
 		if (mPlayer != null && mPlayer.isPlaying()){
 			return true;
@@ -511,28 +554,7 @@ public class PodcastPlayer extends Service {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			//FIXME This caching of the previous headphone state could be avoided 
-			//if we used Android 2.0 (API level 5) as we could 
-			//use isInitialStickyBroadcast()
-			boolean prevHeadPhonesIn = mHeadPhonesIn;
-			Bundle data = intent.getExtras();
-			final int state = data.getInt("state");
-			switch (state) {
-			case 0:
-				mHeadPhonesIn = false;
-				break;
-			case 1:
-				//Fall through.  Some headsets cause state 1 some 2..
-			case 2:
-				mHeadPhonesIn = true;
-				break;
-			default:
-				Log.w(TAG, "Headphone state unknown: " + state);
-				break;
-			}
-			if (prevHeadPhonesIn && !mHeadPhonesIn){
-				pause();
-			}
+			pause();
 		}
 		
 	}

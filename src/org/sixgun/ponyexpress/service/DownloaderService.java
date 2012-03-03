@@ -387,7 +387,7 @@ public class DownloaderService extends Service {
 							text = Integer.toString(mCurrentDownloads) + " " 
 							+ getText(R.string.downloading_episodes);
 						}
-						
+						//FIXME Use a proper animated notification not this hack
 						switch (icon_counter) {
 							case 0:
 								icon = R.drawable.sixgunicon0;
