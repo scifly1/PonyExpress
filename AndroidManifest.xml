@@ -10,7 +10,7 @@
 	    android:theme="@style/ThemeSelector"
 		android:label="@string/app_name"
 		android:name="PonyExpressApp"
-		android:debuggable="false">
+		android:debuggable="true">
 		<activity android:name=".activity.PonyExpressActivity">
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
