@@ -41,7 +41,7 @@
             android:background="#ff000000"
             android:onClick="startPlaylist"
             android:paddingTop="10dp"
-            android:src="@drawable/ic_tab_play" />
+            android:src="@drawable/play_button" />
 
         <ImageButton
             android:id="@+id/back_button"
