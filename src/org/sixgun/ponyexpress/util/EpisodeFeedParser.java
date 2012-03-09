@@ -123,7 +123,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			}
 		});
 		//This Listener catches the length and url of the podcast.
-		item.requireChild(CONTENT).setStartElementListener(new StartElementListener() {
+		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
 			
 			@Override
 			public void start(Attributes attributes) {
@@ -178,6 +178,16 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				NotifyError("");
 			}
 		}
+		
+		//This for loop removes all episodes that don't have a URL.  This is for
+		//feeds that have "news" items in the same feed with the audio items.  We
+		//don't want the news, so we delete those.
+		for (int i = 0; i < episodes.size(); i++) {
+			if (episodes.get(i).getLink() == null) {
+				episodes.remove(i);
+			}
+		}
+		
 		return episodes;
 		
 	}
