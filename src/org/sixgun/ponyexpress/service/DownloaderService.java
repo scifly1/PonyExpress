@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
@@ -55,6 +56,9 @@ public class DownloaderService extends Service {
 	private static final int NOTIFY_ID = 1;
 	public static final int DOWNLOAD = 0;
 	public static final int INIT = DOWNLOAD + 1 ;
+	//TODO make maxConcurrentDownloads a preference
+	private static final int mMaxConcurrentDownloads = 3;
+		
 	private PonyExpressApp mPonyExpressApp;
 	//Do not remove episodes from mEpisodes as you'll change the index 
 	//of other episodes that may be being accessed.
@@ -64,6 +68,7 @@ public class DownloaderService extends Service {
 	volatile private int mCurrentDownloads;
 	private boolean mDownloaderAwake = false;
 	private Handler mHandler = new Handler();
+	private LinkedList<DownloadingEpisode> mQueue;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -106,8 +111,9 @@ public class DownloaderService extends Service {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mEpisodes = new ArrayList<DownloadingEpisode>();
+		mQueue = new LinkedList<DownloadingEpisode>();
 		mDownloaderAwake = true;
-		beginNotifications();
+		beginLooperThread();
 	}
 
 	@Override
@@ -134,9 +140,7 @@ public class DownloaderService extends Service {
 		int action = intent.getIntExtra("action", -1);
 		switch (action){
 		case DOWNLOAD:
-			final int index = initDownload(intent.getExtras());
-			downloadEpisode(index);
-			notifyPlayerActivityOfStart(index);
+			initDownload(intent.getExtras());
 			break;
 		default:
 			Log.e(TAG, "unknown action received by DownloaderService: " + action);
@@ -149,7 +153,7 @@ public class DownloaderService extends Service {
 	 * @param _data the Bundle with the URL, name etc in.
 	 * @return The index in the downloadServices array that the episode is in.
 	 */
-	private int initDownload(Bundle _data){
+	private void initDownload(Bundle _data){
 		//Get all the data needed for the download.
 		final Bundle data = _data; 
 		DownloadingEpisode newEpisode = new DownloadingEpisode();
@@ -161,10 +165,8 @@ public class DownloaderService extends Service {
 		newEpisode.setLink(data.getString(EpisodeKeys.URL));
 		newEpisode.setSize(data.getInt(EpisodeKeys.SIZE));
 		
-		mEpisodes.add(newEpisode);
-		
-		final int index = mEpisodes.indexOf(newEpisode);
-		return index;
+		mQueue.add(newEpisode);
+		Log.d(TAG, newEpisode.getTitle() + " queued");
 	}
 	
 	/**
@@ -356,77 +358,36 @@ public class DownloaderService extends Service {
 	}
 	
 	
-	/**This thread  follows mCurrentDownloads while the 
-	* service is active. It Displays notifications while > 1.  
+	/**This thread follows mCurrentDownloads and mQueue while the 
+	* service is active. It moves episodes from the queue to 
+	* mCurrentDownloads when necessary.
+	* It also displays notifications while downloading.  
 	*/
-	private void beginNotifications() {
+	private void beginLooperThread() {
 		new Thread(new Runnable() {
 			@Override
-			public void run() {
-				//This uses an empty intent because there is no new activity to start.
-				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
-						0, new Intent(), 0);
-				
-				int icon;
-				CharSequence text = "";
-				int icon_counter = 0;
-				
+			public void run() {				
 				while (mDownloaderAwake){
+					//if room in mCurrentDownloads and items in mQueue
+					//move to mEpisodes.
+					if (mCurrentDownloads < mMaxConcurrentDownloads && !mQueue.isEmpty()){
+						final DownloadingEpisode episode = mQueue.poll();
+						mEpisodes.add(episode);
+						final int index = mEpisodes.indexOf(episode);
+						downloadEpisode(index);
+						Log.d(TAG, episode.getTitle() + " downloading");
+						notifyPlayerActivityOfStart(index);
+					}
 					try {
-						//Sleep first to give mCurrentDownloads a chance to increment
+						//Sleep here to give mCurrentDownloads a chance to increment
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						mNM.cancel(NOTIFY_ID);
 						return;
 					}
 					
-					if (mCurrentDownloads > 0){ 
-						if (mCurrentDownloads == 1){
-							text = getText(R.string.downloading_episode);
-						} else {
-							text = Integer.toString(mCurrentDownloads) + " " 
-							+ getText(R.string.downloading_episodes);
-						}
-						//FIXME Use a proper animated notification not this hack
-						switch (icon_counter) {
-							case 0:
-								icon = R.drawable.sixgunicon0;
-								break;
-							case 1:
-								icon = R.drawable.sixgunicon1;
-								break;
-							case 2:
-								icon = R.drawable.sixgunicon2;
-								break;
-							case 3:
-								icon = R.drawable.sixgunicon3;
-								break;
-							case 4:
-								icon = R.drawable.sixgunicon4;
-								break;
-							case 5:
-								icon = R.drawable.sixgunicon5;
-								break;
-							case 6:
-								icon = R.drawable.sixgunicon6;
-								break;
-							default:
-								icon = R.drawable.sixgunicon0;
-						}
-						
-						if (icon_counter > 5){
-							icon_counter = 0;
-						} else icon_counter++;
-						
-						Notification notification = new Notification(
-								icon, null,
-								System.currentTimeMillis());
-						notification.flags |= Notification.FLAG_ONGOING_EVENT;
-						notification.number = mCurrentDownloads;
-						notification.setLatestEventInfo(mPonyExpressApp, 
-								getText(R.string.app_name), text, intent);
-						//FIXME should this use a handler to notify the UI thread?
-						mNM.notify(NOTIFY_ID, notification);
+					if (mCurrentDownloads + mQueue.size() > 0){
+						updateNotification();
 					} else {
 						mNM.cancel(NOTIFY_ID);
 						stopSelf();
@@ -435,6 +396,64 @@ public class DownloaderService extends Service {
 				}
 			}
 		}).start();
+	}
+	
+	private void updateNotification(){
+		//This uses an empty intent because there is no new activity to start.
+		//TODO use an intent to the download overview
+		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+				0, new Intent(), 0);
+		
+		int icon;
+		CharSequence text = "";
+		int icon_counter = 0;
+		
+		if (mCurrentDownloads == 1){
+			text = getText(R.string.downloading_episode);
+		} else {
+			text = Integer.toString(mCurrentDownloads) + " " 
+			+ getText(R.string.downloading_episodes);
+		}
+		//FIXME Use a proper animated notification not this hack
+		switch (icon_counter) {
+			case 0:
+				icon = R.drawable.sixgunicon0;
+				break;
+			case 1:
+				icon = R.drawable.sixgunicon1;
+				break;
+			case 2:
+				icon = R.drawable.sixgunicon2;
+				break;
+			case 3:
+				icon = R.drawable.sixgunicon3;
+				break;
+			case 4:
+				icon = R.drawable.sixgunicon4;
+				break;
+			case 5:
+				icon = R.drawable.sixgunicon5;
+				break;
+			case 6:
+				icon = R.drawable.sixgunicon6;
+				break;
+			default:
+				icon = R.drawable.sixgunicon0;
+		}
+		
+		if (icon_counter > 5){
+			icon_counter = 0;
+		} else icon_counter++;
+		
+		Notification notification = new Notification(
+				icon, null,
+				System.currentTimeMillis());
+		notification.flags |= Notification.FLAG_ONGOING_EVENT;
+		notification.number = mCurrentDownloads + mQueue.size();
+		notification.setLatestEventInfo(mPonyExpressApp, 
+				getText(R.string.app_name), text, intent);
+		//FIXME should this use a handler to notify the UI thread?
+		mNM.notify(NOTIFY_ID, notification);
 	}
 	
 	public void cancelDownload(int index) {
