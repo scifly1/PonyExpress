@@ -21,6 +21,7 @@ package org.sixgun.ponyexpress.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.sixgun.ponyexpress.Episode;
@@ -179,19 +180,19 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			}
 		}
 		
-		//This for loop removes all episodes that don't have a URL.  This is for
+		//This iterator loop removes all episodes that don't have a URL.  This is for
 		//feeds that have "news" items in the same feed with the audio items.  We
 		//don't want the news, so we delete those.
-		for (int i = 0; i < episodes.size(); i++) {
-			if (episodes.get(i).getLink() == null) {
-				episodes.remove(i);
+				
+		final Iterator<Episode> iterator = episodes.iterator();
+			while (iterator.hasNext()) {
+				final Episode episode = iterator.next();
+				if ((episode.getLink() == null)){
+					iterator.remove();
+				}
 			}
-		}
 		
-		return episodes;
-		
+		//Return the final list.
+		return episodes;		
 	}
-	
-	
-
 }
