@@ -100,6 +100,8 @@ public class PlayerActivity extends Activity {
 	static private boolean mIsDownloading;
 	private int mIndex;
 	private DownloadStarted mDownloadReciever;
+	private String mEpisodeTitle;
+	
 	
 	//This is all responsible for connecting/disconnecting to the Downloader service.
 	private ServiceConnection mDownloaderConnection = new ServiceConnection() {
@@ -123,7 +125,8 @@ public class PlayerActivity extends Activity {
 	        // cast its IBinder to a concrete class and directly access it.
 			mDownloader = ((DownloaderService.DownloaderServiceBinder)service).getService();
 			mIndex = queryDownloader();
-			if (mIndex != -1){
+			//mIndex can also be QUEUED (-1) or downloading (>=0) 
+			if (mIndex > DownloaderService.NOT_DOWNLOADING){
 				mIsDownloading = true;
 				activateDownloadCancelButton();
 				startDownloadProgressBar(mIndex);
@@ -180,7 +183,6 @@ public class PlayerActivity extends Activity {
 			queryPlayer();
 		}
 	};
-
 		
 	protected void doBindPodcastPlayer() {
 	    // Establish a connection with the service.  We use an explicit
@@ -233,7 +235,7 @@ public class PlayerActivity extends Activity {
 	}
 	
 	private int queryDownloader(){
-		final int index = mDownloader.isEpisodeDownloading(mData.getString(EpisodeKeys.TITLE));
+		final int index = mDownloader.isEpisodeDownloading(mEpisodeTitle);
 		return index;
 	}
 	
@@ -250,6 +252,7 @@ public class PlayerActivity extends Activity {
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		mPodcastName = (mData.getString(PodcastKeys.NAME));
 		mRow_ID = mData.getLong(EpisodeKeys._ID);
+		mEpisodeTitle = mData.getString(EpisodeKeys.TITLE);
 		setContentView(R.layout.player);
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
@@ -335,7 +338,17 @@ public class PlayerActivity extends Activity {
 		OnClickListener cancelDownloadButtonListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				if (mDownloader.isEpisodeQueued(mEpisodeTitle)){ 
+					mDownloader.removeFromQueue(mEpisodeTitle);
+					//Reenable the download button
+					mCancelButton.setVisibility(View.GONE);
+					mCancelButton.setEnabled(false);
+					mDownloadButton.setVisibility(View.VISIBLE);
+					mDownloadButton.setEnabled(true);
+				}else {
+				//Episode is downloading
 				mCancelDownload = true;
+				}
 			}
 			
 		};
@@ -662,7 +675,7 @@ public class PlayerActivity extends Activity {
 		startService(intent);
 	}
 	
-	public class DownloadStarted extends BroadcastReceiver{
+	private class DownloadStarted extends BroadcastReceiver{
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -680,60 +693,63 @@ public class PlayerActivity extends Activity {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-
 				mHandler.post(disableDownloadButton);
-
-				mDownloadProgress.setMax(100);
-				boolean downloadError = false;
-				while (mIsDownloading && mDownloadPercent < 100 ){
+				
+				//When resuming the activity, the Downloader needs to be 
+				// rebound.  So sleep before trying to access it.
+				while (mDownloader == null){
 					try {
-						//When resuming the activity, the Downloader needs to be 
-						// rebound.  So sleep before trying to access it.
-						while (mDownloader == null){
-							try {
-								Log.d(TAG, "Sleeping while Downloader rebinds");
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-								Log.e(TAG, 
-										"DownloadProgressBar thread failed to sleep while waiting for podcast player to bind", e);
-							}
-						}
-						mDownloadPercent = (int) mDownloader.getProgress(index);
-						
-						downloadError = mDownloader.checkForDownloadError(index);
-						if (downloadError || mCancelDownload){
-							mIsDownloading = false;
-							mDownloadPercent= 0;
-						}
-						
+						Log.d(TAG, "Sleeping while Downloader rebinds");
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						Log.d(TAG, "Download thread interupted while sleeping!", e);
+						Log.e(TAG, 
+								"DownloadProgressBar thread failed to sleep while " +
+								"waiting for downloaderservice to bind", e);
 					}
-					//Post progress to mHandler in UI thread
-					mHandler.post(setProgress);
 				}
-				//Download completed
-				if (mDownloadPercent == 100){
-					//Post download completion runnable to mHandler in UI thread
-					mHandler.post(downloadCompleted);
-				}//Download failed
-				else if (downloadError){
-					//Post downloadFailed runnable to mHandler to reset UI
-					mHandler.post(downloadCancelled); //Reenable button and zero progress
-					mHandler.post(downloadFailed); //Post notification
-					mDownloader.resetDownloadError(index);
+				if (index != DownloaderService.QUEUED){  //Episode is not queued
+					mDownloadProgress.setMax(100);
+					boolean downloadError = false;
+					while (mIsDownloading && mDownloadPercent < 100 ){
+						try {
+							downloadError = mDownloader.checkForDownloadError(index);
+							if (downloadError || mCancelDownload){
+								mIsDownloading = false;
+								mDownloadPercent= 0;
+							}
+							Thread.sleep(1000);
+							mDownloadPercent = (int) mDownloader.getProgress(index);
+						} catch (InterruptedException e) {
+							Log.d(TAG, "Download thread interupted while sleeping!", e);
+						}
+						//Post progress to mHandler in UI thread
+						mHandler.post(setProgress);
+					}
+					//Download completed
+					if (mDownloadPercent == 100){
+						//Post download completion runnable to mHandler in UI thread
+						mHandler.post(downloadCompleted);
+					}//Download failed
+					else if (downloadError){
+						//Post downloadFailed runnable to mHandler to reset UI
+						mHandler.post(downloadCancelled); //Reenable button and zero progress
+						mHandler.post(downloadFailed); //Post notification
+						mDownloader.resetDownloadError(index);
 
-				}
-				//download cancelled
-				else if (mCancelDownload){
-					mDownloader.cancelDownload(index);
-					mHandler.post(downloadCancelled);
-					mCancelDownload = false;
-				}
+					}
+					//download cancelled
+					else if (mCancelDownload){
+						mDownloader.cancelDownload(index);
+						mHandler.post(downloadCancelled);
+						mCancelDownload = false;
+					}
+				}//episode is queued
 			}
 		}).start();
 	}
+	
+	
+	
 	
 	Runnable disableDownloadButton = new Runnable() {
 		

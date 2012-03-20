@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.sixgun.ponyexpress.DownloadingEpisode;
@@ -53,12 +54,15 @@ public class DownloaderService extends Service {
     private final IBinder mBinder = new DownloaderServiceBinder();
 	private static final String TAG = "PonyExpress Downloader";
 	private static final String NO_MEDIA_FILE = ".nomedia";
+	public static final String DOWNLOADING = "org.sixgun.ponyexpress.DOWNLOADING";
+	public static final int NOT_DOWNLOADING = -2;
+	public static final int QUEUED = -1;
 	private static final int NOTIFY_ID = 1;
 	public static final int DOWNLOAD = 0;
 	public static final int INIT = DOWNLOAD + 1 ;
 	//TODO make maxConcurrentDownloads a preference
 	private static final int mMaxConcurrentDownloads = 3;
-		
+				
 	private PonyExpressApp mPonyExpressApp;
 	//Do not remove episodes from mEpisodes as you'll change the index 
 	//of other episodes that may be being accessed.
@@ -167,6 +171,7 @@ public class DownloaderService extends Service {
 		
 		mQueue.add(newEpisode);
 		Log.d(TAG, newEpisode.getTitle() + " queued");
+		notifyPlayerActivityOfStart(QUEUED);
 	}
 	
 	/**
@@ -261,7 +266,7 @@ public class DownloaderService extends Service {
 	 * particular DownloadingEpisode.
 	 */
 	private void notifyPlayerActivityOfStart(final int index){
-		Intent intent = new Intent("org.sixgun.ponyexpress.DOWNLOADING");
+		Intent intent = new Intent(DOWNLOADING);
 		intent.putExtra("index", index);
 		sendBroadcast(intent);
 	}
@@ -342,7 +347,7 @@ public class DownloaderService extends Service {
 	 * Deletes the partially downloaded episode if downloading is cancelled.
 	 *
 	 */
-	//FIXME Episode deletion also occurs in PanyExpressActivity, it could be unified in Utils.
+	//FIXME Episode deletion also occurs in PonyExpressActivity, it could be unified in Utils.
 	private void deleteEpisode(String podcastPath, URL url){
 		File path = new File(mRoot, podcastPath);		
 		//Split filename from path url.
@@ -462,10 +467,14 @@ public class DownloaderService extends Service {
 		
 
 	public int isEpisodeDownloading(String PodcastTitle) {
-		// Iterate through the array to find podcastname and return index or -1
-		// if not downloading.
-		int index = -1;
+		// Iterate through the array to find podcastname and return index or
+		// NOT_DOWNLOADING or QUEUED
+		int index = NOT_DOWNLOADING;
 		if (mEpisodes.isEmpty()) return index;
+		if (isEpisodeQueued(PodcastTitle)){
+			index = QUEUED;
+			return index;
+		}
 		
 		for (DownloadingEpisode episode:mEpisodes){
 			if (episode.getTitle().equals(PodcastTitle)){
@@ -477,6 +486,16 @@ public class DownloaderService extends Service {
 			}
 		}
 		return index;
+	}
+	public boolean isEpisodeQueued(String podcastTitle){
+		if (mQueue.isEmpty()) return false;
+		
+		for (DownloadingEpisode episode:mQueue){
+			if (episode.getTitle().equals(podcastTitle)){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public double getProgress(final int index) {
@@ -499,6 +518,18 @@ public class DownloaderService extends Service {
 
 	public void resetDownloadError(final int index) {
 		mEpisodes.get(index).resetDownloadFailed();	
+	}
+
+
+	public void removeFromQueue(String episode_title) {
+		Iterator<DownloadingEpisode> iterator = mQueue.iterator();
+		while (iterator.hasNext()){
+			final DownloadingEpisode episode = iterator.next();
+			if (episode.getTitle().equals(episode_title)){
+				iterator.remove();
+			}
+		}
+		
 	}
 
 }
