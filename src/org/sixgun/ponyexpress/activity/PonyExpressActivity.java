@@ -81,6 +81,7 @@ public class PonyExpressActivity extends ListActivity {
 	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update_Sixgun";
 	public static final String UPDATE_ALL = "Update_all";
 	public static final String UPDATE_SINGLE = "Update_single";
+	public static final String SET_ALARM_ONLY = "Set_alarm_only";
 		
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
