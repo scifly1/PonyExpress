@@ -175,6 +175,9 @@ public class PonyExpressActivity extends ListActivity {
 		final boolean first = prefs.getBoolean(FIRST, true);
 		if (first){
 			onFirstRun(prefs);
+		}else{
+			//Make sure the update alarm is set properly.
+			updateFeed(SET_ALARM_ONLY);
 		}
 		
 		//Check SDCard contents and database match.
