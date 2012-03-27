@@ -33,6 +33,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -221,7 +222,7 @@ public class DownloaderService extends Service {
 								if (episode.downloadCancelled()){
 									Log.d(TAG, "Podcast download cancelled.");
 									//Delete partial download.
-									deleteEpisode(podcastPath, url);
+									Utils.deleteFile(mPonyExpressApp, episode.getRowID(), episode.getPodcastName());
 								}
 								else {
 									Log.d(TAG,"Podcast written to SD card.");
@@ -342,26 +343,6 @@ public class DownloaderService extends Service {
 		}
 		
 	}
-	
-	/**
-	 * Deletes the partially downloaded episode if downloading is cancelled.
-	 *
-	 */
-	//FIXME Episode deletion also occurs in PonyExpressActivity, it could be unified in Utils.
-	private void deleteEpisode(String podcastPath, URL url){
-		File path = new File(mRoot, podcastPath);		
-		//Split filename from path url.
-		final String filename_path = url.getFile();
-		final String filename = filename_path.substring(filename_path.lastIndexOf('/'));
-		File partialEpisode = new File(path, filename);
-		if  (partialEpisode.delete()){
-			Log.d(TAG, filename + " deleted.");
-		} else { 
-			Log.e(TAG, "Failed to delete " + filename);
-			}
-		
-	}
-	
 	
 	/**This thread follows mCurrentDownloads and mQueue while the 
 	* service is active. It moves episodes from the queue to 
