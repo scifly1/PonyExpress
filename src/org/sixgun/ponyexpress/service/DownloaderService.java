@@ -60,8 +60,8 @@ public class DownloaderService extends Service {
 	private static final int NOTIFY_ID = 1;
 	public static final int DOWNLOAD = 0;
 	public static final int INIT = DOWNLOAD + 1 ;
-	//TODO make maxConcurrentDownloads a preference
-	private static final int mMaxConcurrentDownloads = 3;
+	//TODO make MAX_CONCURRENT_DOWNLOADS a preference?
+	private static final int MAX_CONCURRENT_DOWNLOADS = 3;
 				
 	private PonyExpressApp mPonyExpressApp;
 	//Do not remove episodes from mEpisodes as you'll change the index 
@@ -375,7 +375,7 @@ public class DownloaderService extends Service {
 				while (mDownloaderAwake){
 					//if room in mCurrentDownloads and items in mQueue
 					//move to mEpisodes.
-					if (mCurrentDownloads < mMaxConcurrentDownloads && !mQueue.isEmpty()){
+					if (mCurrentDownloads < MAX_CONCURRENT_DOWNLOADS && !mQueue.isEmpty()){
 						final DownloadingEpisode episode = mQueue.poll();
 						mEpisodes.add(episode);
 						final int index = mEpisodes.indexOf(episode);
