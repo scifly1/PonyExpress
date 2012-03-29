@@ -149,7 +149,7 @@ public class Utils {
 		//Add the podcast name as a folder under the PODCAST_PATH
 		filename = podcast_name + filename;
 		File fullPath = new File(dirPath,filename);
-		return fullPath.delete();			
+		return fullPath.delete();	
 	}
 	
 	/**

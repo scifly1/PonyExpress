@@ -842,6 +842,10 @@ public class PonyExpressDbAdaptor {
 		final String state = Environment.getExternalStorageState();
 		boolean deleted = false;
 		if (Environment.MEDIA_MOUNTED.equals(state)){
+			//Remove any episodes of the podcast from the playlist
+			final String quote_name = "\"" + podcast_name + "\"";
+			mDb.delete(PLAYLIST_TABLE, PodcastKeys.NAME + "=" + quote_name, null);
+			
 			final String path = PonyExpressApp.PODCAST_PATH + podcast_name;
 			Log.d(TAG, "Deleting " + path + "from SD Card");
 			File podcast_path = new File(rootPath + path);
@@ -852,14 +856,14 @@ public class PonyExpressDbAdaptor {
 			Log.d(TAG, "Removing episodes from database");
 			//Remove entry from Podcasts table
 			mDb.delete(PODCAST_TABLE, PodcastKeys._ID + "=" + rowID, null);
-			Log.d(TAG, "Removing podcast from database");
+			Log.d(TAG, "Removing podcast from database");	
 		}
 		//Send broadcast to inform app that database changed and can now update view.
 		Intent intent = new Intent("org.sixgun.ponyexpress.PODCAST_DELETED");
 		mCtx.sendBroadcast(intent);
 		return deleted;
 	}
-	
+
 	public boolean checkDatabaseForUrl(Podcast podcast){
 		boolean mCheckDatabase = false;
 		final Cursor cursor = mDb.rawQuery("SELECT * FROM " + PODCAST_TABLE + " WHERE " + PodcastKeys.FEED_URL + "= '" + podcast.getFeed_Url().toString() + "'", null);
