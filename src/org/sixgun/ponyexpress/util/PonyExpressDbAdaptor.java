@@ -1161,4 +1161,11 @@ public class PonyExpressDbAdaptor {
 		
 	}
 
+	public void removeEpisodeFromPlaylist(String podcast_name, long rowID) {
+		final String quoted_name = "\"" + podcast_name + "\"";
+		mDb.delete(PLAYLIST_TABLE, 
+				PodcastKeys.NAME + "="+ quoted_name + " AND " + 
+		EpisodeKeys.ROW_ID + "=" + rowID , null);
+	}
+
 }

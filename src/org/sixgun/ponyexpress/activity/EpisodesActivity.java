@@ -289,8 +289,8 @@ public class EpisodesActivity extends ListActivity {
 			markListened(info.id);
 			if (Utils.deleteFile(mPonyExpressApp, info.id, mPodcastName)){
 				mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
-				//TODO Remove from playlist if in it
-				
+				//Remove from playlist if in it
+				mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(mPodcastName, info.id);
 			}
 			listEpisodes();
 		default:

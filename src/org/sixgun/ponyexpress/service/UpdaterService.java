@@ -310,8 +310,8 @@ public class UpdaterService extends IntentService {
 				if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast_name)){
 					//delete from SD Card
 					Utils.deleteFile(mPonyExpressApp, rowID, podcast_name);
-					//TODO remove from playlist if in it.
-					
+					//remove from playlist if in it.
+					mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(podcast_name, rowID);
 				}
 				//remove from database after deleting.
 				mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast_name);
