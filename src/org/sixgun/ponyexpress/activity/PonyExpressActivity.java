@@ -81,6 +81,7 @@ public class PonyExpressActivity extends ListActivity {
 	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update_Sixgun";
 	public static final String UPDATE_ALL = "Update_all";
 	public static final String UPDATE_SINGLE = "Update_single";
+	public static final String SET_ALARM_ONLY = "Set_alarm_only";
 		
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
@@ -174,6 +175,9 @@ public class PonyExpressActivity extends ListActivity {
 		final boolean first = prefs.getBoolean(FIRST, true);
 		if (first){
 			onFirstRun(prefs);
+		}else{
+			//Make sure the update alarm is set properly.
+			updateFeed(SET_ALARM_ONLY);
 		}
 		
 		//Check SDCard contents and database match.

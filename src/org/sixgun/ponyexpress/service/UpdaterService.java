@@ -84,8 +84,19 @@ public class UpdaterService extends IntentService {
 		Bundle data = intent.getExtras();
 		final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
 		final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
+		final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
 		final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
 				
+		if (set_alarm_only){
+			final long nextUpdate = getNextUpdateTime();
+			if (nextUpdate >= System.currentTimeMillis()){
+				setNextAlarm();
+			}else{
+				showStatusNotification(getText(R.string.checking_all));
+				updateAllFeeds();
+			}
+		}
+		
 		if (update_sixgun){
 			showStatusNotification(getText(R.string.checking_sixgun));
 			checkForNewSixgunShows();
@@ -97,7 +108,7 @@ public class UpdaterService extends IntentService {
 			updateAllFeeds();
 		}
 		
-		if (!update_sixgun && !update_all && update_single != null) {
+		if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
 			showStatusNotification(getText(R.string.checking) + " " + update_single);
 			updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
 		}
@@ -126,14 +137,16 @@ public class UpdaterService extends IntentService {
 	 * preferences.
 	 */
 	private void setNextAlarm() {
-		final Long updateTime = getNextUpdateTime();
-		final AlarmManager alarm_mgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-		final Intent intent = new Intent(this, UpdateAlarmReceiver.class);
-		final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
-		alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
-		
-		Log.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
-				
+		if(checkBackgroundUpdate()){
+			final Long updateTime = getNextUpdateTime();
+			final AlarmManager alarm_mgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+			final Intent intent = new Intent(this, UpdateAlarmReceiver.class);
+			final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
+			alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
+			Log.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
+		}else{
+			Log.d(TAG, "No background updates scheduled");
+		}				
 	}
 
 	/**
@@ -232,13 +245,9 @@ public class UpdaterService extends IntentService {
 				break;
 			}
 		}
-		//Set the next update alarm
 		setLastUpdateTime();
-		if(checkBackgroundUpdate()){
-			setNextAlarm();
-		}else{
-			Log.d(TAG,"No background updates scheduled");
-		}
+		//Set the next update alarm
+		setNextAlarm();
 	}
 	
 	/**
