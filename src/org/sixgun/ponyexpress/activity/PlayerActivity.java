@@ -243,11 +243,6 @@ public class PlayerActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		mData = getIntent().getExtras();
-		if (savedInstanceState != null){
-			//if we are coming back after a config change the original 
-			//bundle may have PLAYLIST true, which we don't want. 
-			mData.putBoolean(PodcastKeys.PLAYLIST, false);
-		}
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		mPodcastName = (mData.getString(PodcastKeys.NAME));
@@ -256,6 +251,10 @@ public class PlayerActivity extends Activity {
 		setContentView(R.layout.player);
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
+		
+		if (mRow_ID != mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist()){
+			mData.putBoolean(PodcastKeys.PLAYLIST, false);
+		}
 		
 		mDownloadReciever = new DownloadStarted();
 		
@@ -269,7 +268,7 @@ public class PlayerActivity extends Activity {
 					mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
 				} else {
-					// Play episdode
+					// Play episode
 					startService(mPlayerIntent);
 					mPaused = false;
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
