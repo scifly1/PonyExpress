@@ -22,7 +22,6 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.PonyExpressActivity.PodcastCursorAdapter;
 
 import android.content.Context;
 import android.content.Intent;
@@ -40,10 +39,10 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 public class PlaylistActivity extends PonyExpressActivity implements PlaylistInterface {
