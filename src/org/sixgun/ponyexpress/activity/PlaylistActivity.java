@@ -325,7 +325,15 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 			startActivityForResult(intent, START_PLAYBACK);
 		}
 	}
-
+	
+	/**
+	 * Starts the download overview activity.
+	 * @param v
+	 */
+	public void openDownloadOverview(View v){
+		//TODO Stub...
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity#onActivityResult(int, int, android.content.Intent)

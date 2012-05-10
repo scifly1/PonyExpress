@@ -132,6 +132,14 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 			startActivityForResult(intent, START_PLAYBACK);
 		}
 	}
+	
+	/**
+	 * Starts the download overview activity.
+	 * @param v
+	 */
+	public void openDownloadOverview(View v){
+		//TODO Stub...
+	}
 
 	/**
 	 * This method lists the podcasts currently in the playlist.
