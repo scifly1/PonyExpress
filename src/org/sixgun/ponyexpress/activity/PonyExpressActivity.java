@@ -366,9 +366,14 @@ public class PonyExpressActivity extends ListActivity {
 	}
 
 	private void updateFeed(String podcastName){
-		UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
-		if (task.isCancelled()){
-			Log.d(TAG, "Cancelled Update, No Connectivity");
+		if (isUpdaterServiceRunning() && podcastName != SET_ALARM_ONLY){
+        	Toast.makeText(mPonyExpressApp, 
+					R.string.please_wait, Toast.LENGTH_LONG).show();
+		}else{
+			UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
+			if (task.isCancelled()){
+				Log.d(TAG, "Cancelled Update, No Connectivity");
+			}
 		}
 	}
 	/**
@@ -518,6 +523,21 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 
+	/**
+	 * This method checks to see if the Updater service is running.
+	 * @return
+	 * boolean
+	 */
+	private boolean isUpdaterServiceRunning() {
+		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (UpdaterService.class.getName().equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
 	/** 
 	* Parse the RSS feed and update the database with new episodes in a background thread.
 	* 
@@ -536,8 +556,6 @@ public class PonyExpressActivity extends ListActivity {
 				cancel(true);
 			}
 			if (isUpdaterServiceRunning()){
-				Toast.makeText(mPonyExpressApp, 
-						R.string.please_wait, Toast.LENGTH_LONG).show();
 				cancel(true);
 			}
 		}
@@ -571,16 +589,6 @@ public class PonyExpressActivity extends ListActivity {
 			
 		}
 		
-		private boolean isUpdaterServiceRunning() {
-		    ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-		    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-		        if (UpdaterService.class.getName().equals(service.service.getClassName())) {
-		            return true;
-		        }
-		    }
-		    return false;
-		}
-
 		/* 
 		 */
 		@Override
