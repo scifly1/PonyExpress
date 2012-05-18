@@ -573,20 +573,13 @@ public class PonyExpressActivity extends ListActivity {
 						
 			//Pause until all UpdaterServices are done
 			while (isUpdaterServiceRunning()){
-				
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
 					Log.e(TAG, "UpdateEpisodes failed to sleep");
 				}
-				
-				if (!isUpdaterServiceRunning()){
-					break;
-				}
 			}
-			
 			return null;
-			
 		}
 		
 		/* 
