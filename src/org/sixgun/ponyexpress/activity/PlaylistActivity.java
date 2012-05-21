@@ -72,17 +72,18 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	}
 
 
-	/**
-	 * Return to the standard view from the Playlist view
-	 * @param v
+	/*
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#goBack(android.view.View)
 	 */
+	@Override
 	public void goBack(View v) {
 		finish();
 	}
 		
-	/**
-	 * This method lists the podcasts currently in the playlist.
+	/*
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#listPlaylist()
 	 */
+	@Override
 	public void listPlaylist() {
 		Cursor c = mPonyExpressApp.getDbHelper().getPlaylist();
 		if (c.getCount() > 0){
@@ -310,10 +311,10 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	}
 
 
-	/**
-	 * Starts EpisdodeTabs with the Player etc.. with a playlist
-	 * @param v
+	/*
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#startPlaylist(android.view.View)
 	 */
+	@Override
 	public void startPlaylist(View v) {
 		if (!mPonyExpressApp.getDbHelper().playlistEmpty()){
 			//TODO Check if all episodes in list are downloaded.
@@ -326,10 +327,10 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		}
 	}
 	
-	/**
-	 * Starts the download overview activity.
-	 * @param v
+	/*
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#openDownloadOverview(android.view.View)
 	 */
+	@Override
 	public void openDownloadOverview(View v){
 		//TODO Stub...
 	}

@@ -38,4 +38,10 @@ public interface PlaylistInterface {
 	 * This method lists the podcasts currently in the playlist.
 	 */
 	public void listPlaylist();
+	
+	/**
+	 * This method opens the Download overview activity.
+	 * @param v
+	 */
+	public void openDownloadOverview(View v);
 }

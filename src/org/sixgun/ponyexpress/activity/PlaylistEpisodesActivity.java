@@ -112,7 +112,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.sixgun.ponyexpress.Playlist#goBack(android.view.View)
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#goBack(android.view.View)
 	 */
 	@Override
 	public void goBack(View v) {
@@ -120,7 +120,7 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	}
 	
 	/* (non-Javadoc)
-	 * @see org.sixgun.ponyexpress.Playlist#startPlaylist(android.view.View)
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#startPlaylist(android.view.View)
 	 */
 	@Override
 	public void startPlaylist(View v) {
@@ -133,17 +133,18 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 		}
 	}
 	
-	/**
-	 * Starts the download overview activity.
-	 * @param v
+	/*
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#openDownloadOverview(android.view.View)
 	 */
+	@Override
 	public void openDownloadOverview(View v){
 		//TODO Stub...
 	}
 
-	/**
-	 * This method lists the podcasts currently in the playlist.
+	/*
+	 * @see org.sixgun.ponyexpress.PlaylistInterface#listPlaylist()
 	 */
+	@Override
 	public void listPlaylist() {
 		Cursor c = mPonyExpressApp.getDbHelper().getPlaylist();
 		if (c.getCount() > 0){
