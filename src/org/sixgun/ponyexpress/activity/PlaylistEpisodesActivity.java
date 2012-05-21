@@ -138,7 +138,8 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 	 */
 	@Override
 	public void openDownloadOverview(View v){
-		//TODO Stub...
+		Intent intent = new Intent(this,DownloadOverviewActivity.class);
+		startActivity(intent);
 	}
 
 	/*

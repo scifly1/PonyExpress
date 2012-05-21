@@ -317,8 +317,6 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	@Override
 	public void startPlaylist(View v) {
 		if (!mPonyExpressApp.getDbHelper().playlistEmpty()){
-			//TODO Check if all episodes in list are downloaded.
-			
 			//Start EpisodeTabs as happens from EpisodeActivity
 			// but hand over a flag to indicate to play from the playlist.
 			Intent intent = new Intent(this,EpisodeTabs.class);
@@ -332,7 +330,8 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	 */
 	@Override
 	public void openDownloadOverview(View v){
-		//TODO Stub...
+		Intent intent = new Intent(this,DownloadOverviewActivity.class);
+		startActivity(intent);
 	}
 	
 

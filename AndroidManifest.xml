@@ -77,6 +77,7 @@
 		<activity android:name=".activity.AddNewPodcastFeedActivity" />
 		<activity android:name=".activity.PlaylistActivity" />
 		<activity android:name=".activity.PlaylistEpisodesActivity" />	
+		<activity android:name=".activity.DownloadOverviewActivity" />
 		<receiver android:name=".receiver.UpdateAlarmReceiver" />
 		<receiver android:name=".receiver.BootServiceReceiver">
 			<intent-filter>
