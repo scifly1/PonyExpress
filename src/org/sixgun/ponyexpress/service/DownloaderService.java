@@ -513,4 +513,10 @@ public class DownloaderService extends Service {
 		
 	}
 
+
+	public boolean isDownloading() {
+		if (mCurrentDownloads + mQueue.size() > 0) return true;
+		else return false;
+	}
+
 }
