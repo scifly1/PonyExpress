@@ -27,6 +27,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
@@ -59,6 +60,7 @@ public class DownloaderService extends Service {
 	public static final int NOT_DOWNLOADING = -2;
 	public static final int QUEUED = -1;
 	private static final int NOTIFY_ID = 1;
+	private static final int NOTIFY_ERROR_ID = NOTIFY_ID +1;
 	public static final int DOWNLOAD = 0;
 	public static final int INIT = DOWNLOAD + 1 ;
 	//TODO make MAX_CONCURRENT_DOWNLOADS a preference?
@@ -74,6 +76,7 @@ public class DownloaderService extends Service {
 	private boolean mDownloaderAwake = false;
 	private Handler mHandler = new Handler();
 	private LinkedList<DownloadingEpisode> mQueue;
+	private List<DownloadingEpisode> mCurrentDownloadsList;
 	
 	/**
      * Class for clients to access.  Because we know this service always
@@ -142,6 +145,10 @@ public class DownloaderService extends Service {
 	}
 	
 	private void handleCommand(Intent intent){
+		if (intent == null){
+			Log.d(TAG, "Null intent passed to handleCommand");
+			return;
+		}
 		int action = intent.getIntExtra("action", -1);
 		switch (action){
 		case DOWNLOAD:
@@ -295,7 +302,17 @@ public class DownloaderService extends Service {
 				Log.d(TAG,"Can Write to SD card.");
 				return true;
 			} else {
-				Log.d(TAG, "SD Card is not writable.");	
+				Log.d(TAG, "SD Card is not writable.");
+				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
+						0, new Intent(), 0);
+				int icon = R.drawable.stat_notify_error;
+				Notification notification = new Notification(
+						icon, null,
+						System.currentTimeMillis());
+				notification.setLatestEventInfo(mPonyExpressApp, 
+						getText(R.string.app_name), getString(R.string.cannot_write), intent);
+				//FIXME should this use a handler to notify the UI thread?
+				mNM.notify(NOTIFY_ERROR_ID, notification);
 			}	
 		}
 		return false;
@@ -486,10 +503,7 @@ public class DownloaderService extends Service {
 		if (downloaded){
 			return 100.0;
 		}else{
-			final int size = episode.getSize();
-			final int progress = episode.getDownloadProgress();
-			final double percent = progress/(double)size * 100; 
-			return percent;
+			return episode.getDownloadPercent();
 		}
 	}
 
@@ -519,4 +533,34 @@ public class DownloaderService extends Service {
 		else return false;
 	}
 
+
+	public List<DownloadingEpisode> getDownloadingEpisodes() {
+		if (mCurrentDownloadsList == null){
+			mCurrentDownloadsList = new ArrayList<DownloadingEpisode>();
+		}
+		mCurrentDownloadsList.clear();
+
+		for (DownloadingEpisode episode:mEpisodes){
+			if (episode.getDownloadProgress() < episode.getSize()){
+				mCurrentDownloadsList.add(episode);
+			}
+		}
+		for (DownloadingEpisode episode:mQueue){
+			mCurrentDownloadsList.add(episode);
+		}
+		return mCurrentDownloadsList;
+	}
+
+
+	public void cancelDownload(String title) {
+		//Remove from queue if in it
+		removeFromQueue(title);
+		//Cancel download if downloading
+		for (DownloadingEpisode episode : mEpisodes){
+			if (episode.getTitle().equals(title)){
+				episode.setDownloadCancelled();
+			}
+		}
+		
+	}
 }

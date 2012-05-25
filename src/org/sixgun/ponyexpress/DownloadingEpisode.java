@@ -85,6 +85,15 @@ public class DownloadingEpisode extends Episode {
 	public int getDownloadProgress() {
 		return mDownloadProgress;
 	}
+	
+	/**
+	 * Returns the percentage downloaded
+	 */
+	public double getDownloadPercent(){
+		final double percent = mDownloadProgress/(double)mSize * 100; 
+		return percent;
+	}
+	
 	/**
 	 * @param mSize the mSize to set
 	 */

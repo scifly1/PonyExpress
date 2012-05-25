@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/episode_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/cancel_button"
+        android:paddingTop="10dp"
+        android:paddingBottom="5dp"
+        android:textSize="16sp"/>
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/episode_name"
+        android:layout_toLeftOf="@+id/cancel_button"
+        android:max="100" 
+        style="?android:attr/progressBarStyleHorizontal"
+		android:indeterminate="false"/>
+    
+    <TextView android:id="@+id/queue_text"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/cancel_button"
+        android:layout_below="@+id/episode_name"
+        android:layout_alignParentLeft="true"
+        android:paddingBottom="5dp"
+        android:paddingLeft="15dp"
+        android:textSize="15sp"
+        android:visibility="gone"
+        android:text="@string/in_queue"
+        android:textStyle="bold|italic"/>
+
+    <Button
+        android:id="@+id/cancel_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="16dp"
+        android:paddingTop="10dp"
+        android:text="@string/cancel" />
+
+</RelativeLayout>

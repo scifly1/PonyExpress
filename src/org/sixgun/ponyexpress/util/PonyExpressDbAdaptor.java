@@ -1168,4 +1168,23 @@ public class PonyExpressDbAdaptor {
 		EpisodeKeys.ROW_ID + "=" + rowID , null);
 	}
 
+	public void removeEpisodeFromPlaylist(String podcastName, String title) {
+		//Find the rowId of the episode in the correct episode table
+		long rowId = -1;
+		final String table_name = getTableName(podcastName);
+		final String quotedTitle = Utils.handleQuotes(title);
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
+		final Cursor cursor = mDb.query(true, table_name,
+				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
+				null, null, null, null, null);
+		if (cursor.getCount() > 0){
+			cursor.moveToFirst();
+			rowId = cursor.getLong(0);						
+			}
+		cursor.close();
+		//Remove from the Playlist table
+		removeEpisodeFromPlaylist(podcastName, rowId);
+		
+	}
+
 }

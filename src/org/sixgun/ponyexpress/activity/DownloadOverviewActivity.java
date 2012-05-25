@@ -18,6 +18,11 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.sixgun.ponyexpress.DownloadingEpisode;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
 
@@ -27,15 +32,29 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 public class DownloadOverviewActivity extends ListActivity {
 
 	protected static final String TAG = "DownloadOverviewActivity";
 	private DownloaderService mDownloader;
 	private boolean mDownloaderBound;
+	private volatile boolean mInterruptProgressThread = false;
+	private DownloadingEpisodeAdapter mAdapter;
+	private List<DownloadingEpisode> mDownloadsArrayList;
+	private Handler mHandler;
+	private List<DownloadingEpisode> mCancelledDownloads;
+	private PonyExpressApp mPonyExpressApp;
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -44,6 +63,13 @@ public class DownloadOverviewActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.download_overview);
+		mDownloadsArrayList = new ArrayList<DownloadingEpisode>();
+		mCancelledDownloads = new ArrayList<DownloadingEpisode>();
+		mPonyExpressApp = (PonyExpressApp) getApplication();
+		mAdapter = new DownloadingEpisodeAdapter(this,R.layout.downloads_row, mDownloadsArrayList);
+		setListAdapter(mAdapter);
+		mHandler = new Handler();
+		
 		
 		
 	}
@@ -55,6 +81,7 @@ public class DownloadOverviewActivity extends ListActivity {
 	protected void onDestroy() {
 		super.onDestroy();
 		doUnbindDownloaderService();
+		mInterruptProgressThread = true;
 	}
 
 
@@ -70,6 +97,97 @@ public class DownloadOverviewActivity extends ListActivity {
 
 	public void goBack(View v){
 		finish();
+	}
+	
+	Runnable UpdateDataRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mAdapter.clear();
+			for (DownloadingEpisode episode: mDownloadsArrayList){
+				//Add episodes to the Adapter unless they have been cancelled
+				if (!mCancelledDownloads.contains(episode)){
+					mAdapter.add(episode);
+				}
+			}
+			mAdapter.notifyDataSetChanged();
+		}
+		
+	};
+	
+	private void startDownloadProgressThread(){
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				while (!mInterruptProgressThread){
+					Log.d(TAG, "Starting download progress thread");
+					mDownloadsArrayList = mDownloader.getDownloadingEpisodes();
+					//Update the adapter
+					mHandler.post(UpdateDataRunnable);
+										
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						Log.e(TAG, "Download Progress thread interuppted", e);
+					}
+				}
+				Log.d(TAG, "Stopping download progress thread");
+			}
+		}).start();
+	}
+
+	
+	protected class DownloadingEpisodeAdapter extends ArrayAdapter<DownloadingEpisode>{
+
+		public DownloadingEpisodeAdapter(Context context,
+				int textViewResourceId, List<DownloadingEpisode> objects) {
+			super(context, textViewResourceId, objects);
+		}
+
+		/* (non-Javadoc)
+		 * @see android.widget.ArrayAdapter#getView(int, android.view.View, android.view.ViewGroup)
+		 */
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			View v = convertView;
+			final int itemPosition = position;
+			final DownloadingEpisode episode = getItem(itemPosition);
+			if (v == null) {
+				LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+	            v = vi.inflate(R.layout.downloads_row, null);
+			}
+			
+			TextView episodeTitle = (TextView) v.findViewById(R.id.episode_name);
+			episodeTitle.setText(episode.getTitle());
+			
+			ProgressBar progress = (ProgressBar) v.findViewById(R.id.progress_bar);
+			progress.setProgress((int) episode.getDownloadPercent());
+			
+			TextView queueText = (TextView) v.findViewById(R.id.queue_text);
+			if (episode.getDownloadProgress() == 0){
+				//Epsiode is queued
+				queueText.setVisibility(View.VISIBLE);
+				progress.setVisibility(View.GONE);
+			} else {
+				queueText.setVisibility(View.GONE);
+				progress.setVisibility(View.VISIBLE);
+			}
+			
+			Button cancelButton = (Button) v.findViewById(R.id.cancel_button);
+			cancelButton.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					mDownloader.cancelDownload(
+							episode.getTitle());
+					mCancelledDownloads.add(episode);
+					//remove from playlist if present
+					mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(episode.getPodcastName(), episode.getTitle());
+				}
+			});
+			
+			return v;
+		}
+		
 	}
 	
 	//This is all responsible for connecting/disconnecting to the Downloader service.
@@ -96,7 +214,7 @@ public class DownloadOverviewActivity extends ListActivity {
 				//Query Downloader for current downloads
 				if (mDownloader.isDownloading()){
 					Log.d(TAG, "Currently Downloading");
-					//TODO Get downloading episode data
+					startDownloadProgressThread();
 				} else {
 					Log.d(TAG, "Not Downloading");
 				}
@@ -117,6 +235,7 @@ public class DownloadOverviewActivity extends ListActivity {
 		    mDownloaderBound = true;
 		}
 
+
 		protected void doUnbindDownloaderService() {
 		    if (mDownloaderBound) {
 		        // Detach our existing connection.
@@ -126,4 +245,6 @@ public class DownloadOverviewActivity extends ListActivity {
 		        mDownloaderBound = false;
 		    }
 		}
+		
+		
 }
