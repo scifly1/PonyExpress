@@ -155,6 +155,10 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 			mPonyExpressApp.getDbHelper().clearPlaylist();
 			listPlaylist();
 			return true;
+		case R.id.downloads:
+			startActivity(new Intent(
+					mPonyExpressApp, DownloadOverviewActivity.class));
+			return true;
 		default: 
 			return super.onOptionsItemSelected(item);
 		}

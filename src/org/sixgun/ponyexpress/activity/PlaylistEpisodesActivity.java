@@ -204,6 +204,10 @@ public class PlaylistEpisodesActivity extends EpisodesActivity implements Playli
 			mPonyExpressApp.getDbHelper().clearPlaylist();
 			listPlaylist();
 			return true;
+		case R.id.downloads:
+			startActivity(new Intent(
+					mPonyExpressApp, DownloadOverviewActivity.class));
+			return true;
 		default: 
 			return super.onOptionsItemSelected(item);
 		}
