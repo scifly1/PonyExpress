@@ -34,6 +34,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.DownloadOverviewActivity;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Notification;
@@ -402,10 +403,10 @@ public class DownloaderService extends Service {
 	}
 	
 	private void updateNotification(){
-		//This uses an empty intent because there is no new activity to start.
-		//TODO use an intent to the download overview
-		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
-				0, new Intent(), 0);
+		//Start the download overview when selecting the notification
+		Intent i = new Intent(mPonyExpressApp, DownloadOverviewActivity.class);
+		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 0, i, 0);
 		
 		int icon;
 		CharSequence text = "";
