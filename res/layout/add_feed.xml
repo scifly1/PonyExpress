@@ -1,113 +1,142 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-	xmlns:android="http://schemas.android.com/apk/res/android"
-	android:orientation="vertical"
-	android:layout_width="fill_parent"
-	android:layout_height="fill_parent"
-	android:background="#ff231b00">
-	<RelativeLayout
-		android:id="@+id/pony_header"
-		android:orientation="vertical"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:background="#ff231b00">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ff231b00"
+    android:orientation="vertical" >
 
-		<TextView
-			android:id="@+id/app_name"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:text="@string/app_name"
-			android:textStyle="bold"
-			android:paddingLeft="10dp"
-			android:paddingTop="10dp"
-			android:textSize="28sp"
-			android:background="#FF000000" />
-		<TextView
-			android:id="@+id/sixgun_subtitle"
-			android:layout_width="fill_parent"
-			android:layout_height="wrap_content"
-			android:text="@string/Add_feeds"
-			android:paddingLeft="10dp"
-			android:textSize="18sp"
-			android:layout_below="@id/app_name"
-			android:background="#FF000000" />
-		<TextView
-			android:background="@drawable/gradient"
-			android:layout_height="wrap_content"
-			android:layout_width="fill_parent"
-			android:layout_below="@id/sixgun_subtitle" />
+    <RelativeLayout
+        android:id="@+id/pony_header"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#ff231b00"
+        android:orientation="vertical" >
 
-		<ImageButton
-			android:id="@+id/settings_button"
-			android:paddingTop="10dp"
-			android:layout_alignParentRight="true"
-			android:src="@drawable/settings_button"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:background="#ff000000"
-			android:onClick="showSettings" />
-	</RelativeLayout>
-	<TextView
-		android:id="@+id/feed_label"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:layout_below="@id/pony_header"
-		android:text="@string/Feed_uri" />
-	<EditText
-		android:id="@+id/feed_entry"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:inputType="textUri"
-		android:text="@string/http"
-		android:textColor="#ff000000"
-		android:background="@android:drawable/editbox_background"
-		android:layout_below="@id/feed_label" />
-	<TextView
-		android:id="@+id/group_label"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="@string/Enter_group"
-		android:layout_below="@id/feed_entry"
-		android:layout_marginTop="10dp" />
-	<EditText
-		android:id="@+id/group_entry"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:background="@android:drawable/editbox_background"
-		android:text="@string/exclamation"
-		android:textColor="#ff000000"
-		android:layout_below="@id/feed_entry"
-		android:layout_toRightOf="@id/group_label" />
-	<TextView
-		android:id="@+id/tag_label"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="@string/Enter_tag"
-		android:layout_below="@id/group_entry"
-		android:layout_marginTop="10dp" />
-	<EditText
-		android:id="@+id/tag_entry"
-		android:layout_width="fill_parent"
-		android:layout_height="wrap_content"
-		android:background="@android:drawable/editbox_background"
-		android:text="@string/hash"
-		android:textColor="#ff000000"
-		android:layout_below="@id/group_entry"
-		android:layout_toRightOf="@id/tag_label" />
-	<Button
-		android:id="@+id/ok"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_below="@id/tag_entry"
-		android:layout_alignParentRight="true"
-		android:layout_marginLeft="5dip"
-		android:text="@string/ok" />
-	<Button
-		android:id="@+id/cancel"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:layout_below="@id/tag_entry"
-		android:layout_toLeftOf="@id/ok"
-		android:text="@string/cancel" />
+        <TextView
+            android:id="@+id/app_name"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:background="#FF000000"
+            android:paddingLeft="10dp"
+            android:paddingTop="10dp"
+            android:text="@string/app_name"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/sixgun_subtitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/app_name"
+            android:background="#FF000000"
+            android:paddingLeft="10dp"
+            android:text="@string/Add_feeds"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/sixgun_subtitle"
+            android:background="@drawable/gradient" />
+
+        <ImageButton
+            android:id="@+id/settings_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="#ff000000"
+            android:onClick="showSettings"
+            android:paddingTop="10dp"
+            android:src="@drawable/settings_button" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/feed_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pony_header"
+        android:text="@string/Feed_uri" />
+
+    <EditText
+        android:id="@+id/feed_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/feed_label"
+        android:background="@android:drawable/editbox_background"
+        android:inputType="textUri"
+        android:text="@string/http"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:id="@+id/group_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/feed_entry"
+        android:layout_marginTop="10dp"
+        android:text="@string/Enter_group" />
+
+    <EditText
+        android:id="@+id/group_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/feed_entry"
+        android:layout_toRightOf="@id/group_label"
+        android:background="@android:drawable/editbox_background"
+        android:text="@string/exclamation"
+        android:textColor="#ff000000" />
+
+    <TextView
+        android:id="@+id/tag_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/group_entry"
+        android:layout_marginTop="10dp"
+        android:text="@string/Enter_tag" />
+
+    <EditText
+        android:id="@+id/tag_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/group_entry"
+        android:layout_toRightOf="@id/tag_label"
+        android:background="@android:drawable/editbox_background"
+        android:text="@string/hash"
+        android:textColor="#ff000000" />
+
+    <Button
+        android:id="@+id/ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/tag_entry"
+        android:layout_marginLeft="5dip"
+        android:text="@string/ok" />
+
+    <Button
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/tag_entry"
+        android:layout_toLeftOf="@id/ok"
+        android:text="@string/cancel" />
+
+    <Button
+        android:id="@+id/backup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="78dp"
+        android:layout_toLeftOf="@+id/group_entry"
+        android:text="@string/backup" />
+
+    <Button
+        android:id="@+id/restore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/backup"
+        android:layout_alignBottom="@+id/backup"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="18dp"
+        android:text="@string/restore" />
 
 </RelativeLayout>
