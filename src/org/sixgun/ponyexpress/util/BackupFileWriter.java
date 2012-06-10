@@ -98,5 +98,6 @@ private static final String TAG = "PonyExpress PodcastPlayer";
 			throw new RuntimeException(e);
 		}
 		Log.d(TAG,"Backup successful");
+		//TODO Toast or something...
 	}
 }

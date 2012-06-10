@@ -133,6 +133,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Backing up to file...");
+				//TODO Do this in an Async..
 				final BackupFileWriter backupwriter = new BackupFileWriter();
 				backupwriter.writeBackupOpml(mPonyExpressApp.getDbHelper().getAllPodcastsUrls());
 			}

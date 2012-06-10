@@ -61,7 +61,7 @@ public class BackupParser {
 		RootElement opml = new RootElement(OPML);
 		Element body = opml.requireChild(BODY);		
 		
-		//This Listener catches the length and url of the podcast.
+		//This Listener catches and adds the xmlUrl attribute to the url list.
 		body.getChild(OUTLINE).setStartElementListener(new StartElementListener() {
 			@Override
 			public void start(Attributes attributes) {
@@ -75,6 +75,7 @@ public class BackupParser {
 				Xml.parse(filename, Xml.Encoding.UTF_8, 
 						opml.getContentHandler());
 			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
+				//TODO Proper error handling
 				Log.e(TAG, "RSS feed is malformed, required data is missing!");
         	} catch (IOException e) {
         		//TODO
