@@ -738,6 +738,25 @@ public class PonyExpressDbAdaptor {
 		return url;
 	}
 	
+	public List<String> getAllPodcastsUrls(){
+		final String[] podcast_columns = {PodcastKeys._ID, PodcastKeys.FEED_URL};
+		final Cursor podcasts_cursor = mDb.query(true, PODCAST_TABLE, podcast_columns, 
+				null, null, null, null, null, null);
+		List<String> podcast_urls = new ArrayList<String>();
+		if (podcasts_cursor != null && podcasts_cursor.getCount() > 0){
+			podcasts_cursor.moveToFirst();
+			for (int i = 0; i < podcasts_cursor.getCount(); i++){
+				final String name = podcasts_cursor.getString(1);
+				podcast_urls.add(name);
+				podcasts_cursor.moveToNext();
+			}
+		} else {
+			Log.e(TAG, "empty cursor at getAllPodcastsUrls()");
+		}
+		podcasts_cursor.close();
+		return podcast_urls;
+	}
+	
 	public String getAlbumArtUrl(long row_ID){
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
