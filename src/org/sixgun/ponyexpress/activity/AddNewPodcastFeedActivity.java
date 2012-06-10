@@ -24,6 +24,7 @@ import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.util.BackupFileWriter;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
@@ -119,7 +120,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Backing up to file...");
-				//TODO
+				BackupFileWriter.writeBackupOpml(mPonyExpressApp.getDbHelper().getAllPodcastsUrls());
 			}
 		};
 		

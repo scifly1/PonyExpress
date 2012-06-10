@@ -19,6 +19,83 @@
 
 package org.sixgun.ponyexpress.util;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.List;
+
+import org.xmlpull.v1.XmlSerializer;
+
+import android.os.Environment;
+import android.util.Log;
+import android.util.Xml;
+
 public class BackupFileWriter {
 
+private static final String TAG = "PonyExpress PodcastPlayer";
+
+	public static void writeBackupOpml(List<String> podcasts){
+
+		Log.d(TAG, "BackupFileWriter started");
+		//create a new file called "all-subscriptions.opml" in the SD card
+		File opmlfile = new File(Environment.getExternalStorageDirectory()+"/all-subscriptions.opml");
+
+		//Check is the file already exists...
+		if (opmlfile.isFile()){
+			//TODO Ask to overwrite...
+			//This is temporary test code
+			opmlfile.delete();
+			try{
+				opmlfile.createNewFile();
+			}catch(IOException e){
+				Log.e(TAG, "exception in createNewFile() method");
+			}
+		}else{
+			//Create an empty file
+			try{
+				opmlfile.createNewFile();
+			}catch(IOException e){
+				Log.e(TAG, "exception in createNewFile() method");
+			}
+		}
+
+		FileOutputStream fileos = null;
+		try{
+			fileos = new FileOutputStream(opmlfile);
+		}catch(FileNotFoundException e){
+			Log.e("FileNotFoundException", "can't create FileOutputStream");
+		}
+
+		XmlSerializer serializer = Xml.newSerializer();
+
+		try {
+			serializer.setOutput(fileos, "UTF-8");
+			serializer.startDocument("UTF-8", null);
+			serializer.setFeature("http://xmlpull.org/v1/doc/features.html#indent-output", true);
+			serializer.startTag(null, "opml");
+			serializer.attribute(null, "version", "2.0");
+			serializer.startTag(null, "head");
+			serializer.startTag(null, "title");
+			serializer.text("PonyExpress");
+			serializer.endTag(null, "title");
+			serializer.startTag(null, "dateCreated");
+			serializer.text(DateFormat.getDateTimeInstance().format(new Date()));
+			serializer.endTag(null, "dateCreated");
+			serializer.endTag(null, "head");
+			serializer.startTag(null, "body");
+			for (String url: podcasts){
+				serializer.startTag(null, "outline");
+				serializer.attribute(null, "xmlUrl", url);
+				serializer.endTag(null, "outline");
+			}
+			serializer.endDocument();
+			serializer.flush();
+			fileos.close();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }
