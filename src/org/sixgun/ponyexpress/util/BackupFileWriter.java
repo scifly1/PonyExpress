@@ -37,7 +37,7 @@ public class BackupFileWriter {
 
 private static final String TAG = "PonyExpress PodcastPlayer";
 
-	public static void writeBackupOpml(List<String> podcasts){
+	public void writeBackupOpml(List<String> podcasts){
 
 		Log.d(TAG, "BackupFileWriter started");
 		//create a new file called "all-subscriptions.opml" in the SD card
@@ -97,5 +97,6 @@ private static final String TAG = "PonyExpress PodcastPlayer";
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+		Log.d(TAG,"Backup successful");
 	}
 }

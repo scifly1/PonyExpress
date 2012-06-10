@@ -120,7 +120,8 @@ public class AddNewPodcastFeedActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Backing up to file...");
-				BackupFileWriter.writeBackupOpml(mPonyExpressApp.getDbHelper().getAllPodcastsUrls());
+				final BackupFileWriter backupwriter = new BackupFileWriter();
+				backupwriter.writeBackupOpml(mPonyExpressApp.getDbHelper().getAllPodcastsUrls());
 			}
 		};
 		
