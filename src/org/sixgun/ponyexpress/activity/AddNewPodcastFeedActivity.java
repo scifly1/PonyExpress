@@ -30,7 +30,9 @@ import org.sixgun.ponyexpress.util.BackupParser;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -49,6 +51,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	private TextView mGroupText;
 	private TextView mTagText;
 	private PonyExpressApp mPonyExpressApp;
+	private ProgressDialog mProgDialog;
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -57,6 +60,10 @@ public class AddNewPodcastFeedActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.add_feed);
+
+		//Create Progress Dialogs for later use.
+		mProgDialog = new ProgressDialog(this);
+		mProgDialog.setMessage(getText(R.string.restoring));
 
 		OnClickListener OKButtonListener =  new OnClickListener() {
 
@@ -109,28 +116,14 @@ public class AddNewPodcastFeedActivity extends Activity {
 		};
 
 		OnClickListener restoreButtonListener = new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Restore from backup file...");
-				final BackupParser backupparser = new BackupParser();
-				List<String> podcasts = backupparser.parse();
-				for (String url: podcasts){
-					Podcast podcast = new Podcast();
-					URL feedUrl = Utils.getURL(url);
-					podcast.setFeedUrl(feedUrl);
-					boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-					if (mCheckDatabase == true) {
-						//Skip
-					}else{
-						mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-						Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
-						//Send podcast name back to PonyExpressActivity so it can update the new feed.
-						Intent intent = new Intent();
-						intent.putExtra(PodcastKeys.NAME, PonyExpressActivity.UPDATE_ALL);
-						setResult(RESULT_OK, intent);
-						finish();
-					}
+				//Start the restore Async
+				Restore task = (Restore) new Restore().execute();
+				if (task.isCancelled()){
+					Log.d(TAG, "Restore canceled");
 				}
 			}
 		};
@@ -180,5 +173,60 @@ public class AddNewPodcastFeedActivity extends Activity {
 	public void showSettings(View v){
 		startActivity(new Intent(
 				mPonyExpressApp,PreferencesActivity.class));
+	}
+
+	/**
+	 *  Cancel progress dialog when activity destroyed.
+	 */
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		//Dismiss dialog now or it will leak.
+		if (mProgDialog.isShowing()){
+			mProgDialog.dismiss();
+		}
+	}
+
+	/**
+	 * This Async uses BackupParser to restore podcast feeds from a backup file that is 
+	 * compatible with gPodder.net.
+	 */
+	private class Restore extends AsyncTask <Void,Void,Void>{
+
+		/*
+		 * This is carried out in the UI thread before the background tasks are started.
+		 */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mProgDialog.show();
+
+		}
+
+		@Override
+		protected Void doInBackground(Void... params) {
+
+			final BackupParser backupparser = new BackupParser();
+			List<String> podcasts = backupparser.parse();
+			for (String url: podcasts){
+				Podcast podcast = new Podcast();
+				URL feedUrl = Utils.getURL(url);
+				podcast.setFeedUrl(feedUrl);
+				boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+				if (!checkDatabase) {
+					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+				}
+			}
+			return null;
+		}
+
+		protected void onPostExecute(Void v) {
+			Intent intent = new Intent();
+			intent.putExtra(PodcastKeys.NAME, PonyExpressActivity.UPDATE_ALL);
+			setResult(RESULT_OK, intent);
+			mProgDialog.hide();
+			Log.d(TAG,"Restore finished...");
+			finish();
+		}
 	}
 }

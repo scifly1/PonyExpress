@@ -227,6 +227,7 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 	</string-array>
 	<string name="backup">Backup</string>
 	<string name="restore">Restore</string>
+	<string name="restoring">Restoring feeds from the backup file.</string>
 
 	
 </resources>

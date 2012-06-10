@@ -299,11 +299,11 @@ public class PonyExpressActivity extends ListActivity {
 		super.onActivityResult(requestCode, resultCode, data);
 		//No need for Switch/case on requestCode as only one result expected
 		if (resultCode == RESULT_OK){
+			mProgDialog.show();
 			final String podcast_name = data.getExtras().
 					getString(PodcastKeys.NAME);
 			updateFeed(podcast_name);
 		}
-		
 	}
 
 	/* (non-Javadoc)
