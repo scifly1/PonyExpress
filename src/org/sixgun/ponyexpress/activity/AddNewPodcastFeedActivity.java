@@ -29,6 +29,7 @@ import org.sixgun.ponyexpress.util.Utils;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -39,6 +40,8 @@ import android.widget.Toast;
 
 public class AddNewPodcastFeedActivity extends Activity {
 
+	private static final String TAG = "PonyExpress PodcastPlayer";
+	
 	private TextView mFeedText;
 	private TextView mGroupText;
 	private TextView mTagText;
@@ -102,6 +105,24 @@ public class AddNewPodcastFeedActivity extends Activity {
 			}
 		};
 		
+		OnClickListener restoreButtonListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Log.d(TAG,"Restore from backup file...");
+				//TODO
+			}
+		};
+		
+		OnClickListener backupButtonListener = new OnClickListener() {
+			
+			@Override
+			public void onClick(View v) {
+				Log.d(TAG,"Backing up to file...");
+				//TODO
+			}
+		};
+		
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mFeedText = (EditText) findViewById(R.id.feed_entry);
 		mGroupText = (EditText) findViewById(R.id.group_entry);
@@ -110,6 +131,10 @@ public class AddNewPodcastFeedActivity extends Activity {
 		okButton.setOnClickListener(OKButtonListener);
 		Button cancelButton = (Button) findViewById(R.id.cancel);
 		cancelButton.setOnClickListener(CancelButtonListener);
+		Button backupButton = (Button) findViewById(R.id.backup);
+		backupButton.setOnClickListener(backupButtonListener);
+		Button restoreButton = (Button) findViewById(R.id.restore);
+		restoreButton.setOnClickListener(restoreButtonListener);
 		
 		//If the feedURl has been sent in the intent populate the text box
 		if (!getIntent().getExtras().getString(PodcastKeys.FEED_URL).equals("")){
