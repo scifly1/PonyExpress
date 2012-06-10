@@ -19,12 +19,14 @@
 package org.sixgun.ponyexpress.activity;
 
 import java.net.URL;
+import java.util.List;
 
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.util.BackupFileWriter;
+import org.sixgun.ponyexpress.util.BackupParser;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
@@ -41,8 +43,8 @@ import android.widget.Toast;
 
 public class AddNewPodcastFeedActivity extends Activity {
 
-	private static final String TAG = "PonyExpress PodcastPlayer";
-	
+	private static final String TAG = "PonyExpress AddNewPopdcastFeedActivity";
+
 	private TextView mFeedText;
 	private TextView mGroupText;
 	private TextView mTagText;
@@ -55,17 +57,17 @@ public class AddNewPodcastFeedActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.add_feed);
-				
+
 		OnClickListener OKButtonListener =  new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				final String feed = mFeedText.getText().toString();
 				final String group = mGroupText.getText().toString();
 				final String tag = mTagText.getText().toString();
-				
+
 				Podcast podcast = new Podcast();
-				
+
 				URL  feedUrl = Utils.getURL(feed);
 				if (Utils.checkURL(feedUrl) != null){
 					podcast.setFeedUrl(feedUrl);
@@ -93,28 +95,46 @@ public class AddNewPodcastFeedActivity extends Activity {
 						intent.putExtra(PodcastKeys.NAME, name);
 						setResult(RESULT_OK, intent);
 						finish();
-					}										
+					}
 				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
 		};
 		OnClickListener CancelButtonListener = new OnClickListener() {
-			
+
 			@Override
 			public void onClick(View v) {
 				setResult(RESULT_CANCELED);
 				finish();
 			}
 		};
-		
+
 		OnClickListener restoreButtonListener = new OnClickListener() {
 			
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Restore from backup file...");
-				//TODO
+				final BackupParser backupparser = new BackupParser();
+				List<String> podcasts = backupparser.parse();
+				for (String url: podcasts){
+					Podcast podcast = new Podcast();
+					URL feedUrl = Utils.getURL(url);
+					podcast.setFeedUrl(feedUrl);
+					boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+					if (mCheckDatabase == true) {
+						//Skip
+					}else{
+						mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+						Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
+						//Send podcast name back to PonyExpressActivity so it can update the new feed.
+						Intent intent = new Intent();
+						intent.putExtra(PodcastKeys.NAME, PonyExpressActivity.UPDATE_ALL);
+						setResult(RESULT_OK, intent);
+						finish();
+					}
+				}
 			}
 		};
-		
+
 		OnClickListener backupButtonListener = new OnClickListener() {
 			
 			@Override
@@ -124,7 +144,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 				backupwriter.writeBackupOpml(mPonyExpressApp.getDbHelper().getAllPodcastsUrls());
 			}
 		};
-		
+
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mFeedText = (EditText) findViewById(R.id.feed_entry);
 		mGroupText = (EditText) findViewById(R.id.group_entry);
@@ -137,7 +157,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 		backupButton.setOnClickListener(backupButtonListener);
 		Button restoreButton = (Button) findViewById(R.id.restore);
 		restoreButton.setOnClickListener(restoreButtonListener);
-		
+
 		//If the feedURl has been sent in the intent populate the text box
 		if (!getIntent().getExtras().getString(PodcastKeys.FEED_URL).equals("")){
 			String url = getIntent().getExtras().getString(PodcastKeys.FEED_URL);
@@ -152,17 +172,13 @@ public class AddNewPodcastFeedActivity extends Activity {
 			
 		}
 	}
-	
+
 	/**
 	 * Bring up the Settings (preferences) menu via a button click.
 	 * @param v, a reference to the button that was clicked to call this.
 	 */
 	public void showSettings(View v){
 		startActivity(new Intent(
-        		mPonyExpressApp,PreferencesActivity.class));
+				mPonyExpressApp,PreferencesActivity.class));
 	}
-	
-	
-	
-
 }
