@@ -615,7 +615,11 @@ public class PonyExpressActivity extends ListActivity {
 				for (String podcast: podcastsOnDisk){
 					File podcast_path = new File(path,podcast);
 					String[] files = podcast_path.list();
-					filesOnDisk.addAll(Arrays.asList(files));
+					try{
+						filesOnDisk.addAll(Arrays.asList(files));
+					}catch(NullPointerException e){
+						Log.d(TAG,"NullPOinter");
+					}
 					//Get a Map of filenames (and their index) that are in the database
 					final Map<Long, String> filesInDatabase = 
 						mPonyExpressApp.getDbHelper().getFilenamesOnDisk(podcast);

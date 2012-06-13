@@ -23,8 +23,8 @@ public class ReturnCodes {
 	public static final int INTERNET_CONNECTIVITY_LOST = 1;
 	public static final int URL_OFFLINE = 2;
 	public static final int PARSING_ERROR = 3;
-	
-	public static final int ALL_OK = 999;
-	
+	public static final int SD_CARD_NOT_WRITABLE = 4;
+	public static final int ASK_TO_OVERWRITE = 5;
 
+	public static final int ALL_OK = 999;
 }

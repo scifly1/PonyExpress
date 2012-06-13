@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -42,25 +43,25 @@ public class BackupParser {
 	private static final String XMLURL = "xmlUrl";
 	private static final String BODY = "body";
 	private static final String OUTLINE = "outline";
-	
+
 	private static final String TAG = "BackupParser";
-	
+
 	public List<String> parse() {
-		
-		Log.e(TAG, "Starting BackupParser");
+
+		Log.d(TAG, "Starting BackupParser");
 		final List<String> urllist = new ArrayList<String>();
 		InputStream filename = null;
-				
+
 		try {
-			filename = new FileInputStream(Environment.getExternalStorageDirectory()+"/all-subscriptions.opml");
+			filename = new FileInputStream(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH + "all-subscriptions.opml");
 		} catch (FileNotFoundException e){
 			Log.e(TAG, "No file found");
 			//TODO
 		}
-		
+
 		RootElement opml = new RootElement(OPML);
 		Element body = opml.requireChild(BODY);		
-		
+
 		//This Listener catches and adds the xmlUrl attribute to the url list.
 		body.getChild(OUTLINE).setStartElementListener(new StartElementListener() {
 			@Override
@@ -69,7 +70,7 @@ public class BackupParser {
 				urllist.add(url);
 			}
 		});
-		
+
 		if (filename != null){
 			try {
 				Xml.parse(filename, Xml.Encoding.UTF_8, 
@@ -77,13 +78,11 @@ public class BackupParser {
 			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
 				//TODO Proper error handling
 				Log.e(TAG, "RSS feed is malformed, required data is missing!");
-        	} catch (IOException e) {
-        		//TODO
-        	}
+			} catch (IOException e) {
+				//TODO
+			}
 		}
 		Log.d(TAG, "List returned");
 		return urllist;
-
 	}
-
 }

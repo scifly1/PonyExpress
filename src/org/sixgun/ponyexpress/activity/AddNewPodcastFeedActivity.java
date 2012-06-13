@@ -25,6 +25,7 @@ import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.ReturnCodes;
 import org.sixgun.ponyexpress.util.BackupFileWriter;
 import org.sixgun.ponyexpress.util.BackupParser;
 import org.sixgun.ponyexpress.util.Utils;
@@ -63,7 +64,6 @@ public class AddNewPodcastFeedActivity extends Activity {
 
 		//Create Progress Dialogs for later use.
 		mProgDialog = new ProgressDialog(this);
-		mProgDialog.setMessage(getText(R.string.restoring));
 
 		OnClickListener OKButtonListener =  new OnClickListener() {
 
@@ -133,9 +133,12 @@ public class AddNewPodcastFeedActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Backing up to file...");
-				//TODO Do this in an Async..
-				final BackupFileWriter backupwriter = new BackupFileWriter();
-				backupwriter.writeBackupOpml(mPonyExpressApp.getDbHelper().getAllPodcastsUrls());
+				List<String> podcastlist = mPonyExpressApp.getDbHelper().getAllPodcastsUrls();
+				@SuppressWarnings("unchecked")
+				Backup task = (Backup) new Backup().execute(podcastlist);
+				if (task.isCancelled()){
+					Log.d(TAG, "Backup canceled");
+				}
 			}
 		};
 
@@ -188,6 +191,41 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 	}
 
+	private class Backup extends AsyncTask<List<String>,Integer,Integer>{
+
+		/*
+		 * This is carried out in the UI thread before the background tasks are started.
+		 */
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mProgDialog.setMessage(getText(R.string.backing_up_feeds));
+			mProgDialog.show();
+		}
+
+		@Override
+		protected Integer doInBackground(List<String>... list) {
+			final BackupFileWriter backupwriter = new BackupFileWriter();
+			return backupwriter.writeBackupOpml(list[0]);
+		}
+
+		protected void onPostExecute(Integer return_code) {
+			mProgDialog.hide();
+			switch (return_code) {
+			case ReturnCodes.ASK_TO_OVERWRITE:
+				//TODO Toast
+				break;
+			case ReturnCodes.SD_CARD_NOT_WRITABLE:
+				//TODO Toast
+				break;
+			case ReturnCodes.ALL_OK:
+				//TODO Toast
+				Log.d(TAG,"Backup finished...");
+				break;
+			}
+		}
+	}
+
 	/**
 	 * This Async uses BackupParser to restore podcast feeds from a backup file that is 
 	 * compatible with gPodder.net.
@@ -200,6 +238,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
+			mProgDialog.setMessage(getText(R.string.restoring));
 			mProgDialog.show();
 
 		}

@@ -245,7 +245,32 @@ public class Utils {
 		
 		return bd;
 	}
-	
+
+	/**
+	 * Checks to see if the SD card is mounted and writable.
+	 * @return boolean
+	 */
+	public static boolean isSDCardWritable() {
+		final String state = Environment.getExternalStorageState();
+		if (Environment.MEDIA_MOUNTED.equals(state)){
+			Log.d(TAG, "SD Card is mounted");
+			File file = Environment.getExternalStorageDirectory();
+			if (file.canWrite()){
+				Log.d(TAG,"Can Write to SD card.");
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Writes the PonyExpress folders to the SD card.
+	 */
+	public static void writePodcastPath(){
+		File path = new File(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH);
+		path.mkdirs();
+	}
+
 	/**
 	 * Checks the remaining space on the SD card.
 	 * @return the remaining space in megabytes.
