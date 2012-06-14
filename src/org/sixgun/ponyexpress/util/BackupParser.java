@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sixgun.ponyexpress.PonyExpressApp;
+import org.sixgun.ponyexpress.ReturnCodes;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
@@ -55,8 +56,8 @@ public class BackupParser {
 		try {
 			filename = new FileInputStream(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH + "all-subscriptions.opml");
 		} catch (FileNotFoundException e){
-			Log.e(TAG, "No file found");
-			//TODO
+			urllist.add(Integer.toString(ReturnCodes.NO_BACKUP_FILE));
+			return urllist;
 		}
 
 		RootElement opml = new RootElement(OPML);
@@ -76,10 +77,13 @@ public class BackupParser {
 				Xml.parse(filename, Xml.Encoding.UTF_8, 
 						opml.getContentHandler());
 			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
-				//TODO Proper error handling
-				Log.e(TAG, "RSS feed is malformed, required data is missing!");
+				urllist.clear();
+				urllist.add(Integer.toString(ReturnCodes.PARSING_ERROR));
+				Log.e(TAG, "OPML file is malformed, required data is missing!");
 			} catch (IOException e) {
-				//TODO
+				urllist.clear();
+				urllist.add(Integer.toString(ReturnCodes.PARSING_ERROR));
+				Log.e(TAG, "OPML file is malformed, required data is missing!");
 			}
 		}
 		Log.d(TAG, "List returned");

@@ -25,6 +25,7 @@ public class ReturnCodes {
 	public static final int PARSING_ERROR = 3;
 	public static final int SD_CARD_NOT_WRITABLE = 4;
 	public static final int ASK_TO_OVERWRITE = 5;
+	public static final int NO_BACKUP_FILE = 6;
 
 	public static final int ALL_OK = 999;
 }

@@ -31,7 +31,9 @@ import org.sixgun.ponyexpress.util.BackupParser;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -91,17 +93,14 @@ public class AddNewPodcastFeedActivity extends Activity {
 						}
 					}
 					//Check if the new url is already in the database
-					boolean mCheckDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-					if (mCheckDatabase == true) {
+					boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+					if (checkDatabase) {
 						Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
 					}else{
 						final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
 						Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
 						//Send podcast name back to PonyExpressActivity so it can update the new feed.
-						Intent intent = new Intent();
-						intent.putExtra(PodcastKeys.NAME, name);
-						setResult(RESULT_OK, intent);
-						finish();
+						sendToMainActivity(name);
 					}
 				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
@@ -133,9 +132,8 @@ public class AddNewPodcastFeedActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				Log.d(TAG,"Backing up to file...");
-				List<String> podcastlist = mPonyExpressApp.getDbHelper().getAllPodcastsUrls();
-				@SuppressWarnings("unchecked")
-				Backup task = (Backup) new Backup().execute(podcastlist);
+				//Start the backup Async
+				Backup task = (Backup) new Backup().execute();
 				if (task.isCancelled()){
 					Log.d(TAG, "Backup canceled");
 				}
@@ -191,7 +189,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 	}
 
-	private class Backup extends AsyncTask<List<String>,Integer,Integer>{
+	private class Backup extends AsyncTask<Void,Integer,Integer>{
 
 		/*
 		 * This is carried out in the UI thread before the background tasks are started.
@@ -204,22 +202,26 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 
 		@Override
-		protected Integer doInBackground(List<String>... list) {
+		protected Integer doInBackground(Void... v) {
+			List<String> podcastlist = mPonyExpressApp.getDbHelper().getAllPodcastsUrls();
 			final BackupFileWriter backupwriter = new BackupFileWriter();
-			return backupwriter.writeBackupOpml(list[0]);
+			return backupwriter.writeBackupOpml(podcastlist);
 		}
 
 		protected void onPostExecute(Integer return_code) {
 			mProgDialog.hide();
+			//Handle the return codes.
 			switch (return_code) {
 			case ReturnCodes.ASK_TO_OVERWRITE:
-				//TODO Toast
+				startOverwriteDialog();
 				break;
 			case ReturnCodes.SD_CARD_NOT_WRITABLE:
-				//TODO Toast
+				Toast.makeText(mPonyExpressApp,
+						R.string.cannot_write, Toast.LENGTH_LONG).show();
 				break;
 			case ReturnCodes.ALL_OK:
-				//TODO Toast
+				Toast.makeText(mPonyExpressApp,
+						R.string.backup_successful, Toast.LENGTH_LONG).show();
 				Log.d(TAG,"Backup finished...");
 				break;
 			}
@@ -230,7 +232,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	 * This Async uses BackupParser to restore podcast feeds from a backup file that is 
 	 * compatible with gPodder.net.
 	 */
-	private class Restore extends AsyncTask <Void,Void,Void>{
+	private class Restore extends AsyncTask <Void,Void,Integer>{
 
 		/*
 		 * This is carried out in the UI thread before the background tasks are started.
@@ -244,29 +246,99 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 
 		@Override
-		protected Void doInBackground(Void... params) {
+		protected Integer doInBackground(Void... params) {
 
 			final BackupParser backupparser = new BackupParser();
 			List<String> podcasts = backupparser.parse();
-			for (String url: podcasts){
-				Podcast podcast = new Podcast();
-				URL feedUrl = Utils.getURL(url);
-				podcast.setFeedUrl(feedUrl);
-				boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-				if (!checkDatabase) {
-					mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+
+			//This is where we handle the return from backupparser.parse().
+			//If an empty List<String> was returned, handle it here...
+			int return_code = 0;
+			try{
+				return_code = Integer.valueOf(podcasts.get(0));
+			} catch (IndexOutOfBoundsException e){
+				//An empty List<String> was returned
+				return ReturnCodes.PARSING_ERROR;
+			} catch (NumberFormatException e){
+				//If we are here, we have a proper List<String> of urls. Let's put em to good use.
+				for (String url: podcasts){
+					Podcast podcast = new Podcast();
+					URL feedUrl = Utils.getURL(url);
+					podcast.setFeedUrl(feedUrl);
+					boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+					if (!checkDatabase) {
+						mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+					}
 				}
+				return ReturnCodes.ALL_OK;
 			}
+
+			//If a single integer in place 0 was returned, there was an error.
+			//Handle it here.
+			switch (return_code) {
+				case (ReturnCodes.NO_BACKUP_FILE):
+					return ReturnCodes.NO_BACKUP_FILE;
+
+				case (ReturnCodes.PARSING_ERROR):
+					return ReturnCodes.PARSING_ERROR;
+			}
+			//We should never get here, but the compiler asks for a return...
 			return null;
 		}
 
-		protected void onPostExecute(Void v) {
-			Intent intent = new Intent();
-			intent.putExtra(PodcastKeys.NAME, PonyExpressActivity.UPDATE_ALL);
-			setResult(RESULT_OK, intent);
+		protected void onPostExecute(Integer return_code) {
 			mProgDialog.hide();
-			Log.d(TAG,"Restore finished...");
-			finish();
+			//Handle the return codes.
+			switch (return_code) {
+			case ReturnCodes.NO_BACKUP_FILE:
+				Toast.makeText(mPonyExpressApp,
+						R.string.there_is_no_backup, Toast.LENGTH_LONG).show();
+				break;
+			case ReturnCodes.PARSING_ERROR:
+				Toast.makeText(mPonyExpressApp,
+						R.string.error_parsing_backup_file, Toast.LENGTH_LONG).show();
+				break;
+			case ReturnCodes.ALL_OK:
+				Log.d(TAG,"Restore finished...");
+				sendToMainActivity(PonyExpressActivity.UPDATE_ALL);
+			}
 		}
+	}
+
+	/**
+	 * This method closes this activity and sends a string back to the main activity.
+	 * @param name
+	 */
+	private void sendToMainActivity(String update_code){
+		Intent intent = new Intent();
+		intent.putExtra(PodcastKeys.NAME, update_code);
+		setResult(RESULT_OK, intent);
+		finish();
+	}
+
+	/**
+	 * This is the method that creates and shows the "Ask to overwrite" dialog.
+	 */
+	private void startOverwriteDialog(){
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setMessage(getText(R.string.a_backup_file_));
+		builder.setCancelable(false);
+		builder.setPositiveButton(getText(R.string.yes), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				Utils.deleteBackupFile();
+				//Start the backup Async
+				Backup task = (Backup) new Backup().execute();
+				if (task.isCancelled()){
+					Log.d(TAG, "Backup canceled");
+				}
+			}
+		});
+		builder.setNegativeButton(getText(R.string.no), new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int id) {
+				dialog.cancel();
+			}
+		});
+		AlertDialog alert = builder.create();
+		alert.show();
 	}
 }

@@ -247,6 +247,14 @@ public class Utils {
 	}
 
 	/**
+	 * This method deletes a backup file, if it exists.
+	 */
+	public static void deleteBackupFile() {
+		File path = new File(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH + "all-subscriptions.opml");
+		path.delete();
+	}
+	
+	/**
 	 * Checks to see if the SD card is mounted and writable.
 	 * @return boolean
 	 */

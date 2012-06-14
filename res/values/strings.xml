@@ -229,6 +229,12 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 	<string name="restore">Restore</string>
 	<string name="restoring">Restoring feeds from the backup file.</string>
 	<string name="backing_up_feeds">Backing up the list of feeds. Please wait.</string>
+	<string name="backup_successful">Backup successful! Yippee ki-yay! </string>
+	<string name="a_backup_file_">A backup file already exists. Do you want to overwrite?</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	<string name="there_is_no_backup">There is no backup file to restore.</string>
+	<string name="error_parsing_backup_file">There was an error parsing the backup file. Required data may be missing or corrupt.</string>
 
 	
 </resources>
