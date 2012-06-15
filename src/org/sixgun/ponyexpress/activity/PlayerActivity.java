@@ -272,7 +272,7 @@ public class PlayerActivity extends Activity {
 					startService(mPlayerIntent);
 					mPaused = false;
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
-					mSeekBar.setMax(mPodcastPlayer.getEpisodeLength());
+					mSeekBar.setMax(mEpisodeDuration);
 					mSeekBar.setProgress(mCurrentPosition);
 					startSeekBar();
 					
