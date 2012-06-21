@@ -38,6 +38,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -267,6 +268,10 @@ public class PlayerActivity extends Activity {
 					mPaused = true;
 					mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
 					mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
+					SharedPreferences prefs = getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+					final SharedPreferences.Editor editor = prefs.edit();
+					editor.putBoolean(PodcastKeys.PLAYLIST, false);
+					editor.commit();
 				} else {
 					// Play episode
 					startService(mPlayerIntent);
@@ -275,11 +280,10 @@ public class PlayerActivity extends Activity {
 					mSeekBar.setMax(mEpisodeDuration);
 					mSeekBar.setProgress(mCurrentPosition);
 					startSeekBar();
-					
 				}
 			}
 		};
-		
+
 		OnClickListener rewindButtonListener = new OnClickListener() {
 			
 			@Override
@@ -576,14 +580,15 @@ public class PlayerActivity extends Activity {
 			startSeekBar();
 		} else if (mPaused && mEpisodeDownloaded){
 			//if playing from a playlist auto start playback.
-			if (mData.getBoolean(PodcastKeys.PLAYLIST)){
+			SharedPreferences prefs = getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+			if (prefs.getBoolean(PodcastKeys.PLAYLIST, false)){
 				mPlayPauseButton.performClick();
-				mData.putBoolean(PodcastKeys.PLAYLIST, false);
+				final SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean(PodcastKeys.PLAYLIST, false);
+				editor.commit();
 			}
 		}
-		
 	}
-
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)

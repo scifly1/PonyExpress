@@ -25,6 +25,7 @@ import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -323,6 +324,10 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		if (!mPonyExpressApp.getDbHelper().playlistEmpty()){
 			//Start EpisodeTabs as happens from EpisodeActivity
 			// but hand over a flag to indicate to play from the playlist.
+			SharedPreferences prefs = getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+			final SharedPreferences.Editor editor = prefs.edit();
+			editor.putBoolean(PodcastKeys.PLAYLIST, true);
+			editor.commit();
 			Intent intent = new Intent(this,EpisodeTabs.class);
 			intent.putExtra(PodcastKeys.PLAYLIST, true);
 			startActivityForResult(intent, START_PLAYBACK);

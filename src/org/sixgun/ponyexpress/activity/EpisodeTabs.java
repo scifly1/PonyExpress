@@ -30,6 +30,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -187,11 +188,15 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			EpisodeTabs.this.setResult(RESULT_OK);
+			SharedPreferences prefs = getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+			final SharedPreferences.Editor editor = prefs.edit();
+			editor.putBoolean(PodcastKeys.PLAYLIST, true);
+			editor.commit();
 			finish();
 		}
 		
 	}
-	
+
 	protected void queryPlayer() {
 		if (mPodcastPlayer != null && mPlayingPlaylist){
 			final String podcast_name = mPodcastPlayer.getPodcastName();
@@ -208,7 +213,6 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 					finish();
 				}
 			}
-		}	
+		}
 	}
-	
 }
