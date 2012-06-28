@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Paul Elms
+ * Copyright 2010,2012 Paul Elms
  *
  *  This file is part of PonyExpress.
  *
@@ -18,11 +18,17 @@
 */
 package org.sixgun.ponyexpress;
 
+import android.util.Log;
+
 /**
  * SubClass of Episode holding information about an episode that is being downloaded.
  * Used by the DownloaderService in a list enables concurrent downloads.
  */
 public class DownloadingEpisode extends Episode {
+	private static final String TAG = "DownloadingEpisode";
+	public static final double OVERSIZE_EPISODE = -1;
+	public static final double OVERSIZE_EPISODE_DOWNLOADED = -2;
+	
 	private String mPodcastName;
 	private String mPodcastPath;
 	private int mDownloadProgress;
@@ -31,6 +37,7 @@ public class DownloadingEpisode extends Episode {
 	private long mRowID;
 	private boolean mDownloadFailed = false;
 	private boolean mDownloadCancelled = false;
+	private boolean mDownloadCompleted = false;
 	
 	public DownloadingEpisode(){
 		mDownloadProgress = 0;
@@ -79,6 +86,18 @@ public class DownloadingEpisode extends Episode {
 	public void setDownloadProgress(int mDownloadProgress) {
 		this.mDownloadProgress = mDownloadProgress;
 	}
+	
+	public boolean isEpisodeDownloading(){
+		final int percent = (int) getDownloadPercent();
+		if (percent == DownloadingEpisode.OVERSIZE_EPISODE_DOWNLOADED){
+			Log.d(TAG, "Oversize episode is no longer downloading");
+			return false;
+		}
+		else if (percent < 100){
+			return true;
+		} else return false;
+	}
+	
 	/**
 	 * @return the mDownloadProgress
 	 */
@@ -90,7 +109,16 @@ public class DownloadingEpisode extends Episode {
 	 * Returns the percentage downloaded
 	 */
 	public double getDownloadPercent(){
-		final double percent = mDownloadProgress/(double)mSize * 100; 
+		double percent = mDownloadProgress/(double)mSize * 100;
+		//Catch podcasts which have incorrect length in their feeds.
+		if (percent > 100){
+			percent = OVERSIZE_EPISODE;
+			if (mDownloadCompleted){
+				//download completed, tell playerActivity or downloadOverview
+				percent = OVERSIZE_EPISODE_DOWNLOADED;
+				Log.d(TAG,"Oversize episode completed download");
+			}
+		}
 		return percent;
 	}
 	
@@ -143,6 +171,11 @@ public class DownloadingEpisode extends Episode {
 	
 	public void resetDownloadCancelled() {
 		this.mDownloadCancelled = false;
+		
+	}
+
+	public void setDownloadCompleted(boolean b) {
+		mDownloadCompleted = b;
 		
 	}
 }

@@ -179,6 +179,8 @@ public class PodcastPlayer extends Service {
 					mPonyExpressApp.getDbHelper().popPlaylist();
 					final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
 					final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+					//TODO Check an episode has been returned, if db corrupted it will not be.
+
 					Bundle bundle = new Bundle();
 					bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
 					initPlayer(bundle);

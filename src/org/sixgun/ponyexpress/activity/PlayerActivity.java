@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -87,7 +88,7 @@ public class PlayerActivity extends Activity {
 	static protected Button mDownloadButton;
 	static private Button mCancelButton;
 	private boolean mCancelDownload;
-	static private ProgressBar mDownloadProgress;
+	private ProgressBar mDownloadProgress;
 	private PonyExpressApp mPonyExpressApp;
 	static private RelativeLayout mPlayerControls;
 	private Intent mPlayerIntent;
@@ -718,11 +719,21 @@ public class PlayerActivity extends Activity {
 							}
 							Thread.sleep(1000);
 							mDownloadPercent = (int) mDownloader.getProgress(index);
+							if (mDownloadPercent == DownloadingEpisode.OVERSIZE_EPISODE_DOWNLOADED){
+								//Oversize episode completed, break loop
+								mDownloadPercent = 100;
+							}
 						} catch (InterruptedException e) {
 							Log.d(TAG, "Download thread interupted while sleeping!", e);
 						}
-						//Post progress to mHandler in UI thread
-						mHandler.post(setProgress);
+						if (mDownloadPercent == DownloadingEpisode.OVERSIZE_EPISODE){
+							//Real progress is unknown, so set to indeterminate.
+							Log.d(TAG, "Set Indeterminate");
+							mHandler.post(setIndeterminate);
+						} else {
+							//Post progress to mHandler in UI thread
+							mHandler.post(setProgress);
+						}
 					}
 					//Download completed
 					if (mDownloadPercent == 100){
@@ -764,6 +775,17 @@ public class PlayerActivity extends Activity {
 		public void run() {
 			mDownloadProgress.setProgress(mDownloadPercent);
 		}
+	};
+	
+	Runnable setIndeterminate = new Runnable() {
+
+		@Override
+		public void run() {
+			mDownloadProgress.setIndeterminate(true);
+			//invalidate forces the view to be redrawn now it has changed.
+			mDownloadProgress.invalidate();
+		}
+		
 	};
 	
 	Runnable downloadCompleted = new Runnable() {
@@ -817,6 +839,9 @@ public class PlayerActivity extends Activity {
 			mDownloadButton.setVisibility(View.VISIBLE);
 			mDownloadButton.setEnabled(true);
 			mDownloadProgress.setProgress(0);
+			//Ensure indeterminate set to false
+			mDownloadProgress.setIndeterminate(false);
+			mDownloadProgress.invalidate();
 		}
 		
 	};
