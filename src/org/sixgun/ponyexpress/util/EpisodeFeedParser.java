@@ -56,6 +56,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
     private static final String ITEM = "item";
     private static final String OGG = "audio/ogg";
     private static final String MPEG = "audio/mpeg";
+    private static final String MP3 = "audio/mp3";
     private static final String OLD_OGG = "application/ogg";
 	private static final String TAG = "EpisodeFeedParser";
 	
@@ -133,7 +134,8 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				
 				if (mime_type.equalsIgnoreCase(OGG) || 
 						mime_type.equalsIgnoreCase(MPEG) ||
-						mime_type.equalsIgnoreCase(OLD_OGG)){
+						mime_type.equalsIgnoreCase(OLD_OGG)||
+						mime_type.equalsIgnoreCase(MP3)) {
 					String length = attributes.getValue("", "length");
 					Log.d(TAG,"Episode Length is "+ length);
 					new_episode.setLength(length);
