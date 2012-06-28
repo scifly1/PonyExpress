@@ -119,7 +119,6 @@ public class DownloadOverviewActivity extends ListActivity {
 			@Override
 			public void run() {
 				while (!mInterruptProgressThread){
-					Log.d(TAG, "Starting download progress thread");
 					mDownloadsArrayList = mDownloader.getDownloadingEpisodes();
 					//Update the adapter
 					mHandler.post(UpdateDataRunnable);
@@ -160,7 +159,13 @@ public class DownloadOverviewActivity extends ListActivity {
 			episodeTitle.setText(episode.getTitle());
 			
 			ProgressBar progress = (ProgressBar) v.findViewById(R.id.progress_bar);
-			progress.setProgress((int) episode.getDownloadPercent());
+			//Check for Oversize episodes
+			if (episode.getDownloadPercent() == DownloadingEpisode.OVERSIZE_EPISODE){
+				progress.setIndeterminate(true);
+			}else{
+				progress.setIndeterminate(false);
+				progress.setProgress((int) episode.getDownloadPercent());
+			}
 			
 			TextView queueText = (TextView) v.findViewById(R.id.queue_text);
 			if (episode.getDownloadProgress() == 0){

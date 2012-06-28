@@ -234,6 +234,7 @@ public class DownloaderService extends Service {
 								}
 								else {
 									Log.d(TAG,"Podcast written to SD card.");
+									episode.setDownloadCompleted(true);
 									mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
 											episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
 								}
@@ -477,7 +478,7 @@ public class DownloaderService extends Service {
 		
 		for (DownloadingEpisode episode:mEpisodes){
 			if (episode.getTitle().equals(PodcastTitle)){
-				if (episode.getDownloadProgress() < episode.getSize()){
+				if (episode.isEpisodeDownloading()){
 					index = mEpisodes.indexOf(episode);
 				}else{
 					Log.d(TAG, "Episode: " + PodcastTitle + " not downloading!");
@@ -542,7 +543,7 @@ public class DownloaderService extends Service {
 		mCurrentDownloadsList.clear();
 
 		for (DownloadingEpisode episode:mEpisodes){
-			if (episode.getDownloadProgress() < episode.getSize()){
+			if (episode.isEpisodeDownloading()){
 				mCurrentDownloadsList.add(episode);
 			}
 		}

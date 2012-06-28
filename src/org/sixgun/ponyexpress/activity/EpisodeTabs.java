@@ -106,6 +106,7 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 			//get first episode from playlist
 			mPodcastName = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
 			mEpisodeId = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+			//TODO Check an episode has been returned, if db corrupted it will not be.
 			bundle = Episode.packageEpisode(mPonyExpressApp, mPodcastName, mEpisodeId);
 			bundle.putBoolean(PodcastKeys.PLAYLIST, true);
 		} else {
