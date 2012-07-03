@@ -53,6 +53,7 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 public class EpisodesActivity extends ListActivity {
@@ -282,8 +283,13 @@ public class EpisodesActivity extends ListActivity {
 			onListItemClick(getListView(), info.targetView, info.position, info.id);
 			return true;
 		case R.id.re_download:
-			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
-			onListItemClick(getListView(), info.targetView, info.position, info.id);
+			//Check user wants to download on the current network type
+			if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
+				Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
+			} else {
+				mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
+				startDownload(info.id);
+			}
 			return true;
 		case R.id.delete:
 			markListened(info.id);
@@ -296,6 +302,13 @@ public class EpisodesActivity extends ListActivity {
 		default:
 			return super.onContextItemSelected(item);
 		}	
+	}
+	
+	private void startDownload(long id){
+		Intent intent = new Intent(this,DownloaderService.class);
+		intent.putExtras(Episode.packageEpisode(mPonyExpressApp, mPodcastName, id));
+		intent.putExtra("action", DownloaderService.DOWNLOAD);
+		startService(intent);
 	}
 
 
