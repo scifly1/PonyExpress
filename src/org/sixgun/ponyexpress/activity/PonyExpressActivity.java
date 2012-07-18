@@ -27,12 +27,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.UpdaterService;
-import org.sixgun.ponyexpress.util.Utils;
-import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -52,7 +51,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -63,7 +61,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -240,12 +237,49 @@ public class PonyExpressActivity extends ListActivity {
 			mProgDialog.dismiss();
 		}
 	}
+	
+	private class PonyPodcastCursorAdapter extends PodcastCursorAdapter{
+
+		public PonyPodcastCursorAdapter(Context context, Cursor c) {
+			super(context, c);
+		}
+
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			//Call super's method to get all layout sorted
+			super.bindView(view, context, cursor);
+
+			//Add Click listener's for each row.
+			final int id_index = cursor.getColumnIndex(PodcastKeys._ID);
+			final long id = cursor.getLong(id_index);
+			view.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					selectPodcast(id);
+
+				}
+			});
+			view.setOnLongClickListener(new OnLongClickListener() {
+
+				@Override
+				public boolean onLongClick(View v) {
+					openContextMenu(v);
+					return true;
+				}
+			});
+
+		}
+	}
+
+	
+	
 
 	/**
 	 * Starts the EpisodesActivity with the selected podcast
 	 * @param id row_id of the podcast in the database
 	 */
-	protected void selectPodcast(View v, long id) {
+	protected void selectPodcast(long id) {
 		//Get the podcast name and album art url and number of unlistened episodes.
 		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
 		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
@@ -386,7 +420,7 @@ public class PonyExpressActivity extends ListActivity {
 		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
 		startManagingCursor(c);
 		//Create a CursorAdapter to map podcast title and art to the ListView.
-		PodcastCursorAdapter adapter = new PodcastCursorAdapter(mPonyExpressApp, c);
+		PonyPodcastCursorAdapter adapter = new PonyPodcastCursorAdapter(mPonyExpressApp, c);
 		mListingPodcasts = true;
 		//Add footer to the listview if required.
 		if (addFooter){
@@ -406,79 +440,7 @@ public class PonyExpressActivity extends ListActivity {
 		registerForContextMenu(getListView());
 	}
 
-	/**
-	 * We subclass CursorAdapter to handle our display the results from our Podcast cursor. 
-	 * Overide newView to create/inflate a view to bind the data to.
-	 * Overide bindView to determine how the data is bound to the view.
-	 */
-	protected class PodcastCursorAdapter extends CursorAdapter{
-
-		public PodcastCursorAdapter(Context context, Cursor c) {
-			super(context, c);
-		}
-
-		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			final int nameIndex = cursor.getColumnIndex(PodcastKeys.NAME);
-			final int artUrlIndex = cursor.getColumnIndex(PodcastKeys.ALBUM_ART_URL);
-			//get the number of unlistened episodes
-			String name = cursor.getString(nameIndex);
-			final int unlistened = mPonyExpressApp.getDbHelper().countUnlistened(name);
-			
-			//Remove the words "ogg feed" if present at the end.
-			name = Utils.stripper(name, "Ogg Feed");
-			
-			TextView podcastName = (TextView) view.findViewById(R.id.podcast_text);
-			RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
-			TextView unlistenedText = (TextView) view.findViewById(R.id.unlistened_eps);
-			
-			podcastName.setText(name);
-			String albumArtUrl = cursor.getString(artUrlIndex);
-			if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
-        		albumArt.setRemoteURI(albumArtUrl);
-        		albumArt.loadImage();
-			} else {
-				albumArt.loadDefault();
-			}
-			final String unlistenedString = Utils.formUnlistenedString(context, unlistened);
-			unlistenedText.setText(unlistenedString);
-			
-			//Add Click listener's for each row.
-			final int id_index = cursor.getColumnIndex(PodcastKeys._ID);
-			final long id = cursor.getLong(id_index);
-			view.setOnClickListener(new OnClickListener() {
-				
-				@Override
-				public void onClick(View v) {
-					selectPodcast(v, id);
-					
-				}
-			});
-			view.setOnLongClickListener(new OnLongClickListener() {
-				
-				@Override
-				public boolean onLongClick(View v) {
-					openContextMenu(v);
-					return true;
-				}
-			});
-			
-			
-			
-		}
-
-		@Override
-		public View newView(Context context, Cursor cursor, ViewGroup parent) {
-			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			View v = new View(context);
-			v = vi.inflate(R.layout.podcast_row, parent, false);
-			return v;
-		}
 		
-	}
-	
-	
-	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreateContextMenu(android.view.ContextMenu, android.view.View, android.view.ContextMenu.ContextMenuInfo)
 	 */
@@ -505,7 +467,7 @@ public class PonyExpressActivity extends ListActivity {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()){
 		case R.id.view_eps:
-			selectPodcast(info.targetView, info.id);
+			selectPodcast(info.id);
 			return true;
 		case R.id.refresh_feeds:
 			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastName(info.id);

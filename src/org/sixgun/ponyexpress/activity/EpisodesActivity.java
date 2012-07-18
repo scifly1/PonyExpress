@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.Episode;
+import org.sixgun.ponyexpress.EpisodeCursorAdapter;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -27,20 +28,17 @@ import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.ListActivity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -50,7 +48,6 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
-import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -312,35 +309,7 @@ public class EpisodesActivity extends ListActivity {
 	}
 
 
-	private class EpisodeAdapter extends CursorAdapter {
-
-		public EpisodeAdapter(Context context, Cursor c) {
-			super(context, c);
-		}
-
-		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			final int titleIndex = cursor.getColumnIndex(EpisodeKeys.TITLE);
-			final int listenedIndex = cursor.getColumnIndex(EpisodeKeys.LISTENED);
-			TextView episodeText = (TextView) view.findViewById(R.id.episode_text);
-			String title = cursor.getString(titleIndex);
-			int listened = cursor.getInt(listenedIndex);
-			episodeText.setText(title);
-			if (listened == -1){ //not listened == -1
-				episodeText.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
-			} else episodeText.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
-		}
-
-		@Override
-		public View newView(Context context, Cursor cursor, ViewGroup parent) {
-			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			View v = new View(context);
-			v = vi.inflate(R.layout.episode_row, null);
-			return v;
-		}
-		
-	}
-
+	
 	/**
 	 * Query the database for all Episode titles to populate the ListView.
 	 */
@@ -348,7 +317,7 @@ public class EpisodesActivity extends ListActivity {
 		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames(mPodcastName);
 		startManagingCursor(c);		
 		
-		EpisodeAdapter episodes = new EpisodeAdapter(this, c);
+		EpisodeCursorAdapter episodes = new EpisodeCursorAdapter(this, c);
 		setListAdapter(episodes);
 		
 		//Also update the unlistened text at the same time.

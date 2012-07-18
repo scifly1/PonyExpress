@@ -111,6 +111,8 @@
 		<item>50 seconds</item>
 		<item>60 seconds</item>
 	</string-array>
+	<string name="add_episode">Add to playlist</string>
+	<string name="view_shownotes">View show notes</string>
 	<string name="mark_all_listened">Mark all listened</string>
 	<string name="mark_all_not_listened">Mark all not listened</string>
 	<string name="new_episodes"> new episodes</string>
@@ -144,6 +146,16 @@
 	<string name="playlist_subtitle_eps">Select episodes...</string>
 	<string name="not_downloaded_dialog">This episode is not downloaded. Do you want to download it now?</string>
 	<string name="always_auto_download">Always auto-download?</string>
+	<string name="backup">Backup</string>
+	<string name="restore">Restore</string>
+	<string name="restoring">Restoring feeds from the backup file.</string>
+	<string name="backing_up_feeds">Backing up the list of feeds. Please wait.</string>
+	<string name="backup_successful">Backup successful! Yippee ki-yay! </string>
+	<string name="a_backup_file_">A backup file already exists. Do you want to overwrite?</string>
+	<string name="yes">Yes</string>
+	<string name="no">No</string>
+	<string name="there_is_no_backup">There is no backup file to restore.</string>
+	<string name="error_parsing_backup_file">There was an error parsing the backup file. Required data may be missing or corrupt.</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
@@ -225,16 +237,7 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		<item>50000</item>
 		<item>60000</item>
 	</string-array>
-	<string name="backup">Backup</string>
-	<string name="restore">Restore</string>
-	<string name="restoring">Restoring feeds from the backup file.</string>
-	<string name="backing_up_feeds">Backing up the list of feeds. Please wait.</string>
-	<string name="backup_successful">Backup successful! Yippee ki-yay! </string>
-	<string name="a_backup_file_">A backup file already exists. Do you want to overwrite?</string>
-	<string name="yes">Yes</string>
-	<string name="no">No</string>
-	<string name="there_is_no_backup">There is no backup file to restore.</string>
-	<string name="error_parsing_backup_file">There was an error parsing the backup file. Required data may be missing or corrupt.</string>
+	
 
 	
 </resources>

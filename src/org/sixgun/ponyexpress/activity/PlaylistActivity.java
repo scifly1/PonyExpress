@@ -18,17 +18,34 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.Episode;
+import org.sixgun.ponyexpress.EpisodeCursorAdapter;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PlaylistInterface;
+import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.DownloaderService;
+import org.sixgun.ponyexpress.util.InternetHelper;
+import org.sixgun.ponyexpress.util.Utils;
 
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
+import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -39,27 +56,62 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.CheckBox;
 import android.widget.CursorAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
-public class PlaylistActivity extends PonyExpressActivity implements PlaylistInterface {
+public class PlaylistActivity extends Activity implements PlaylistInterface {
 
 	private static final int START_PLAYBACK = 0;
+	private static final int NOT_DOWNLOADED_DIALOG = 0;
+	private static final String TAG = "PlaylistActivity";
 	private ListView mPlaylist;
 	private View mNoPlaylist;
+	private PonyExpressApp mPonyExpressApp;
+	private ViewGroup mBackground;
+	private String mAlbumArtUrl;
+	private String mPodcastName;
+	private CheckBox mAlwaysDownloadCheckbox;
+	protected long mRowIdForNotDownloadedDialog;
+	private boolean mListingEpisodes = false;
+	private ListView mPodcastsAndEpisodesList;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.playlist);
 		
-		//Get the playlist listview as we need to manage it.
+		mPonyExpressApp = (PonyExpressApp) getApplication();
+		//Get the listviews as we need to manage them.
 		mPlaylist = (ListView) findViewById(R.id.playlist_list);
 		mNoPlaylist = (TextView) findViewById(R.id.no_list);
+		mPodcastsAndEpisodesList = (ListView) findViewById(R.id.podcasts_episodes_list);
+		
+		//Set the background of the episode list when shown
+		mBackground = (ViewGroup) findViewById(R.id.playlist_episodes_body);
+		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+
+			@Override
+			public void onGlobalLayout() {
+				Resources res = getResources();
+				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
+				if (image != null){
+					int new_height = mBackground.getHeight();
+					int new_width = mBackground.getWidth();
+					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+							(res, image, new_height, new_width);
+					mBackground.setBackgroundDrawable(new_background);
+				}
+			}
+		});
+				
 		listPlaylist();
+		listPodcasts(false);
 	}
 		
 	/* (non-Javadoc)
@@ -72,13 +124,30 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		listPlaylist();
 	}
 
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onBackPressed()
+	 */
+	@Override
+	public void onBackPressed() {
+		//Handle pressing back when showing the episodes list. 
+		goBack(null);
+	}
 
 	/*
 	 * @see org.sixgun.ponyexpress.PlaylistInterface#goBack(android.view.View)
 	 */
 	@Override
 	public void goBack(View v) {
-		finish();
+		if (mListingEpisodes){
+			mListingEpisodes = false;
+			//Remove podcast art from background
+			mAlbumArtUrl = null;
+			mBackground.setBackgroundResource(R.drawable.background);
+			
+			listPodcasts(false);
+		} else {
+			finish();
+		}
 	}
 		
 	/*
@@ -106,16 +175,90 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	/* (non-Javadoc)
 	 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity#listPodcasts(boolean)
 	 */
-	@Override
 	protected void listPodcasts(boolean addFooter) {
 		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
 		startManagingCursor(c);
 		//Create a CursorAdapter to map podcast title and art to the ListView.
 		PlaylistPodcastCursorAdapter adapter = new PlaylistPodcastCursorAdapter(mPonyExpressApp, c);
 		
-		setListAdapter(adapter);
+		mPodcastsAndEpisodesList.setAdapter(adapter);
+	}
+	
+	protected void listEpisodes(String podcast_name){
+		//Method called when a podcast is selected. Switches 
+		//the adapter used in the listView from the podcastAdapter 
+		//to the episodes adapter.
+		mListingEpisodes = true;
 		
-		registerForContextMenu(getListView());
+		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames(podcast_name);
+		startManagingCursor(c);		
+		
+		EpisodeCursorAdapter episodes = new PlaylistEpisodeCursorAdapter(this, c);
+		mPodcastsAndEpisodesList.setAdapter(episodes);
+		registerForContextMenu(mPodcastsAndEpisodesList);
+	}
+	
+	private void startDownload(long id) {
+		Intent intent = new Intent(this,DownloaderService.class);
+		Bundle bundle = Episode.packageEpisode(mPonyExpressApp, mPodcastName, id);
+		intent.putExtras(bundle);
+		intent.putExtra("action", DownloaderService.DOWNLOAD);
+		startService(intent);
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int)
+	 */
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		AlertDialog dialog;
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		final SharedPreferences.Editor editor = prefs.edit();
+		//If more dialogs are added this should be a switch case block.
+		if (id == NOT_DOWNLOADED_DIALOG){
+			AlertDialog.Builder builder = new Builder(this);
+			LayoutInflater inflater = this.getLayoutInflater();
+			View message = inflater.inflate(R.layout.auto_download_dialog,(ViewGroup) findViewById(R.id.auto_download_dialog_root));
+			mAlwaysDownloadCheckbox = (CheckBox) message.findViewById(R.id.always_download_checkBox);
+			
+			builder.setView(message);
+			builder.setCancelable(false)
+			.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {				
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			})
+			.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					if (mAlwaysDownloadCheckbox.isChecked()){
+						editor.putBoolean(getString(R.string.auto_download_key), true);
+					} else {
+						editor.putBoolean(getString(R.string.auto_download_key), false);
+					}
+					editor.commit();
+					mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, mRowIdForNotDownloadedDialog);			
+					listPlaylist();
+					startDownload(mRowIdForNotDownloadedDialog);
+					
+				}
+			});
+			dialog = builder.create();
+		} else dialog = null;
+		return dialog;
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPrepareDialog(int, android.app.Dialog)
+	 */
+	@Override
+	protected void onPrepareDialog(int id, Dialog dialog, Bundle episode) {
+		super.onPrepareDialog(id, dialog, episode);
+		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+		final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
+		mAlwaysDownloadCheckbox.setChecked(auto_download);
+		mRowIdForNotDownloadedDialog = episode.getLong(EpisodeKeys.ROW_ID);
 	}
 
 	/* (non-Javadoc)
@@ -180,9 +323,16 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
 			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
 			menu.setHeaderTitle(episode_name.getText());
-		}else{
+		} else if (v.getId() == R.id.podcasts_episodes_list && mListingEpisodes){
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.episode_playlist_context, menu);
+			//Set the title of the menu
+			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
+			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
+			menu.setHeaderTitle(episode_name.getText());
+		} else {
 			super.onCreateContextMenu(menu, v, menuInfo);
-		}		
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -192,6 +342,7 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()){
+		//Playlist context menu items
 		case R.id.move_top:
 			mPonyExpressApp.getDbHelper().moveToTop(info.position);
 			listPlaylist();
@@ -212,6 +363,23 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		case R.id.move_down:
 			mPonyExpressApp.getDbHelper().moveDownPlaylist(info.position);
 			listPlaylist();
+			return true;
+		//Episode context menu items
+		case R.id.add_to_playlist:
+			selectEpisode(info.id);
+			return true;
+		case R.id.shownotes:
+			//TODO
+			return true;
+		case R.id.mark_listened:
+			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, 
+					EpisodeKeys.LISTENED, 0);
+			listEpisodes(mPodcastName);
+			return true;
+		case R.id.mark_not_listened:
+			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, 
+					EpisodeKeys.LISTENED, -1);
+			listEpisodes(mPodcastName);
 			return true;
 		default:
 			return super.onContextItemSelected(item);
@@ -285,6 +453,25 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		public PlaylistPodcastCursorAdapter(Context context, Cursor c) {
 			super(context, c);
 		}
+		
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			//Call super's method to get all layout sorted
+			super.bindView(view, context, cursor);
+
+			//Add Click listener's for each row.
+			final int id_index = cursor.getColumnIndex(PodcastKeys._ID);
+			final long id = cursor.getLong(id_index);
+			view.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					selectPodcast(id);
+
+				}
+			});
+			
+		}
 
 		/* (non-Javadoc)
 		 * @see org.sixgun.ponyexpress.activity.PonyExpressActivity.PodcastCursorAdapter#newView(android.content.Context, android.database.Cursor, android.view.ViewGroup)
@@ -298,21 +485,90 @@ public class PlaylistActivity extends PonyExpressActivity implements PlaylistInt
 		}
 	}
 	
+	private class PlaylistEpisodeCursorAdapter extends EpisodeCursorAdapter {
+
+		public PlaylistEpisodeCursorAdapter(Context context, Cursor c) {
+			super(context, c);
+		}
+		
+		@Override
+		public void bindView(View view, Context context, Cursor cursor) {
+			//Call super method to set out layout
+			super.bindView(view, context, cursor);
+			
+			//Add Click listener's for each row.
+			final int id_index = cursor.getColumnIndex(EpisodeKeys._ID);
+			final long id = cursor.getLong(id_index);
+			view.setOnClickListener(new OnClickListener() {
+
+				@Override
+				public void onClick(View v) {
+					selectEpisode(id);
+
+				}
+			});
+			
+			view.setOnLongClickListener(new OnLongClickListener() {
+
+				@Override
+				public boolean onLongClick(View v) {
+					openContextMenu(v);
+					return true;
+				}
+			});
+		}
+		
+		
+	}
 	
+
 	/* 
 	 * Starts the PlaylistEpisodesActivity to select the required episodes
 	 * @param id row_id of the podcast in the database
 	 */
-	@Override
-	protected void selectPodcast(View v, long id) {
+	protected void selectPodcast(long id) {
 		//Get the podcast name and album art url and number of unlistened episodes.
-		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
-		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
-		//Store in an intent and send to PlaylistEpisodesActivity
-		Intent intent = new Intent(this,PlaylistEpisodesActivity.class);
-		intent.putExtra(PodcastKeys.NAME, name);
-		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
-		startActivity(intent);
+		mPodcastName = mPonyExpressApp.getDbHelper().getPodcastName(id);
+		mAlbumArtUrl = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
+		
+		//Change listView by changing adapter used with listEpisodes(podcast name, art url)
+		listEpisodes(mPodcastName);
+	}
+	
+	private void selectEpisode(long id) {
+		//is episode downloaded?
+		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName)){
+			// is Connectivity ok and are downloads allowed?
+			switch (mPonyExpressApp.getInternetHelper().isDownloadPossible()){
+			case InternetHelper.NO_CONNECTION:
+				Toast.makeText(mPonyExpressApp, R.string.not_downloaded_no_internet, Toast.LENGTH_SHORT).show();
+				return;
+			case InternetHelper.MOBILE_NOT_ALLOWED:
+				Toast.makeText(mPonyExpressApp, R.string.not_downloaded_wrong_network_type, Toast.LENGTH_SHORT).show();
+				return;
+			case InternetHelper.DOWNLOAD_OK:
+				final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+				final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
+				if (!auto_download){
+					Bundle episode = new Bundle();
+					episode.putLong(EpisodeKeys.ROW_ID, id);
+					showDialog(NOT_DOWNLOADED_DIALOG, episode);
+				} else {
+					//Auto-download ok
+					startDownload(id);
+					mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
+					listPlaylist();
+				}
+				break;
+			default:
+				Log.e(TAG, "Unkown return from InternetHelper.isDownloadPossible");
+				return;
+			}
+		} else {
+			mPonyExpressApp.getDbHelper().addEpisodeToPlaylist(mPodcastName, id);			
+			listPlaylist();
+		}
+	
 	}
 
 

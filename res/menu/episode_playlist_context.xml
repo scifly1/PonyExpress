@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item
+		android:id="@+id/mark_listened"
+		android:title="@string/mark_listened"
+		android:orderInCategory="3" />
+	<item
+		android:title="@string/mark_not_listened"
+		android:id="@+id/mark_not_listened"
+		android:orderInCategory="4" />
+	<item
+		android:id="@+id/add_to_playlist"
+		android:title="@string/add_episode"
+		android:orderInCategory="1" />
+	<item 
+	    android:id="@+id/shownotes"
+	    android:title="@string/view_shownotes"
+	    android:orderInCategory="2" />
+	
+</menu>
