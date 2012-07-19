@@ -81,6 +81,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	protected long mRowIdForNotDownloadedDialog;
 	private boolean mListingEpisodes = false;
 	private ListView mPodcastsAndEpisodesList;
+	private TextView mPlaylistSubtitle;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -91,6 +92,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		mPlaylist = (ListView) findViewById(R.id.playlist_list);
 		mNoPlaylist = (TextView) findViewById(R.id.no_list);
 		mPodcastsAndEpisodesList = (ListView) findViewById(R.id.podcasts_episodes_list);
+		mPlaylistSubtitle = (TextView) findViewById(R.id.playlist_subtitle);
 		
 		//Set the background of the episode list when shown
 		mBackground = (ViewGroup) findViewById(R.id.playlist_episodes_body);
@@ -182,6 +184,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		PlaylistPodcastCursorAdapter adapter = new PlaylistPodcastCursorAdapter(mPonyExpressApp, c);
 		
 		mPodcastsAndEpisodesList.setAdapter(adapter);
+		mPlaylistSubtitle.setText(R.string.playlist_subtitle_pod);
 	}
 	
 	protected void listEpisodes(String podcast_name){
@@ -196,6 +199,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		EpisodeCursorAdapter episodes = new PlaylistEpisodeCursorAdapter(this, c);
 		mPodcastsAndEpisodesList.setAdapter(episodes);
 		registerForContextMenu(mPodcastsAndEpisodesList);
+		mPlaylistSubtitle.setText(R.string.playlist_subtitle_eps);
 	}
 	
 	private void startDownload(long id) {
