@@ -266,6 +266,12 @@ public class EpisodesActivity extends ListActivity {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()){
+		case R.id.shownotes:
+			final Bundle data = Episode.packageEpisode(mPonyExpressApp, mPodcastName, info.id);
+			Intent intent = new Intent(this, ShowNotesActivity.class);
+			intent.putExtras(data);
+			startActivity(intent);
+			return true;
 		case R.id.mark_listened:
 			markListened(info.id);
 			listEpisodes();
