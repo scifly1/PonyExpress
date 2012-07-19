@@ -369,7 +369,10 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			selectEpisode(info.id);
 			return true;
 		case R.id.shownotes:
-			//TODO
+			final Bundle data = Episode.packageEpisode(mPonyExpressApp, mPodcastName, info.id);
+			Intent intent = new Intent(this, ShowNotesActivity.class);
+			intent.putExtras(data);
+			startActivity(intent);
 			return true;
 		case R.id.mark_listened:
 			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, 
