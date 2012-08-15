@@ -101,8 +101,6 @@ public class PodcastPlayer extends Service {
 
 	private boolean mQueuedIsUnlistened;
 
-	private int mStartPosition;
-	
 	SharedPreferences mPrefs;
 
 	private boolean mPlayingPlaylist;
@@ -304,8 +302,8 @@ public class PodcastPlayer extends Service {
 		final String file = mData.getString(EpisodeKeys.FILENAME);
 		String path = PonyExpressApp.PODCAST_PATH + mPodcastNameQueued + file;
 		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
-		mStartPosition = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
 		boolean isError = false;
+		int startPosition = getPlaybackPosition();
 		
 		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
@@ -335,14 +333,14 @@ public class PodcastPlayer extends Service {
 				}
 			}
 			//SeekTo last listened position
-			if (mStartPosition != -1){				
-				mFreePlayer.seekTo(mStartPosition);
-				Log.d(TAG,"Seeking to " + mStartPosition);
+			if (startPosition != -1){
+				mFreePlayer.seekTo(startPosition);
+				Log.d(TAG,"Seeking to " + startPosition);
 				mQueuedIsUnlistened = false;
 			} else {
 				mQueuedIsUnlistened = true;
 			}
-			
+
 			mEpisodeQueued = file;
 		}
 		if (isError){
@@ -392,26 +390,21 @@ public class PodcastPlayer extends Service {
 		}		
 		
 		mPlayer.start();
-		
-		mStartPosition = mPlayer.getCurrentPosition();
-		//Adds a 10sec recap on resume if it's marked true in the prefs.
-		if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false) == true){
-			mStartPosition -= 10000;
-		}
-			
+
+		int playbackPosition = getPlaybackPosition();
 		//Fix for android 2.2 HTC phones that 
 		//don't seek to the current position with mp3 and instead go to 0
-		if (mStartPosition != 0){
-			mPlayer.seekTo(mStartPosition - 10); // This extra seek is needed!
+		if (playbackPosition != 0){
+			mPlayer.seekTo(playbackPosition - 10); // This extra seek is needed!
 		} else {
-			mPlayer.seekTo(mStartPosition + 10);
+			mPlayer.seekTo(playbackPosition + 10);
 		}
-		mPlayer.seekTo(mStartPosition);
+		mPlayer.seekTo(playbackPosition);
 		
 		showNotification();
 		mEpisodePlaying = mEpisodeQueued;
 		Log.d(TAG,"Playing " + mEpisodePlaying);
-		
+
 	}
 	
 	public void pause() {
@@ -427,11 +420,14 @@ public class PodcastPlayer extends Service {
 		hideNotification();
 		//Record last listened position in database
 		final int playbackPosition = mPlayer.getCurrentPosition();
-		boolean res =mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID, 
-				EpisodeKeys.LISTENED, playbackPosition);
-		if (res){
+		
+		boolean save = savePlaybackPosition(playbackPosition);
+		if (save){
 			Log.d(TAG, "Updated listened to position to " + playbackPosition);
+		}else{
+			Log.d(TAG, "Error saving playback position at " + playbackPosition);
 		}
+		
 		stopSelf();
 	}
 		
@@ -448,7 +444,14 @@ public class PodcastPlayer extends Service {
 		final int playbackPosition = mPlayer.getCurrentPosition();
 		final int seekDelta = Integer.parseInt(mPrefs.getString(getString(R.string.r_seek_time_key), "30000"));
 		final int newPosition = playbackPosition - seekDelta;
-		mPlayer.seekTo(newPosition);
+		
+		//This check is needed because seeking to a negative position can cause errors
+		//on some implementations of MediaPlayer.
+		if(newPosition < 0){
+			mPlayer.seekTo(0);
+		}else{
+			mPlayer.seekTo(newPosition);
+		}
 	}
 	/** This Method is called from PlayerActivity to Seek using the SeekBar  
 	 * 
@@ -458,9 +461,11 @@ public class PodcastPlayer extends Service {
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
+			savePlaybackPosition(progress);
 			mFreePlayer.seekTo(progress);
 		} else {
 			//Playback has been started now, so the mPlayer is correct#
+			savePlaybackPosition(progress);
 			mPlayer.seekTo(progress);
 		}
 	}
@@ -475,7 +480,37 @@ public class PodcastPlayer extends Service {
 			return mPlayer.getDuration();
 		}
 	}
-	
+
+	//This method returns the saved current position from the DB for PodcastPlayer.java.
+	//This is needed because MediaPlayer.getCurrentPosition() can be unreliable in it's
+	//position returns.
+	private int getPlaybackPosition(){
+		int playbackPosition = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
+
+		//Adds a 10sec recap on resume if that option is marked true in the prefs,
+		//and then return playbackPosition. Otherwise, simply return playbackPosition.
+		if (mPrefs.getBoolean(getString(R.string.recap_on_resume_key), false)){
+			if (playbackPosition < 10000){
+				return 0;
+			}else{
+				return (playbackPosition - 10000);
+			}
+		}else{
+			return playbackPosition;
+		}
+	}
+
+	//Simple save the current  playback position to the DB, and
+	//return a boolean of success.
+	private boolean savePlaybackPosition(int playbackPosition){
+		return mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID,
+				EpisodeKeys.LISTENED, playbackPosition);
+	}
+
+	//This method returns the current position from MediaPlayer
+	//for the seekBar in PlayerActivity.java.  MediaPlayer.getCurrentPosition()
+	//can be unreliable, but it's ok for the seekbar. Also, we don't
+	//want to hammer the DB with reads and writes.
 	public int getEpisodePosition(){
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
@@ -491,25 +526,25 @@ public class PodcastPlayer extends Service {
 			} else return 0;
 		}
 	}
-	
+
 	public String getEpisodeTitle(){
 		return mEpisodePlaying;
 	}
-	
+
 	public String getPodcastName(){
 		return mPodcastName;
 	}
-	
+
 	public long getEpisodeRow(){
 		return mRowID;
 	}
-	
+
 	public boolean isPlaying() {
 		if (mPlayer != null && mPlayer.isPlaying()){
 			return true;
 		} else return false;
 	}
-	
+
 	public boolean isResumeAfterCall() {
 		final boolean ret = mBeenResumedAfterCall;
 		mBeenResumedAfterCall = false;
