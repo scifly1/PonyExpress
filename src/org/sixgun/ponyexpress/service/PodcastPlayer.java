@@ -164,10 +164,8 @@ public class PodcastPlayer extends Service {
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
-				//Set Listened to 0
-				boolean res = mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
-						EpisodeKeys.LISTENED, 0);
-				if (res) {
+				//Set Listened to 0				
+				if (savePlaybackPosition(0)) {
 					Log.d(TAG, "Updated listened to position to " + 0);
 				}
 				
@@ -384,8 +382,7 @@ public class PodcastPlayer extends Service {
 			
 			//Mark the episode listened if previously unlistened.
 			if (mQueuedIsUnlistened){
-				mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, 
-						EpisodeKeys.LISTENED, 0);
+				savePlaybackPosition(0);
 			}
 		}		
 		
