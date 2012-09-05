@@ -110,6 +110,7 @@
         android:layout_alignParentRight="true"
         android:layout_below="@id/tag_entry"
         android:layout_marginLeft="5dip"
+        android:onClick="okButtonPressed"
         android:text="@string/ok" />
 
     <Button
@@ -118,7 +119,8 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/tag_entry"
         android:layout_toLeftOf="@id/ok"
-        android:text="@string/cancel" />
+        android:text="@string/cancel" 
+        android:onClick="cancelButtonPressed"/>
 
     <Button
         android:id="@+id/backup"
@@ -127,7 +129,8 @@
         android:layout_alignParentBottom="true"
         android:layout_marginBottom="78dp"
         android:layout_toLeftOf="@+id/group_entry"
-        android:text="@string/backup" />
+        android:text="@string/backup" 
+        android:onClick="backupButtonPressed"/>
 
     <Button
         android:id="@+id/restore"
@@ -137,6 +140,7 @@
         android:layout_alignBottom="@+id/backup"
         android:layout_alignParentRight="true"
         android:layout_marginRight="18dp"
-        android:text="@string/restore" />
+        android:text="@string/restore" 
+        android:onClick="restoreButtonPressed"/>
 
 </RelativeLayout>
