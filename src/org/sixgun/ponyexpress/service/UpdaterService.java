@@ -123,6 +123,7 @@ public class UpdaterService extends IntentService {
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
+					Log.d(TAG, "Releasing wakelock");
 				}
 				sWakeLock = null;
 			}

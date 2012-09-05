@@ -46,6 +46,7 @@ public class UpdateAlarmReceiver extends BroadcastReceiver{
 			UpdaterService.sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
 		}
 		if (!UpdaterService.sWakeLock.isHeld()){
+			Log.d(TAG, "Acquiring wake lock");
 			UpdaterService.sWakeLock.acquire();
 		}
 		//Start UpdaterSevice with UPDATE_ALL string
