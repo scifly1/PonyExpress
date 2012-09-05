@@ -97,35 +97,6 @@ public class PonyExpressActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
-		//Need to get the add podcast and settings button explicitly for android1.5
-		mClickHandler = new OnClickListener() {
-		    public void onClick(View v) {
-		        switch (v.getId()) {
-		            case R.id.settings_button:
-		            	showSettings(v);
-		                break;
-		            case R.id.playlist_button:
-		            	showPlaylist(v);
-		                break;
-		            case R.id.footer_button:
-		            	//fallthrough
-		            case R.id.sixgun_subtitle:
-		            	//fallthrough
-		            case R.id.app_name:
-		            	//fallthrough
-		            case R.id.pony_footer:
-		            	showAbout(v);
-		            	break;
-		        }
-		    }
-		};
-		findViewById(R.id.app_name).setOnClickListener(mClickHandler);
-		findViewById(R.id.sixgun_subtitle).setOnClickListener(mClickHandler);
-		findViewById(R.id.settings_button).setOnClickListener(mClickHandler);
-		findViewById(R.id.playlist_button).setOnClickListener(mClickHandler);
-		//Add click listerner for the footer_button even though it may be hidden later.
-		findViewById(R.id.pony_footer).setOnClickListener(mClickHandler);
-		
 		
 		ViewGroup list_root = (ViewGroup) findViewById(R.id.podcast_list_root);
 		list_root.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
@@ -430,7 +401,6 @@ public class PonyExpressActivity extends ListActivity {
 			//prevent more than one footer being added each time we pass through here.
 			if (list.getFooterViewsCount() == 0){
 				list.addFooterView(mListFooter);
-				mListFooter.findViewById(R.id.footer_button).setOnClickListener(mClickHandler);
 				footer_layout.setVisibility(View.GONE);
 			}
 		}
