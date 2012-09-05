@@ -48,16 +48,19 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class UpdaterService extends IntentService {
 	
+	public static WakeLock sWakeLock;
 	private String TAG = "PonyExpress UpdaterService";
 	private PonyExpressApp mPonyExpressApp;
 	private NotificationManager mNM;
 	private static final int NOTIFY_1 = 1;
 	private static final int NOTIFY_2 = 2;
+	
 	
 		
 	
@@ -76,45 +79,54 @@ public class UpdaterService extends IntentService {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		Log.d(TAG,"Updater Service started");
 		
-		// Initialize the status notification
-		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-						
-		// Get the input data from the intent and parse it, starting the various
-		// updater methods and setting notification text as needed.
-		Bundle data = intent.getExtras();
-		final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
-		final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
-		final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
-		final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
-				
-		if (set_alarm_only){
-			final long nextUpdate = getNextUpdateTime();
-			if (nextUpdate >= System.currentTimeMillis()){
-				setNextAlarm();
-			}else{
+		try {
+			// Initialize the status notification
+			mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+
+			// Get the input data from the intent and parse it, starting the various
+			// updater methods and setting notification text as needed.
+			Bundle data = intent.getExtras();
+			final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
+			final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
+			final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
+			final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
+
+			if (set_alarm_only){
+				final long nextUpdate = getNextUpdateTime();
+				if (nextUpdate >= System.currentTimeMillis()){
+					setNextAlarm();
+				}else{
+					showStatusNotification(getText(R.string.checking_all));
+					updateAllFeeds();
+				}
+			}
+
+			if (update_sixgun){
+				showStatusNotification(getText(R.string.checking_sixgun));
+				checkForNewSixgunShows();
+				updateAllFeeds();
+			}
+
+			if (update_all) {
 				showStatusNotification(getText(R.string.checking_all));
 				updateAllFeeds();
 			}
+
+			if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
+				showStatusNotification(getText(R.string.checking) + " " + update_single);
+				updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
+			}
+
+			// This method is done at this point, so cancel the notification and log. 
+			mNM.cancel(NOTIFY_1);
+		} finally {
+			if (sWakeLock != null){
+				if (sWakeLock.isHeld()){
+					sWakeLock.release();
+				}
+				sWakeLock = null;
+			}
 		}
-		
-		if (update_sixgun){
-			showStatusNotification(getText(R.string.checking_sixgun));
-			checkForNewSixgunShows();
-			updateAllFeeds();
-		}
-		
-		if (update_all) {
-			showStatusNotification(getText(R.string.checking_all));
-			updateAllFeeds();
-		}
-		
-		if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
-			showStatusNotification(getText(R.string.checking) + " " + update_single);
-			updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
-		}
-		
-		// This method is done at this point, so cancel the notification and log. 
-		mNM.cancel(NOTIFY_1);
 		Log.d(TAG,"Updater Service stopped");
 	}
 	
