@@ -59,7 +59,7 @@ import android.widget.RemoteViews;
  * PodcastPlayer is a service that handles all interactions with the media player.
  *
  */
-public class PodcastPlayer extends Service {
+public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusChangeListener {
 
 	private static final String TAG = "PonyExpress PodcastPlayer";
 	
@@ -201,13 +201,13 @@ public class PodcastPlayer extends Service {
 		
 		//Create MediaButton Broadcast reciever for Android2.2
 		mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-	    mRemoteControlReceiver = new ComponentName(getPackageName(),
-	                RemoteControlReceiver.class.getName());
-		
-	    
+		mRemoteControlReceiver = new ComponentName(getPackageName(),
+				RemoteControlReceiver.class.getName());
+
 		Log.d(TAG, "PodcastPlayer started");
 	}
-	
+
+
 	// This is the old onStart method that will be called on the pre-2.0
 	// platform.  On 2.0 or later we override onStartCommand() so this
 	// method will not be called.
@@ -357,6 +357,12 @@ public class PodcastPlayer extends Service {
 	 */
 	public void play() {
 		
+		int result = mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
+				AudioManager.AUDIOFOCUS_GAIN);
+
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+			Log.d(TAG, "Audio focus granted");
+		}
 		//Register HeadPhone receiver
 		if (mHeadPhoneReciever == null){
 			mHeadPhoneReciever = new HeadPhoneReceiver();
@@ -384,7 +390,7 @@ public class PodcastPlayer extends Service {
 			if (mQueuedIsUnlistened){
 				savePlaybackPosition(0);
 			}
-		}		
+		}
 		
 		mPlayer.start();
 
@@ -405,6 +411,15 @@ public class PodcastPlayer extends Service {
 	}
 	
 	public void pause() {
+
+		//Abandon audio focus
+		int result = mAudioManager.abandonAudioFocus(this);
+			if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
+				Log.d(TAG, "Audio focus abandoned");
+			}else{
+				Log.e(TAG, "Audio focus failed to abandon");
+			}
+
 		//unregister HeadPhone reciever
 		if (mHeadPhoneReciever != null){
 			unregisterReceiver(mHeadPhoneReciever);
@@ -696,7 +711,51 @@ public class PodcastPlayer extends Service {
             System.err.println("unexpected " + ie);  
         }
     }
-	
 
+	/** Implemented from AudioManager.OnAudioFocusChangeListener.  This is used to
+	* regulate audio apps so that two apps don't play audio at the same time.
+	*
+	* Note: Other apps must also respect focus and call for focus changes or this
+	* will not work!
+	*/
+	@Override
+	public void onAudioFocusChange(int focus) {
+		switch (focus) {
 
+		case AudioManager.AUDIOFOCUS_GAIN:
+			// resume play back when something else gives focus back
+			Log.d(TAG, "Audio focus has been returned from another app");
+			if (!mPlayer.isPlaying()) {
+				//Words can get cut off if we resume right where we left off,
+				// so rewind a bit.
+				mPlayer.seekTo(mPlayer.getCurrentPosition() - 3000);
+				mPlayer.start();
+			}
+			break;
+
+		case AudioManager.AUDIOFOCUS_LOSS:
+			// focus will be taken for an extend period of time, so we
+			// need to pause and stop the service
+			Log.d(TAG, "Audio focus lost-permanent");
+			pause();
+			break;
+
+		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+			// focus will be given back soon so we just need to pause for a moment
+			Log.d(TAG, "Audio focus lost-transient");
+			if (mPlayer.isPlaying()) {
+				mPlayer.pause();
+			}
+			break;
+
+		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+			// focus will be given back soon and we can continue playing,
+			// if we so choose, but we will not
+			Log.d(TAG, "Audio focus lost-transient and can duck");
+			if (mPlayer.isPlaying()) {
+				mPlayer.pause();
+			}
+			break;
+		}
+	}
 }
