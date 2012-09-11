@@ -50,7 +50,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
@@ -86,7 +85,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	private String mPodcastNameQueued;
 	private String mEpisodeQueued;
 	private String mEpisodePlaying;
-	private boolean mResumeAfterCall = false; 
 	private boolean mBeenResumedAfterCall = false; 
 	private long mRowID;
 	private long mRowIDQueued;
@@ -122,6 +120,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	public IBinder onBind(Intent intent) {
 		return mBinder;
 	}
+	//TODO Make this >=8
 	//This static method initialises out custom media button registration methods
 	//if on android 2.2 or greater.
 	private static void initializeRemoteControlRegistrationMethods() {
@@ -157,8 +156,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mPlayer = mPlayer1;
 		mFreePlayer = mPlayer2;
 		mPonyExpressApp = (PonyExpressApp)getApplication();
-		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
@@ -188,6 +185,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					getApplicationContext().sendBroadcast(intent);
 				} else { //Just stop
 					hideNotification();
+					//TODO Make this it's own method
 					//unregister HeadPhone reciever
 					if (mHeadPhoneReciever != null){
 						unregisterReceiver(mHeadPhoneReciever);
@@ -208,6 +206,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		Log.d(TAG, "PodcastPlayer started");
 	}
 
+	//TODO kill -9
 	// This is the old onStart method that will be called on the pre-2.0
 	// platform.  On 2.0 or later we override onStartCommand() so this
 	// method will not be called.
@@ -266,8 +265,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
 		
 		if (mFreePlayer != null){
 			mFreePlayer.release();
@@ -363,6 +360,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 			Log.d(TAG, "Audio focus granted");
 		}
+		//TODO Make this it's own method
 		//Register HeadPhone receiver
 		if (mHeadPhoneReciever == null){
 			mHeadPhoneReciever = new HeadPhoneReceiver();
@@ -413,6 +411,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	public void pause() {
 
 		abandonAudioFocus();
+		//TODO Make this it's own method.
 		//unregister HeadPhone reciever
 		if (mHeadPhoneReciever != null){
 			unregisterReceiver(mHeadPhoneReciever);
@@ -505,7 +504,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		}
 	}
 
-	//Simple save the current  playback position to the DB, and
+	//Simple save the current play back position to the DB, and
 	//return a boolean of success.
 	private boolean savePlaybackPosition(int playbackPosition){
 		return mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID,
@@ -550,47 +549,14 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		} else return false;
 	}
 
+	//TODO Needs to be handled differently. If we use audio focus, this may not be needed
+	//INFO::
+	//PlayerActivity.java line 222 queryPlayer()...
 	public boolean isResumeAfterCall() {
 		final boolean ret = mBeenResumedAfterCall;
 		mBeenResumedAfterCall = false;
 		return ret;
 	}
-	
-	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
-
-		/**
-		 * Pauses playback if a call is recieved or if a call is to be made.
-		 */
-		@Override
-		public void onCallStateChanged(int state, String incomingNumber) {
-			//TODO The media buttons still work the player when a call arrives, 
-			//you can't pick up with the pickup key
-			switch (state)
-			{
-			case TelephonyManager.CALL_STATE_RINGING:
-				//Fall through
-			case TelephonyManager.CALL_STATE_OFFHOOK:
-				if (mPlayer.isPlaying()){
-					pause();
-					mResumeAfterCall  = true;
-				}
-				//Not sure if this is necessary.. ?
-				unregisterRemoteControl();
-				break;
-			case TelephonyManager.CALL_STATE_IDLE:
-				if (mResumeAfterCall){
-					//Don't automatically restart playback, let user initiate it.
-					//play();
-					registerRemoteControl();
-					mResumeAfterCall = false;
-					mBeenResumedAfterCall = true;
-					break;
-				}
-			default:
-				Log.d(TAG, "Unknown phone state: " + state);
-			}
-		}
-	};
 	
 	private class HeadPhoneReceiver extends BroadcastReceiver {
 
@@ -705,7 +671,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
         }
     }
 
-	protected void abandonAudioFocus() {
+	private void abandonAudioFocus() {
 		//Abandon audio focus
 		int result = mAudioManager.abandonAudioFocus(this);
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
@@ -716,10 +682,11 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	}
 
 	/** Implemented from AudioManager.OnAudioFocusChangeListener.  This is used to
-	* regulate audio apps so that two apps don't play audio at the same time.
+	* regulate audio apps so that two apps don't play audio at the same time.  We also
+	* use it to handle phone rings.
 	*
 	* Note: Other apps must also respect focus and call for focus changes or this
-	* will not work!
+	* will not work!  All >=8 "incoming call apps" seem to respect focus.
 	*/
 	@Override
 	public void onAudioFocusChange(int focus) {
@@ -746,6 +713,19 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
 			// focus will be given back soon so we just need to pause for a moment
 			Log.d(TAG, "Audio focus lost-transient");
+			
+			//If a call is incoming, we do not want to resume after
+			//the call has ended. So we pause().
+			TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+			switch(tm.getCallState()) {
+			case TelephonyManager.CALL_STATE_RINGING:
+				//Fall through
+			case TelephonyManager.CALL_STATE_OFFHOOK:
+				pause();
+				//TODO//Still not sure if this is necessary!?!?
+				unregisterRemoteControl();
+			}
+			
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
 			}
