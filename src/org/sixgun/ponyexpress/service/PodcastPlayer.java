@@ -164,6 +164,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
+				abandonAudioFocus();
 				//Set Listened to 0				
 				if (savePlaybackPosition(0)) {
 					Log.d(TAG, "Updated listened to position to " + 0);
@@ -206,7 +207,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 		Log.d(TAG, "PodcastPlayer started");
 	}
-
 
 	// This is the old onStart method that will be called on the pre-2.0
 	// platform.  On 2.0 or later we override onStartCommand() so this
@@ -412,14 +412,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	
 	public void pause() {
 
-		//Abandon audio focus
-		int result = mAudioManager.abandonAudioFocus(this);
-			if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
-				Log.d(TAG, "Audio focus abandoned");
-			}else{
-				Log.e(TAG, "Audio focus failed to abandon");
-			}
-
+		abandonAudioFocus();
 		//unregister HeadPhone reciever
 		if (mHeadPhoneReciever != null){
 			unregisterReceiver(mHeadPhoneReciever);
@@ -711,6 +704,16 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
             System.err.println("unexpected " + ie);  
         }
     }
+
+	protected void abandonAudioFocus() {
+		//Abandon audio focus
+		int result = mAudioManager.abandonAudioFocus(this);
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
+			Log.d(TAG, "Audio focus abandoned");
+		}else{
+			Log.e(TAG, "Audio focus failed to abandon");
+		}
+	}
 
 	/** Implemented from AudioManager.OnAudioFocusChangeListener.  This is used to
 	* regulate audio apps so that two apps don't play audio at the same time.
