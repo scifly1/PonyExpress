@@ -67,91 +67,10 @@ public class AddNewPodcastFeedActivity extends Activity {
 		//Create Progress Dialogs for later use.
 		mProgDialog = new ProgressDialog(this);
 
-		OnClickListener OKButtonListener =  new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				final String feed = mFeedText.getText().toString();
-				final String group = mGroupText.getText().toString();
-				final String tag = mTagText.getText().toString();
-
-				Podcast podcast = new Podcast();
-
-				URL  feedUrl = Utils.getURL(feed);
-				if (Utils.checkURL(feedUrl) != null){
-					podcast.setFeedUrl(feedUrl);
-					//TODO Check identica group exists, (query identica).
-					if (!group.equals("") && !group.equals("!")){
-						//Remove the leading '!' and store.
-						podcast.setIdenticaGroup(group.substring(1));
-					}
-					if(!tag.equals("") && !tag.equals("#")){
-						if(tag.startsWith("#")) {
-							podcast.setIdenticaTag(tag.substring(1));
-						} else {
-							podcast.setIdenticaTag(tag);
-						}
-					}
-					//Check if the new url is already in the database
-					boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-					if (checkDatabase) {
-						Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
-					}else{
-						final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-						Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
-						//Send podcast name back to PonyExpressActivity so it can update the new feed.
-						sendToMainActivity(name);
-					}
-				} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
-			}
-		};
-		OnClickListener CancelButtonListener = new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				setResult(RESULT_CANCELED);
-				finish();
-			}
-		};
-
-		OnClickListener restoreButtonListener = new OnClickListener() {
-
-			@Override
-			public void onClick(View v) {
-				Log.d(TAG,"Restore from backup file...");
-				//Start the restore Async
-				Restore task = (Restore) new Restore().execute();
-				if (task.isCancelled()){
-					Log.d(TAG, "Restore canceled");
-				}
-			}
-		};
-
-		OnClickListener backupButtonListener = new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				Log.d(TAG,"Backing up to file...");
-				//Start the backup Async
-				Backup task = (Backup) new Backup().execute();
-				if (task.isCancelled()){
-					Log.d(TAG, "Backup canceled");
-				}
-			}
-		};
-
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mFeedText = (EditText) findViewById(R.id.feed_entry);
 		mGroupText = (EditText) findViewById(R.id.group_entry);
 		mTagText = (EditText) findViewById(R.id.tag_entry);
-		Button okButton = (Button) findViewById(R.id.ok);
-		okButton.setOnClickListener(OKButtonListener);
-		Button cancelButton = (Button) findViewById(R.id.cancel);
-		cancelButton.setOnClickListener(CancelButtonListener);
-		Button backupButton = (Button) findViewById(R.id.backup);
-		backupButton.setOnClickListener(backupButtonListener);
-		Button restoreButton = (Button) findViewById(R.id.restore);
-		restoreButton.setOnClickListener(restoreButtonListener);
 
 		//If the feedURl has been sent in the intent populate the text box
 		if (!getIntent().getExtras().getString(PodcastKeys.FEED_URL).equals("")){
@@ -165,6 +84,64 @@ public class AddNewPodcastFeedActivity extends Activity {
 				Toast.makeText(this, R.string.url_error, Toast.LENGTH_SHORT).show();
 			}
 			
+		}
+	}
+	
+	public void okButtonPressed(View v) {
+		final String feed = mFeedText.getText().toString();
+		final String group = mGroupText.getText().toString();
+		final String tag = mTagText.getText().toString();
+
+		Podcast podcast = new Podcast();
+
+		URL  feedUrl = Utils.getURL(feed);
+		if (Utils.checkURL(feedUrl) != null){
+			podcast.setFeedUrl(feedUrl);
+			//TODO Check identica group exists, (query identica).
+			if (!group.equals("") && !group.equals("!")){
+				//Remove the leading '!' and store.
+				podcast.setIdenticaGroup(group.substring(1));
+			}
+			if(!tag.equals("") && !tag.equals("#")){
+				if(tag.startsWith("#")) {
+					podcast.setIdenticaTag(tag.substring(1));
+				} else {
+					podcast.setIdenticaTag(tag);
+				}
+			}
+			//Check if the new url is already in the database
+			boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+			if (checkDatabase) {
+				Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
+			}else{
+				final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+				Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
+				//Send podcast name back to PonyExpressActivity so it can update the new feed.
+				sendToMainActivity(name);
+			}
+		} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
+	}
+	
+	public void cancelButtonPressed(View v){
+		setResult(RESULT_CANCELED);
+		finish();
+	}
+	
+	public void backupButtonPressed(View v){
+		Log.d(TAG,"Backing up to file...");
+		//Start the backup Async
+		Backup task = (Backup) new Backup().execute();
+		if (task.isCancelled()){
+			Log.d(TAG, "Backup canceled");
+		}
+	}
+	
+	public void restoreButtonPressed(View v){
+		Log.d(TAG,"Restore from backup file...");
+		//Start the restore Async
+		Restore task = (Restore) new Restore().execute();
+		if (task.isCancelled()){
+			Log.d(TAG, "Restore canceled");
 		}
 	}
 
