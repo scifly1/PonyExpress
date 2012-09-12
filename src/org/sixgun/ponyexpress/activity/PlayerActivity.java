@@ -223,9 +223,10 @@ public class PlayerActivity extends Activity {
 		Bundle state = new Bundle();
 		mEpisodeDuration = mPodcastPlayer.getEpisodeLength();
 		state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
+		//TODO Check!!!
 		//if activity is restarted after a call, isPlaying() may not
 		// be set true yet, as it is asynchronous. 
-		if (mPodcastPlayer.isPlaying() || mPodcastPlayer.isResumeAfterCall()){
+		if (mPodcastPlayer.isPlaying()){
 			state.putBoolean(IS_PLAYING, true);
 		} else {
 			state.putBoolean(IS_PLAYING, false);
