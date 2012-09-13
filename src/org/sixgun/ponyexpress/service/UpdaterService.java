@@ -23,6 +23,7 @@ package org.sixgun.ponyexpress.service;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,6 +61,7 @@ public class UpdaterService extends IntentService {
 	private NotificationManager mNM;
 	private static final int NOTIFY_1 = 1;
 	private static final int NOTIFY_2 = 2;
+	private static final int TIMEOUT = 20000; //20 seconds
 	
 	
 		
@@ -352,13 +354,19 @@ public class UpdaterService extends IntentService {
             URL url = new URL(podcast_url);
             HttpURLConnection urlconn = (HttpURLConnection) url.openConnection();
             urlconn.setRequestProperty("Connection", "close");
-            urlconn.setConnectTimeout(20000); // Timeout is 20 seconds
-            urlconn.connect();
-            if (urlconn.getResponseCode() == 200) {
-            	return ReturnCodes.ALL_OK;
-            } else {
-            	showErrorNotification(podcast_url + getText(R.string.url_offline));
-        		return ReturnCodes.URL_OFFLINE;
+            urlconn.setConnectTimeout(TIMEOUT);
+            urlconn.setReadTimeout(TIMEOUT);
+            try {
+            	urlconn.connect();
+            	if (urlconn.getResponseCode() == 200) {
+            		return ReturnCodes.ALL_OK;
+            	} else {
+            		showErrorNotification(podcast_url + getText(R.string.url_offline));
+            		return ReturnCodes.URL_OFFLINE;
+            	}
+            }catch (SocketTimeoutException ste){
+            	Log.e(TAG, "Url timed out", ste);
+            	return ReturnCodes.URL_OFFLINE;
             }
 		} catch (MalformedURLException e1) {
 			showErrorNotification(podcast_url + getText(R.string.url_offline));
