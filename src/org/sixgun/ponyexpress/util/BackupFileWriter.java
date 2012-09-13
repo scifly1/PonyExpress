@@ -38,6 +38,7 @@ import android.util.Xml;
 public class BackupFileWriter {
 
 private static final String TAG = "PonyExpress BackupFileWriter";
+public static final String BACKUP_FILENAME = "all-subscriptions.opml";
 
 	public int writeBackupOpml(List<String> podcasts){
 
@@ -50,10 +51,10 @@ private static final String TAG = "PonyExpress BackupFileWriter";
 			return ReturnCodes.SD_CARD_NOT_WRITABLE;
 		}
 
-		//create a new file called "all-subscriptions.opml" in the SD card
+		//create a new backup file in the SD card
 		Utils.writePodcastPath();
 		File opmlfile = new File(Environment.getExternalStorageDirectory()
-				+ PonyExpressApp.PODCAST_PATH + "all-subscriptions.opml");
+				+ PonyExpressApp.PODCAST_PATH + BACKUP_FILENAME);
 
 		//Check is the file already exists...
 		if (opmlfile.isFile()){

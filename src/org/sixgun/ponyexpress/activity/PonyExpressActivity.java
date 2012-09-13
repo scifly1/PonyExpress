@@ -32,6 +32,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.UpdaterService;
+import org.sixgun.ponyexpress.util.BackupFileWriter;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
@@ -545,6 +546,10 @@ public class PonyExpressActivity extends ListActivity {
 			List<String> filesOnDisk = new ArrayList<String>();
 			if (podcastsOnDisk != null){
 				for (String podcast: podcastsOnDisk){
+					//Check if podcast is really the backup file.
+					if (podcast.equals(BackupFileWriter.BACKUP_FILENAME)){
+						continue;
+					}
 					File podcast_path = new File(path,podcast);
 					String[] files = podcast_path.list();
 					try{

@@ -54,7 +54,7 @@ public class BackupParser {
 		InputStream filename = null;
 
 		try {
-			filename = new FileInputStream(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH + "all-subscriptions.opml");
+			filename = new FileInputStream(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH + BackupFileWriter.BACKUP_FILENAME);
 		} catch (FileNotFoundException e){
 			urllist.add(Integer.toString(ReturnCodes.NO_BACKUP_FILE));
 			return urllist;
