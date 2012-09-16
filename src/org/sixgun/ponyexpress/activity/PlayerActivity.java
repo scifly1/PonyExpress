@@ -313,7 +313,6 @@ public class PlayerActivity extends Activity {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser){
-					mPodcastPlayer.SeekTo(progress);
 					mCurrentPosition = progress;
 					mElapsed.setText(Utils.milliToTime(progress));
 				}
@@ -334,6 +333,8 @@ public class PlayerActivity extends Activity {
 			 */
 			@Override
 			public void onStopTrackingTouch(SeekBar arg0) {
+				mPodcastPlayer.SeekTo(mCurrentPosition);
+				mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
 				mUserSeeking = false;
 				
 			}

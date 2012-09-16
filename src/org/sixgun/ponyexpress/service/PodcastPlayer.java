@@ -89,7 +89,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 	private Bundle mData;
 
-	private boolean mIsInitialised;
+	private boolean mIsInitialised = false;
 
 	private boolean mQueuedIsUnlistened;
 
@@ -139,11 +139,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				if (mPlayingPlaylist && !mPonyExpressApp.getDbHelper().playlistEnding())
 				{
 					mPonyExpressApp.getDbHelper().popPlaylist();
-					//TODO Make this it's own method.
 					final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
 					final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
 					//TODO Check an episode has been returned, if db corrupted it will not be.
-
+					//What do we do if it is corrupted??
 					Bundle bundle = new Bundle();
 					bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
 					initPlayer(bundle);
@@ -170,8 +169,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		//TODO Remove Debug logs
-		Log.d(TAG,"onStartCommand");
 		int action = intent.getIntExtra("action", -2);
 		switch (action){
 		case INIT_PLAYER:
@@ -185,15 +182,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		case PLAY_PAUSE:
 			if (isPlaying()){
 				pause();
-			}else{
-				//TODO Make this it's own method
-				final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
-				final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
-				Bundle bundle = new Bundle();
-				bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
-				initPlayer(bundle);
-				play();
+			}else if (mIsInitialised){
+				play();	
+			}else if (!mIsInitialised){
+				//TODO Add functionality to resume if a remote play is press
+				//when the service is not running.
 			}
+
 			break;
 		case FASTFORWARD:
 			if (isPlaying()){
@@ -222,7 +217,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-
+		pause();
 		if (mFreePlayer != null){
 			mFreePlayer.release();
 			mFreePlayer = null;
@@ -406,11 +401,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
-			savePlaybackPosition(progress);
 			mFreePlayer.seekTo(progress);
 		} else {
 			//Playback has been started now, so the mPlayer is correct#
-			savePlaybackPosition(progress);
 			mPlayer.seekTo(progress);
 		}
 	}
@@ -447,7 +440,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 	//Simple save the current play back position to the DB, and
 	//return a boolean of success.
-	private boolean savePlaybackPosition(int playbackPosition){
+	public boolean savePlaybackPosition(int playbackPosition){
 		return mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID,
 				EpisodeKeys.LISTENED, playbackPosition);
 	}
@@ -612,7 +605,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	* on focus changes.
 	*
 	* Note: Other apps must also respect focus and call for focus changes or this
-	* will not work!  All >=8 "incoming call apps" seem to respect focus.
+	* will not work!  All api>=8 "incoming call apps" seem to respect focus.
 	*/
 	@Override
 	public void onAudioFocusChange(int focus) {
@@ -623,9 +616,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			Log.d(TAG, "Audio focus has been returned from another app");
 			registerRemoteControl();
 			if (!mPlayer.isPlaying()) {
-				//Words can get cut off if we resume right where we left off,
-				// so rewind a bit.
-				mPlayer.seekTo(mPlayer.getCurrentPosition() - 3000);
+				mPlayer.seekTo(getPlaybackPosition());
 				mPlayer.start();
 			}
 			break;
@@ -643,6 +634,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			Log.d(TAG, "Audio focus lost-transient");
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
+				savePlaybackPosition(mPlayer.getCurrentPosition());
 			}
 			break;
 
@@ -652,6 +644,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			Log.d(TAG, "Audio focus lost-transient and can duck");
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
+				savePlaybackPosition(mPlayer.getCurrentPosition());
 			}
 			break;
 		}
