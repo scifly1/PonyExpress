@@ -223,9 +223,10 @@ public class PlayerActivity extends Activity {
 		Bundle state = new Bundle();
 		mEpisodeDuration = mPodcastPlayer.getEpisodeLength();
 		state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
+		//TODO Check!!!
 		//if activity is restarted after a call, isPlaying() may not
 		// be set true yet, as it is asynchronous. 
-		if (mPodcastPlayer.isPlaying() || mPodcastPlayer.isResumeAfterCall()){
+		if (mPodcastPlayer.isPlaying()){
 			state.putBoolean(IS_PLAYING, true);
 		} else {
 			state.putBoolean(IS_PLAYING, false);
@@ -312,7 +313,6 @@ public class PlayerActivity extends Activity {
 			@Override
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser){
-					mPodcastPlayer.SeekTo(progress);
 					mCurrentPosition = progress;
 					mElapsed.setText(Utils.milliToTime(progress));
 				}
@@ -333,6 +333,8 @@ public class PlayerActivity extends Activity {
 			 */
 			@Override
 			public void onStopTrackingTouch(SeekBar arg0) {
+				mPodcastPlayer.SeekTo(mCurrentPosition);
+				mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
 				mUserSeeking = false;
 				
 			}

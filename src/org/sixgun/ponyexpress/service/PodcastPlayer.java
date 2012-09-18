@@ -20,8 +20,6 @@ package org.sixgun.ponyexpress.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
@@ -50,13 +48,12 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.RemoteViews;
 
 /**
  * PodcastPlayer is a service that handles all interactions with the media player.
+ * Min API level is 8.
  *
  */
 public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusChangeListener {
@@ -70,12 +67,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	public static final int INIT_PLAYER = 2;
 
 	private static final int NOTIFY_ID = 2;
-	//These method are used if Android 2.2 is available, via reflection.
-	private static Method mRegisterMediaButtonEventReceiver;
-    private static Method mUnregisterMediaButtonEventReceiver;
-    private AudioManager mAudioManager;
-    private ComponentName mRemoteControlReceiver;
-
+	
+	private AudioManager mAudioManager;
+	private ComponentName mRemoteControlReceiver;
 	private final IBinder mBinder = new PodcastPlayerBinder();
 	private PonyExpressApp mPonyExpressApp; 
 	private MediaPlayer mPlayer1;
@@ -86,18 +80,16 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	private String mPodcastNameQueued;
 	private String mEpisodeQueued;
 	private String mEpisodePlaying;
-	private boolean mResumeAfterCall = false; 
-	private boolean mBeenResumedAfterCall = false; 
 	private long mRowID;
 	private long mRowIDQueued;
-	HeadPhoneReceiver mHeadPhoneReciever;
+	private HeadPhoneReceiver mHeadPhoneReciever;
 	boolean mHeadPhonesIn = false;
 	private NotificationManager mNM;
 	private String mEpisodeName;
 
 	private Bundle mData;
 
-	private boolean mIsInitialised;
+	private boolean mIsInitialised = false;
 
 	private boolean mQueuedIsUnlistened;
 
@@ -105,48 +97,23 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 	private boolean mPlayingPlaylist;
 
-	
-	
+
+
 	/**
-     * Class for clients to access.  Because we know this service always
-     * runs in the same process as its clients, we don't need to deal with
-     * IPC.
-     */
-    public class PodcastPlayerBinder extends Binder {
-        public PodcastPlayer getService() {
-            return PodcastPlayer.this;
-        }
-    }
-	
+	 * Class for clients to access.  Because we know this service always
+	 * runs in the same process as its clients, we don't need to deal with
+	 * IPC.
+	 */
+	public class PodcastPlayerBinder extends Binder {
+		public PodcastPlayer getService() {
+			return PodcastPlayer.this;
+		}
+	}
+
 	@Override
 	public IBinder onBind(Intent intent) {
 		return mBinder;
 	}
-	//This static method initialises out custom media button registration methods
-	//if on android 2.2 or greater.
-	private static void initializeRemoteControlRegistrationMethods() {
-		   try {
-		      if (mRegisterMediaButtonEventReceiver == null) {
-		         mRegisterMediaButtonEventReceiver = AudioManager.class.getMethod(
-		               "registerMediaButtonEventReceiver",
-		               new Class[] { ComponentName.class } );
-		      }
-		      if (mUnregisterMediaButtonEventReceiver == null) {
-		         mUnregisterMediaButtonEventReceiver = AudioManager.class.getMethod(
-		               "unregisterMediaButtonEventReceiver",
-		               new Class[] { ComponentName.class } );
-		      }
-		      /* success, this device will take advantage of better remote */
-		      /* control event handling in Android 2.2                                    */
-		   } catch (NoSuchMethodException nsme) {
-		      /* failure, still using the legacy behavior, but this app    */
-		      /* is future-proof!                                          */
-		   }
-		}
-	
-	static {
-        initializeRemoteControlRegistrationMethods();
-    }
 	
 	@Override
 	public void onCreate() {
@@ -157,13 +124,12 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mPlayer = mPlayer1;
 		mFreePlayer = mPlayer2;
 		mPonyExpressApp = (PonyExpressApp)getApplication();
-		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_CALL_STATE);
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-		
+
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
+				abandonAudioFocus();
 				//Set Listened to 0				
 				if (savePlaybackPosition(0)) {
 					Log.d(TAG, "Updated listened to position to " + 0);
@@ -176,7 +142,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
 					final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
 					//TODO Check an episode has been returned, if db corrupted it will not be.
-
+					//What do we do if it is corrupted??
 					Bundle bundle = new Bundle();
 					bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
 					initPlayer(bundle);
@@ -187,19 +153,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					getApplicationContext().sendBroadcast(intent);
 				} else { //Just stop
 					hideNotification();
-					//unregister HeadPhone reciever
-					if (mHeadPhoneReciever != null){
-						unregisterReceiver(mHeadPhoneReciever);
-						mHeadPhoneReciever = null;
-					}
+					unRegisterHeadPhoneReceiver();
 				}
 			}
 			
 		};
 		mPlayer.setOnCompletionListener(onCompletionListener);
 		mFreePlayer.setOnCompletionListener(onCompletionListener);
-		
-		//Create MediaButton Broadcast reciever for Android2.2
 		mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
 		mRemoteControlReceiver = new ComponentName(getPackageName(),
 				RemoteControlReceiver.class.getName());
@@ -207,22 +167,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		Log.d(TAG, "PodcastPlayer started");
 	}
 
-
-	// This is the old onStart method that will be called on the pre-2.0
-	// platform.  On 2.0 or later we override onStartCommand() so this
-	// method will not be called.
-	@Override
-	public void onStart(Intent intent, int startId) {
-	    handleCommand(intent);
-	}
-
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-	    handleCommand(intent);
-	    return START_NOT_STICKY;
-	}
-	
-	private void handleCommand(Intent intent){
 		int action = intent.getIntExtra("action", -2);
 		switch (action){
 		case INIT_PLAYER:
@@ -236,9 +182,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		case PLAY_PAUSE:
 			if (isPlaying()){
 				pause();
-			} else if (mIsInitialised) {
-				play();
+			}else if (mIsInitialised){
+				play();	
+			}else if (!mIsInitialised){
+				//TODO Add functionality to resume if a remote play is press
+				//when the service is not running.
 			}
+
 			break;
 		case FASTFORWARD:
 			if (isPlaying()){
@@ -258,17 +208,16 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		if (!mIsInitialised){
 			stopSelf();
 		}
+		return START_NOT_STICKY;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see android.app.Service#onDestroy()
 	 */
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-		tm.listen(mPhoneListener, PhoneStateListener.LISTEN_NONE);
-		
+		pause();
 		if (mFreePlayer != null){
 			mFreePlayer.release();
 			mFreePlayer = null;
@@ -278,10 +227,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mPlayer = null;
 		}
 		mNM.cancel(NOTIFY_ID);
-		
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
-	
+
 	/** Initilises the free Media Player with the correct title and sets 
 	 * it up for playback.
 	 * The rowID is used to update the position
@@ -292,7 +240,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	 */
 	public void initPlayer(Bundle data){
 		registerRemoteControl();
-		
 		mData = data;
 		mPlayingPlaylist = mData.getBoolean(PodcastKeys.PLAYLIST);
 		mEpisodeName = mData.getString(EpisodeKeys.TITLE);
@@ -302,7 +249,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mRowIDQueued = mData.getLong(EpisodeKeys._ID);
 		boolean isError = false;
 		int startPosition = getPlaybackPosition();
-		
+
 		if (!file.equals(mEpisodeQueued)){
 			mFreePlayer.reset();
 			//Set podcast as data source and prepare the player
@@ -350,25 +297,20 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mIsInitialised = true;
 		}
 	}
-	
+
 	/**
 	 * Swaps the queued episode on the free player
 	 * to the mPlayer and begins playback.  
 	 */
 	public void play() {
-		
+
 		int result = mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
 				AudioManager.AUDIOFOCUS_GAIN);
 
 		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
 			Log.d(TAG, "Audio focus granted");
 		}
-		//Register HeadPhone receiver
-		if (mHeadPhoneReciever == null){
-			mHeadPhoneReciever = new HeadPhoneReceiver();
-			IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
-			registerReceiver(mHeadPhoneReciever, filter);
-		}
+		registerHeadPhoneReceiver();
 		registerRemoteControl();
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//We want to play a different episode so stop any currently playing
@@ -377,7 +319,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				this.pause();
 			}
 			mPlayer.reset();
-						
+
 			//Swap mPlayer and mFreePlayer
 			MediaPlayer swap = null;
 			swap = mPlayer;
@@ -385,13 +327,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mFreePlayer = swap;
 			mRowID = mRowIDQueued;
 			mPodcastName = mPodcastNameQueued;
-			
+
 			//Mark the episode listened if previously unlistened.
 			if (mQueuedIsUnlistened){
 				savePlaybackPosition(0);
 			}
 		}
-		
+
 		mPlayer.start();
 
 		int playbackPosition = getPlaybackPosition();
@@ -403,46 +345,32 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mPlayer.seekTo(playbackPosition + 10);
 		}
 		mPlayer.seekTo(playbackPosition);
-		
+
 		showNotification();
 		mEpisodePlaying = mEpisodeQueued;
 		Log.d(TAG,"Playing " + mEpisodePlaying);
 
 	}
-	
+
 	public void pause() {
 
-		//Abandon audio focus
-		int result = mAudioManager.abandonAudioFocus(this);
-			if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
-				Log.d(TAG, "Audio focus abandoned");
-			}else{
-				Log.e(TAG, "Audio focus failed to abandon");
-			}
-
-		//unregister HeadPhone reciever
-		if (mHeadPhoneReciever != null){
-			unregisterReceiver(mHeadPhoneReciever);
-			mHeadPhoneReciever = null;
-		} else {
-			Log.e(TAG, "Attempt to unregister null Headphone reciever");
-		}
-		
+		abandonAudioFocus();
+		unRegisterHeadPhoneReceiver();
 		mPlayer.pause();
 		hideNotification();
 		//Record last listened position in database
 		final int playbackPosition = mPlayer.getCurrentPosition();
-		
+
 		boolean save = savePlaybackPosition(playbackPosition);
 		if (save){
 			Log.d(TAG, "Updated listened to position to " + playbackPosition);
 		}else{
 			Log.d(TAG, "Error saving playback position at " + playbackPosition);
 		}
-		
+
 		stopSelf();
 	}
-		
+
 	public void fastForward() {
 		//Fast forwards a certain number of seconds based on the Seek Time user setting
 		final int playbackPosition = mPlayer.getCurrentPosition();
@@ -450,13 +378,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		final int newPosition = playbackPosition + seekDelta;
 		mPlayer.seekTo(newPosition);
 	}
-	
+
 	public void rewind() {
 		//Rewinds a certain number of seconds based on the Seek Time user setting
 		final int playbackPosition = mPlayer.getCurrentPosition();
 		final int seekDelta = Integer.parseInt(mPrefs.getString(getString(R.string.r_seek_time_key), "30000"));
 		final int newPosition = playbackPosition - seekDelta;
-		
+
 		//This check is needed because seeking to a negative position can cause errors
 		//on some implementations of MediaPlayer.
 		if(newPosition < 0){
@@ -473,11 +401,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		if (!mEpisodeQueued.equals(mEpisodePlaying)) {
 			//The queued title is the one needed for the current PlayerActivity
 			// before playback begins
-			savePlaybackPosition(progress);
 			mFreePlayer.seekTo(progress);
 		} else {
 			//Playback has been started now, so the mPlayer is correct#
-			savePlaybackPosition(progress);
 			mPlayer.seekTo(progress);
 		}
 	}
@@ -512,9 +438,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		}
 	}
 
-	//Simple save the current  playback position to the DB, and
+	//Simple save the current play back position to the DB, and
 	//return a boolean of success.
-	private boolean savePlaybackPosition(int playbackPosition){
+	public boolean savePlaybackPosition(int playbackPosition){
 		return mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID,
 				EpisodeKeys.LISTENED, playbackPosition);
 	}
@@ -557,57 +483,38 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		} else return false;
 	}
 
-	public boolean isResumeAfterCall() {
-		final boolean ret = mBeenResumedAfterCall;
-		mBeenResumedAfterCall = false;
-		return ret;
-	}
-	
-	private PhoneStateListener mPhoneListener = new PhoneStateListener(){
-
-		/**
-		 * Pauses playback if a call is recieved or if a call is to be made.
-		 */
-		@Override
-		public void onCallStateChanged(int state, String incomingNumber) {
-			//TODO The media buttons still work the player when a call arrives, 
-			//you can't pick up with the pickup key
-			switch (state)
-			{
-			case TelephonyManager.CALL_STATE_RINGING:
-				//Fall through
-			case TelephonyManager.CALL_STATE_OFFHOOK:
-				if (mPlayer.isPlaying()){
-					pause();
-					mResumeAfterCall  = true;
-				}
-				//Not sure if this is necessary.. ?
-				unregisterRemoteControl();
-				break;
-			case TelephonyManager.CALL_STATE_IDLE:
-				if (mResumeAfterCall){
-					//Don't automatically restart playback, let user initiate it.
-					//play();
-					registerRemoteControl();
-					mResumeAfterCall = false;
-					mBeenResumedAfterCall = true;
-					break;
-				}
-			default:
-				Log.d(TAG, "Unknown phone state: " + state);
-			}
-		}
-	};
-	
+	/**
+	 * HeadPhoneReceiver handles callbacks from when headphones are unplugged.
+	 * 
+	 */
 	private class HeadPhoneReceiver extends BroadcastReceiver {
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
+			Log.d(TAG,"Headphone unplugged");
 			pause();
 		}
 		
 	}
-	
+
+	private void registerHeadPhoneReceiver() {
+		if (mHeadPhoneReciever == null){
+			mHeadPhoneReciever = new HeadPhoneReceiver();
+			IntentFilter filter = new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+			registerReceiver(mHeadPhoneReciever, filter);
+		}
+	}
+
+	private void unRegisterHeadPhoneReceiver(){
+		//unregister HeadPhone reciever
+		if (mHeadPhoneReciever != null){
+			unregisterReceiver(mHeadPhoneReciever);
+			mHeadPhoneReciever = null;
+		} else {
+			Log.e(TAG, "Attempt to unregister null Headphone reciever");
+		}
+	}
+
 	private void showNotification() {
 		//Episode tabs launchmode is 'singletop' so only one instance can 
 		//exist when it is top of the stack. Thus starting it with this intent 
@@ -616,10 +523,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		Intent notificationIntent = new Intent(this,EpisodeTabs.class);
 		notificationIntent.putExtras(mData);
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		
+
 		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
 				0, notificationIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-		
+
 		Notification notification = new Notification(
 				R.drawable.playicon, null,
 				System.currentTimeMillis());
@@ -630,11 +537,11 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		
 		mNM.notify(NOTIFY_ID, notification);
 	}
-	
+
 	private void hideNotification() {
 		mNM.cancel(NOTIFY_ID);
 	}
-	
+
 	private void showErrorNotification(){
 		//Shows a notification that there is an error with an episode file 
 		//and suggests the user long press to re-download.
@@ -645,10 +552,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		Notification notification = new Notification(
 				R.drawable.stat_notify_error, null,
 				System.currentTimeMillis());
-		
+
 		notification.flags |= Notification.FLAG_AUTO_CANCEL;
 		notification.defaults |= Notification.DEFAULT_LIGHTS;
-		
+
 		RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.wrappable_notification_layout);
 		contentView.setImageViewResource(R.id.notification_image, R.drawable.stat_notify_error);
 		contentView.setTextViewText(R.id.notification_title,getText(R.string.app_name));
@@ -659,64 +566,46 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mNM.notify(NOTIFY_ID, notification);
 		
 	}
-	
+
+	/**
+	 * Registering media buttons tells the android system which app to control on 
+	 * media button presses.  It uses a "last on top" approach.  If we register Pony,
+	 * that means we want the media buttons to control Pony until it's unregistered. 
+	 * Once Pony is unregistered, the previous app registered will be controlled.
+	 * Registration can be given several times, but unregistered only once.
+	 */
 	private void registerRemoteControl() {
-        try {
-            if (mRegisterMediaButtonEventReceiver == null) {
-            	//Running on < android2.2
-            	Log.d(TAG,"register media button receiver < 2.2");
-                return;
-            }
-            //Running on > android 2.2
-            Log.d(TAG,"register media button receiver => 2.2");
-            mRegisterMediaButtonEventReceiver.invoke(mAudioManager,
-                    mRemoteControlReceiver);
-        } catch (InvocationTargetException ite) {
-            /* unpack original exception when possible */
-            Throwable cause = ite.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            } else if (cause instanceof Error) {
-                throw (Error) cause;
-            } else {
-                /* unexpected checked exception; wrap and re-throw */
-                throw new RuntimeException(ite);
-            }
-        } catch (IllegalAccessException ie) {
-            Log.e(TAG, "unexpected " + ie);
-        }
-    }
-    
-    private void unregisterRemoteControl() {
-        try {
-            if (mUnregisterMediaButtonEventReceiver == null) {
-            	//Running on < android2.2
-                return;
-            }
-            //Running on > android 2.2
-            mUnregisterMediaButtonEventReceiver.invoke(mAudioManager,
-                    mRemoteControlReceiver);
-        } catch (InvocationTargetException ite) {
-            /* unpack original exception when possible */
-            Throwable cause = ite.getCause();
-            if (cause instanceof RuntimeException) {
-                throw (RuntimeException) cause;
-            } else if (cause instanceof Error) {
-                throw (Error) cause;
-            } else {
-                /* unexpected checked exception; wrap and re-throw */
-                throw new RuntimeException(ite);
-            }
-        } catch (IllegalAccessException ie) {
-            System.err.println("unexpected " + ie);  
-        }
-    }
+		mAudioManager.registerMediaButtonEventReceiver(mRemoteControlReceiver); 
+	}
+
+	/** 
+	 * Sister method to registerRemoteControl().
+	 */
+	private void unRegisterRemoteControl() {
+		mAudioManager.unregisterMediaButtonEventReceiver(mRemoteControlReceiver); 
+	}
+
+	
+	/**
+	 * This method abandons audio focus.
+	 */
+	private void abandonAudioFocus() {
+		//Abandon audio focus
+		int result = mAudioManager.abandonAudioFocus(this);
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED){
+			Log.d(TAG, "Audio focus abandoned");
+		}else{
+			Log.e(TAG, "Audio focus failed to abandon");
+		}
+	}
 
 	/** Implemented from AudioManager.OnAudioFocusChangeListener.  This is used to
-	* regulate audio apps so that two apps don't play audio at the same time.
+	* regulate audio apps so that two apps don't play audio at the same time.  We also
+	* use it to handle phone rings. Also, media button registration can take place 
+	* on focus changes.
 	*
 	* Note: Other apps must also respect focus and call for focus changes or this
-	* will not work!
+	* will not work!  All api>=8 "incoming call apps" seem to respect focus.
 	*/
 	@Override
 	public void onAudioFocusChange(int focus) {
@@ -725,10 +614,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		case AudioManager.AUDIOFOCUS_GAIN:
 			// resume play back when something else gives focus back
 			Log.d(TAG, "Audio focus has been returned from another app");
+			registerRemoteControl();
 			if (!mPlayer.isPlaying()) {
-				//Words can get cut off if we resume right where we left off,
-				// so rewind a bit.
-				mPlayer.seekTo(mPlayer.getCurrentPosition() - 3000);
+				mPlayer.seekTo(getPlaybackPosition());
 				mPlayer.start();
 			}
 			break;
@@ -737,6 +625,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			// focus will be taken for an extend period of time, so we
 			// need to pause and stop the service
 			Log.d(TAG, "Audio focus lost-permanent");
+			unRegisterRemoteControl();
 			pause();
 			break;
 
@@ -745,6 +634,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			Log.d(TAG, "Audio focus lost-transient");
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
+				savePlaybackPosition(mPlayer.getCurrentPosition());
 			}
 			break;
 
@@ -754,6 +644,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			Log.d(TAG, "Audio focus lost-transient and can duck");
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
+				savePlaybackPosition(mPlayer.getCurrentPosition());
 			}
 			break;
 		}
