@@ -63,33 +63,27 @@ public abstract class BaseFeedParser {
     
 	/**
      * Opens a connection to feedUrl.
-     * 
-     * @return an InputStream from the feedUrl
+     * Note: the returned connection should be disconnected after use.
+     * @return an HttpURLConnection from the feedUrl
      */
-    protected InputStream getInputStream() {
-    	InputStream istream = null;
+    protected HttpURLConnection getConnection() {
     	int attempts = 0;
-    	URLConnection conn = null;
+    	HttpURLConnection conn = null;
 		//try to connect to server a maximum of five times
     	do {
     		conn = openConnection();
 			attempts++;
 		} while (conn == null && attempts < 5);
-    	//if connected get Inputstream
     	if (conn != null){
-    		try {
-    			istream = conn.getInputStream();
-    		} catch (IOException e) {
-    			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
-    			NotifyError("Failed to read the feed.");
-    		}
+    		return conn;
     	} else { NotifyError("Failed to read the feed."); }
-		return istream;
+		return null;
     }
     
     /** 
      * Checks that a connection can be made to mFeedUrl and 
-     * if so returns the connection.
+     * if so returns the connection. The connection should be disconnected
+     * after use by the caller.
      * @return the HttpUrlConnection
      */
     private HttpURLConnection openConnection(){

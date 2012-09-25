@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 
@@ -78,7 +79,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 				Podcast podcast = new Podcast();
 
 				URL  feedUrl = Utils.getURL(feed);
-				if (Utils.checkURL(feedUrl) != null){
+				HttpURLConnection conn = Utils.checkURL(feedUrl);
+				if (conn != null){
+					conn.disconnect();
 					podcast.setFeedUrl(feedUrl);
 					//TODO Check identica group exists, (query identica).
 					if (!group.equals("") && !group.equals("!")){

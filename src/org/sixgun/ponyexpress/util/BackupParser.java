@@ -76,6 +76,7 @@ public class BackupParser {
 			try {
 				Xml.parse(filename, Xml.Encoding.UTF_8, 
 						opml.getContentHandler());
+				filename.close();
 			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
 				urllist.clear();
 				urllist.add(Integer.toString(ReturnCodes.PARSING_ERROR));

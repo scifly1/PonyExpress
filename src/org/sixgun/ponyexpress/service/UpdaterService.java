@@ -350,9 +350,10 @@ public class UpdaterService extends IntentService {
 	 * @return Return code int
 	 */
 	private int pingUrl(String podcast_url) {
+		HttpURLConnection urlconn = null;
 		try {
             URL url = new URL(podcast_url);
-            HttpURLConnection urlconn = (HttpURLConnection) url.openConnection();
+            urlconn = (HttpURLConnection) url.openConnection();
             urlconn.setRequestProperty("Connection", "close");
             urlconn.setConnectTimeout(TIMEOUT);
             urlconn.setReadTimeout(TIMEOUT);
@@ -374,7 +375,12 @@ public class UpdaterService extends IntentService {
 		} catch (IOException e) {
 			showErrorNotification(podcast_url + getText(R.string.url_offline));
 			return ReturnCodes.URL_OFFLINE;
-		}		
+		} finally {
+			if (urlconn != null){
+				urlconn.disconnect();
+			}
+			
+		}
 	}
 
 	private SharedPreferences getPreferences() {

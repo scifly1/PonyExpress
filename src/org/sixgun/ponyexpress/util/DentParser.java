@@ -18,7 +18,10 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 
 import org.sixgun.ponyexpress.Dent;
@@ -122,22 +125,38 @@ public class DentParser extends BaseFeedParser {
 		
 		//Finally, now the listeners are set up we can parse the XML file.
 		
-		InputStream istream = this.getInputStream();
+		HttpURLConnection conn = getConnection();
 		//To debug with test feeds comment out the above line and uncomment the next line.
 	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.dentfeed);
-		if (istream != null){
-			try {
+		InputStream istream = null;
+		
+		try {
+			if (conn != null){
+				istream = new BufferedInputStream(conn.getInputStream());
+			}
+		} catch (IOException e) {
+			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			NotifyError("Failed to read the feed.");
+		} 
+		try {
+			if (istream != null){
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
-			} catch (Exception e) {
-				NotifyError("");
+				istream.close();
+			} else {
+				//If connection errors tell user
+				Dent no_dents = new Dent();
+				no_dents.setTitle(mCtx.getString(R.string.conn_err_query_failed));
+				dents.add(no_dents);
 			}
-		} else {
-			//If connection errors tell user
-			Dent no_dents = new Dent();
-			no_dents.setTitle(mCtx.getString(R.string.conn_err_query_failed));
-			dents.add(no_dents);
+		} catch (Exception e) {
+				NotifyError("");
+		} finally {
+			if (conn != null){
+				conn.disconnect();
+			}
 		}
+		
 		return dents;
 		
 	}

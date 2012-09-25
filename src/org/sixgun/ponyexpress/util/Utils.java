@@ -84,6 +84,7 @@ public class Utils {
 	
 	/**
 	 * Checks that the given URL returns status 200 (OK)
+	 * The returned connection  must be disconnected by the caller.
 	 * @param the URL
 	 * @return the connection if connection can be made or null otherwise.
 	 */
