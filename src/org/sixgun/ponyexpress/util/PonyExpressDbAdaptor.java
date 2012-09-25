@@ -1182,9 +1182,31 @@ public class PonyExpressDbAdaptor {
 
 	public void removeEpisodeFromPlaylist(String podcast_name, long rowID) {
 		final String quoted_name = "\"" + podcast_name + "\"";
-		mDb.delete(PLAYLIST_TABLE, 
+		//Get the play order number for this episode so we can fill
+		// the gap left later.
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
 				PodcastKeys.NAME + "="+ quoted_name + " AND " + 
-		EpisodeKeys.ROW_ID + "=" + rowID , null);
+						EpisodeKeys.ROW_ID + "=" + rowID,
+						null, null, null, null);
+		int play_order_position = 0;
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			play_order_position = c.getInt(1);
+			c.close();
+		} else {
+			Log.e(TAG, "Null cursor returned by removeEpisodeFromPlaylist(String,long)");
+			c.close();
+		}
+				
+		if (play_order_position != 0){
+			//Remove episode
+			mDb.delete(PLAYLIST_TABLE, 
+					PodcastKeys.NAME + "="+ quoted_name + " AND " + 
+			EpisodeKeys.ROW_ID + "=" + rowID , null);
+			
+			fillGap(play_order_position);
+		}		
 	}
 
 	public void removeEpisodeFromPlaylist(String podcastName, String title) {
@@ -1204,6 +1226,31 @@ public class PonyExpressDbAdaptor {
 		//Remove from the Playlist table
 		removeEpisodeFromPlaylist(podcastName, rowId);
 		
+	}
+	
+	private void fillGap(int position){
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys._ID, null, null, null, null);
+		ContentValues cv = new ContentValues();
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				if (c.getInt(1) > position){
+					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
+					mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
+				}else if (c.getInt(1) == position){
+					Log.e(TAG, "This episode should be gone! Shouldn't be here!");
+				}
+				c.moveToNext();
+			}
+		}else{
+			Log.e(TAG, "Empty cursor at fillGap(int)");
+			c.close();
+			return;
+		}
+		c.close();
+		return;
 	}
 
 }
