@@ -139,7 +139,6 @@ public class EpisodeFeedParser extends BaseFeedParser{
 						mime_type.equalsIgnoreCase(OLD_OGG)||
 						mime_type.equalsIgnoreCase(MP3)) {
 					String length = attributes.getValue("", "length");
-					Log.d(TAG,"Episode Length is "+ length);
 					new_episode.setLength(length);
 					String url = attributes.getValue("", "url");
 					new_episode.setLink(url);

@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress.activity;
 
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
@@ -79,7 +80,12 @@ public class AddNewPodcastFeedActivity extends Activity {
 				Podcast podcast = new Podcast();
 
 				URL  feedUrl = Utils.getURL(feed);
-				HttpURLConnection conn = Utils.checkURL(feedUrl);
+				HttpURLConnection conn = null;
+				try {
+					conn = Utils.checkURL(feedUrl);
+				} catch (SocketTimeoutException e) {
+					Log.e(TAG, "Feed url timed out", e);
+				}
 				if (conn != null){
 					conn.disconnect();
 					podcast.setFeedUrl(feedUrl);

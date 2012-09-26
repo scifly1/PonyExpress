@@ -19,12 +19,10 @@
 */
 package org.sixgun.ponyexpress.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.sixgun.ponyexpress.R;
 
@@ -71,8 +69,16 @@ public abstract class BaseFeedParser {
     	HttpURLConnection conn = null;
 		//try to connect to server a maximum of five times
     	do {
-    		conn = openConnection();
-			attempts++;
+    		try{
+    			conn = openConnection();
+    			attempts++;
+    		} catch (SocketTimeoutException ste) {
+    			Log.e(TAG, "Server timed out from getReponseCode()", ste);
+    			if (conn != null){
+    				conn.disconnect();
+    			}
+    			return null;
+    		} 
 		} while (conn == null && attempts < 5);
     	if (conn != null){
     		return conn;
@@ -85,8 +91,9 @@ public abstract class BaseFeedParser {
      * if so returns the connection. The connection should be disconnected
      * after use by the caller.
      * @return the HttpUrlConnection
+     * @throws SocketTimeoutException
      */
-    private HttpURLConnection openConnection(){
+    private HttpURLConnection openConnection() throws SocketTimeoutException{
     	return Utils.checkURL(mFeedUrl);	
     }
 

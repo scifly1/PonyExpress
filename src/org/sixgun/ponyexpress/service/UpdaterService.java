@@ -352,23 +352,22 @@ public class UpdaterService extends IntentService {
 	private int pingUrl(String podcast_url) {
 		HttpURLConnection urlconn = null;
 		try {
-            URL url = new URL(podcast_url);
-            urlconn = (HttpURLConnection) url.openConnection();
-            urlconn.setRequestProperty("Connection", "close");
-            urlconn.setConnectTimeout(TIMEOUT);
-            urlconn.setReadTimeout(TIMEOUT);
-            try {
-            	urlconn.connect();
-            	if (urlconn.getResponseCode() == 200) {
-            		return ReturnCodes.ALL_OK;
-            	} else {
-            		showErrorNotification(podcast_url + getText(R.string.url_offline));
-            		return ReturnCodes.URL_OFFLINE;
-            	}
-            }catch (SocketTimeoutException ste){
-            	Log.e(TAG, "Url timed out", ste);
-            	return ReturnCodes.URL_OFFLINE;
-            }
+			URL url = new URL(podcast_url);
+			urlconn = (HttpURLConnection) url.openConnection();
+			urlconn.setRequestProperty("Connection", "close");
+			urlconn.setConnectTimeout(TIMEOUT);
+			urlconn.setReadTimeout(TIMEOUT);
+			try {
+				if (urlconn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+					return ReturnCodes.ALL_OK;
+				} else {
+					showErrorNotification(podcast_url + getText(R.string.url_offline));
+					return ReturnCodes.URL_OFFLINE;
+				}
+			}catch (SocketTimeoutException ste){
+				Log.e(TAG, podcast_url + " timed out", ste);
+				return ReturnCodes.URL_OFFLINE;
+			}
 		} catch (MalformedURLException e1) {
 			showErrorNotification(podcast_url + getText(R.string.url_offline));
 			return ReturnCodes.URL_OFFLINE;			
@@ -379,7 +378,7 @@ public class UpdaterService extends IntentService {
 			if (urlconn != null){
 				urlconn.disconnect();
 			}
-			
+
 		}
 	}
 
