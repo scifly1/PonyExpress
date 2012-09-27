@@ -26,6 +26,7 @@ import org.sixgun.ponyexpress.service.UpdaterService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
 import android.util.Log;
 
 
@@ -38,6 +39,16 @@ public class UpdateAlarmReceiver extends BroadcastReceiver{
 		
 		Log.d(TAG,"Recieved update alarm!");
 		
+		//If device is asleep when alarm triggered it may go back
+		// to sleep before the service is started so we need a wakelock.
+		if (UpdaterService.sWakeLock == null){
+			PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+			UpdaterService.sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		}
+		if (!UpdaterService.sWakeLock.isHeld()){
+			Log.d(TAG, "Acquiring wake lock");
+			UpdaterService.sWakeLock.acquire();
+		}
 		//Start UpdaterSevice with UPDATE_ALL string
 		intent = new Intent(context,UpdaterService.class);
 		intent.putExtra(PonyExpressActivity.UPDATE_ALL, true);

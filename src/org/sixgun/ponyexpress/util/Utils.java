@@ -24,6 +24,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 
 import org.apache.http.HttpStatus;
@@ -46,6 +47,7 @@ import android.view.Gravity;
 public class Utils {
 	
 	private static final String TAG = "PonyExpressUtils";
+	private static final int TIMEOUT = 20000;
 	private static Constructor<?> mBitmapDrawableCtor;
 
 	/**
@@ -84,13 +86,18 @@ public class Utils {
 	
 	/**
 	 * Checks that the given URL returns status 200 (OK)
+	 * The returned connection  must be disconnected by the caller.
 	 * @param the URL
 	 * @return the connection if connection can be made or null otherwise.
+	 * @throws SocketTimeoutException
 	 */
-	static public HttpURLConnection checkURL(URL _url){
+	static public HttpURLConnection checkURL(URL _url) throws SocketTimeoutException{
 		HttpURLConnection conn;
 		try {
 			conn = (HttpURLConnection) _url.openConnection();
+			conn.setRequestProperty("Connection", "close");
+			conn.setConnectTimeout(TIMEOUT);
+            conn.setReadTimeout(TIMEOUT);
 			Log.d(TAG,"Response code: " + conn.getResponseCode());
 			//Check that the server responds properly
 			if (conn.getResponseCode() != HttpStatus.SC_OK){

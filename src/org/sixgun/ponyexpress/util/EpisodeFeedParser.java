@@ -18,8 +18,10 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -137,7 +139,6 @@ public class EpisodeFeedParser extends BaseFeedParser{
 						mime_type.equalsIgnoreCase(OLD_OGG)||
 						mime_type.equalsIgnoreCase(MP3)) {
 					String length = attributes.getValue("", "length");
-					Log.d(TAG,"Episode Length is "+ length);
 					new_episode.setLength(length);
 					String url = attributes.getValue("", "url");
 					new_episode.setLink(url);
@@ -167,20 +168,36 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		
 		//Finally, now the listeners are set up we can parse the XML file.
 		
-		InputStream istream = getInputStream();
+		HttpURLConnection conn = getConnection();
 		//To debug with test feeds comment out the above line and uncomment the next line.
 	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
-		if (istream != null){
-			try {
+		InputStream istream = null;
+		try {
+			if (conn != null){
+				istream = new BufferedInputStream(conn.getInputStream());
+			}
+		} catch (IOException e) {
+			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			NotifyError("Failed to read the feed.");
+		} 
+
+		try {
+			if (istream != null){
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
-			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
-				Log.e(TAG, "RSS feed is malformed, required data is missing!");
-        		NotifyError(mCtx.getString(R.string.malformed_feed));
-			} catch (IOException e) {
-				NotifyError("");
+				istream.close();
+			}
+		} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
+			Log.e(TAG, "RSS feed is malformed, required data is missing!");
+			NotifyError(mCtx.getString(R.string.malformed_feed));
+		} catch (IOException e) {
+			NotifyError("");
+		} finally {
+			if (conn != null){
+				conn.disconnect();
 			}
 		}
+		
 		
 		//This iterator loop removes all episodes that don't have a URL.  This is for
 		//feeds that have "news" items in the same feed with the audio items.  We

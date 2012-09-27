@@ -18,7 +18,10 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,6 +32,7 @@ import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
+import android.util.Log;
 import android.util.Xml;
 
 
@@ -97,16 +101,29 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 		
 		//Finally, now the listeners are set up we can parse the XML file.
 				
-		InputStream istream = getInputStream();
+		HttpURLConnection conn = getConnection();
 		//To debug with test.xml comment out the above line and uncomment the next line.
 	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.test);
-		
-		if (istream != null){
-			try {
+		InputStream istream = null;
+		try {
+			if (conn != null){
+				istream = new BufferedInputStream(conn.getInputStream());
+			}
+		} catch (IOException e) {
+			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			NotifyError("Failed to read the feed.");
+		}
+		try {
+			if (istream != null){
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
-			} catch (Exception e) {
-				NotifyError("");
+				istream.close();
+			}
+		} catch (Exception e) {
+			NotifyError("");
+		} finally {
+			if (conn != null){
+				conn.disconnect();
 			}
 		}
 		

@@ -23,6 +23,7 @@ package org.sixgun.ponyexpress.service;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,16 +49,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class UpdaterService extends IntentService {
 	
+	public static WakeLock sWakeLock;
 	private String TAG = "PonyExpress UpdaterService";
 	private PonyExpressApp mPonyExpressApp;
 	private NotificationManager mNM;
 	private static final int NOTIFY_1 = 1;
 	private static final int NOTIFY_2 = 2;
+	private static final int TIMEOUT = 20000; //20 seconds
+	
 	
 		
 	
@@ -76,45 +81,55 @@ public class UpdaterService extends IntentService {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		Log.d(TAG,"Updater Service started");
 		
-		// Initialize the status notification
-		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-						
-		// Get the input data from the intent and parse it, starting the various
-		// updater methods and setting notification text as needed.
-		Bundle data = intent.getExtras();
-		final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
-		final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
-		final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
-		final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
-				
-		if (set_alarm_only){
-			final long nextUpdate = getNextUpdateTime();
-			if (nextUpdate >= System.currentTimeMillis()){
-				setNextAlarm();
-			}else{
+		try {
+			// Initialize the status notification
+			mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+
+			// Get the input data from the intent and parse it, starting the various
+			// updater methods and setting notification text as needed.
+			Bundle data = intent.getExtras();
+			final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
+			final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
+			final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
+			final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
+
+			if (set_alarm_only){
+				final long nextUpdate = getNextUpdateTime();
+				if (nextUpdate >= System.currentTimeMillis()){
+					setNextAlarm();
+				}else{
+					showStatusNotification(getText(R.string.checking_all));
+					updateAllFeeds();
+				}
+			}
+
+			if (update_sixgun){
+				showStatusNotification(getText(R.string.checking_sixgun));
+				checkForNewSixgunShows();
+				updateAllFeeds();
+			}
+
+			if (update_all) {
 				showStatusNotification(getText(R.string.checking_all));
 				updateAllFeeds();
 			}
+
+			if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
+				showStatusNotification(getText(R.string.checking) + " " + update_single);
+				updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
+			}
+
+			// This method is done at this point, so cancel the notification and log. 
+			mNM.cancel(NOTIFY_1);
+		} finally {
+			if (sWakeLock != null){
+				if (sWakeLock.isHeld()){
+					sWakeLock.release();
+					Log.d(TAG, "Releasing wakelock");
+				}
+				sWakeLock = null;
+			}
 		}
-		
-		if (update_sixgun){
-			showStatusNotification(getText(R.string.checking_sixgun));
-			checkForNewSixgunShows();
-			updateAllFeeds();
-		}
-		
-		if (update_all) {
-			showStatusNotification(getText(R.string.checking_all));
-			updateAllFeeds();
-		}
-		
-		if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
-			showStatusNotification(getText(R.string.checking) + " " + update_single);
-			updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
-		}
-		
-		// This method is done at this point, so cancel the notification and log. 
-		mNM.cancel(NOTIFY_1);
 		Log.d(TAG,"Updater Service stopped");
 	}
 	
@@ -335,25 +350,36 @@ public class UpdaterService extends IntentService {
 	 * @return Return code int
 	 */
 	private int pingUrl(String podcast_url) {
+		HttpURLConnection urlconn = null;
 		try {
-            URL url = new URL(podcast_url);
-            HttpURLConnection urlconn = (HttpURLConnection) url.openConnection();
-            urlconn.setRequestProperty("Connection", "close");
-            urlconn.setConnectTimeout(20000); // Timeout is 20 seconds
-            urlconn.connect();
-            if (urlconn.getResponseCode() == 200) {
-            	return ReturnCodes.ALL_OK;
-            } else {
-            	showErrorNotification(podcast_url + getText(R.string.url_offline));
-        		return ReturnCodes.URL_OFFLINE;
-            }
+			URL url = new URL(podcast_url);
+			urlconn = (HttpURLConnection) url.openConnection();
+			urlconn.setRequestProperty("Connection", "close");
+			urlconn.setConnectTimeout(TIMEOUT);
+			urlconn.setReadTimeout(TIMEOUT);
+			try {
+				if (urlconn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+					return ReturnCodes.ALL_OK;
+				} else {
+					showErrorNotification(podcast_url + getText(R.string.url_offline));
+					return ReturnCodes.URL_OFFLINE;
+				}
+			}catch (SocketTimeoutException ste){
+				Log.e(TAG, podcast_url + " timed out", ste);
+				return ReturnCodes.URL_OFFLINE;
+			}
 		} catch (MalformedURLException e1) {
 			showErrorNotification(podcast_url + getText(R.string.url_offline));
 			return ReturnCodes.URL_OFFLINE;			
 		} catch (IOException e) {
 			showErrorNotification(podcast_url + getText(R.string.url_offline));
 			return ReturnCodes.URL_OFFLINE;
-		}		
+		} finally {
+			if (urlconn != null){
+				urlconn.disconnect();
+			}
+
+		}
 	}
 
 	private SharedPreferences getPreferences() {

@@ -18,6 +18,8 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
@@ -39,8 +41,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -95,7 +95,14 @@ public class AddNewPodcastFeedActivity extends Activity {
 		Podcast podcast = new Podcast();
 
 		URL  feedUrl = Utils.getURL(feed);
-		if (Utils.checkURL(feedUrl) != null){
+		HttpURLConnection conn = null;
+		try {
+			conn = Utils.checkURL(feedUrl);
+		} catch (SocketTimeoutException e) {
+			Log.e(TAG, "Feed url timed out", e);
+		}
+		if (conn != null){
+			conn.disconnect();
 			podcast.setFeedUrl(feedUrl);
 			//TODO Check identica group exists, (query identica).
 			if (!group.equals("") && !group.equals("!")){

@@ -19,12 +19,10 @@
 */
 package org.sixgun.ponyexpress.util;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.sixgun.ponyexpress.R;
 
@@ -63,36 +61,39 @@ public abstract class BaseFeedParser {
     
 	/**
      * Opens a connection to feedUrl.
-     * 
-     * @return an InputStream from the feedUrl
+     * Note: the returned connection should be disconnected after use.
+     * @return an HttpURLConnection from the feedUrl
      */
-    protected InputStream getInputStream() {
-    	InputStream istream = null;
+    protected HttpURLConnection getConnection() {
     	int attempts = 0;
-    	URLConnection conn = null;
+    	HttpURLConnection conn = null;
 		//try to connect to server a maximum of five times
     	do {
-    		conn = openConnection();
-			attempts++;
+    		try{
+    			conn = openConnection();
+    			attempts++;
+    		} catch (SocketTimeoutException ste) {
+    			Log.e(TAG, "Server timed out from getReponseCode()", ste);
+    			if (conn != null){
+    				conn.disconnect();
+    			}
+    			return null;
+    		} 
 		} while (conn == null && attempts < 5);
-    	//if connected get Inputstream
     	if (conn != null){
-    		try {
-    			istream = conn.getInputStream();
-    		} catch (IOException e) {
-    			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
-    			NotifyError("Failed to read the feed.");
-    		}
+    		return conn;
     	} else { NotifyError("Failed to read the feed."); }
-		return istream;
+		return null;
     }
     
     /** 
      * Checks that a connection can be made to mFeedUrl and 
-     * if so returns the connection.
+     * if so returns the connection. The connection should be disconnected
+     * after use by the caller.
      * @return the HttpUrlConnection
+     * @throws SocketTimeoutException
      */
-    private HttpURLConnection openConnection(){
+    private HttpURLConnection openConnection() throws SocketTimeoutException{
     	return Utils.checkURL(mFeedUrl);	
     }
 
