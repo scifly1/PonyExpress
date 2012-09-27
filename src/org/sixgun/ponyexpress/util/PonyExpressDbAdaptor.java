@@ -238,7 +238,7 @@ public class PonyExpressDbAdaptor {
     private String getTableName(String podcastName) {
 		final String[] columns = {PodcastKeys.TABLE_NAME};
 		//Use double quote here for the podcastName as it is an identifier.
-		final String quotedName = "\"" + podcastName + "\"";
+		final String quotedName = Utils.handleQuotes(podcastName);
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "= " + quotedName, null, null, null, null, null);
 		String tablename = "";
@@ -775,7 +775,7 @@ public class PonyExpressDbAdaptor {
 	public String getAlbumArtUrl(String podcast_name){
 		final String[] columns = {PodcastKeys._ID,PodcastKeys.ALBUM_ART_URL};
 		//Use double quote here for the podcastName as it is an identifier.
-		final String quoted_name = "\"" + podcast_name + "\"";
+		final String quoted_name = Utils.handleQuotes(podcast_name);
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "=" + quoted_name, null, null, null, null, null);
 		String url = "";
@@ -862,7 +862,7 @@ public class PonyExpressDbAdaptor {
 		boolean deleted = false;
 		if (Environment.MEDIA_MOUNTED.equals(state)){
 			//Remove any episodes of the podcast from the playlist
-			final String quote_name = "\"" + podcast_name + "\"";
+			final String quote_name = Utils.handleQuotes(podcast_name);
 			mDb.delete(PLAYLIST_TABLE, PodcastKeys.NAME + "=" + quote_name, null);
 			
 			final String path = PonyExpressApp.PODCAST_PATH + podcast_name;
@@ -1181,7 +1181,7 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public void removeEpisodeFromPlaylist(String podcast_name, long rowID) {
-		final String quoted_name = "\"" + podcast_name + "\"";
+		final String quoted_name = Utils.handleQuotes(podcast_name);
 		//Get the play order number for this episode so we can fill
 		// the gap left later.
 		final String[] columns = {PodcastKeys._ID, PodcastKeys.PLAY_ORDER};
