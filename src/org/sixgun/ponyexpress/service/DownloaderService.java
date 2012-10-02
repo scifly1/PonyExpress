@@ -238,7 +238,6 @@ public class DownloaderService extends Service {
 									mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
 											episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
 								}
-								episode.resetDownloadCancelled();
 								//Decrease mCurrentDownloads which will kill 
 								//the notifications of it getes to <1
 								mCurrentDownloads--;
@@ -543,7 +542,7 @@ public class DownloaderService extends Service {
 		mCurrentDownloadsList.clear();
 
 		for (DownloadingEpisode episode:mEpisodes){
-			if (episode.isEpisodeDownloading()){
+			if (episode.isEpisodeDownloading() && !episode.downloadCancelled()){
 				mCurrentDownloadsList.add(episode);
 			}
 		}

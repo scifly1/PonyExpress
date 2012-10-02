@@ -168,11 +168,6 @@ public class DownloadingEpisode extends Episode {
 	public boolean downloadCancelled() {
 		return mDownloadCancelled;
 	}
-	
-	public void resetDownloadCancelled() {
-		this.mDownloadCancelled = false;
-		
-	}
 
 	public void setDownloadCompleted(boolean b) {
 		mDownloadCompleted = b;

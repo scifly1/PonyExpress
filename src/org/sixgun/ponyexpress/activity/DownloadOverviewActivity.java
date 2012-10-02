@@ -51,9 +51,8 @@ public class DownloadOverviewActivity extends ListActivity {
 	private boolean mDownloaderBound;
 	private volatile boolean mInterruptProgressThread = false;
 	private DownloadingEpisodeAdapter mAdapter;
-	private List<DownloadingEpisode> mDownloadsArrayList;
+	private volatile List<DownloadingEpisode> mDownloadsArrayList;
 	private Handler mHandler;
-	private List<DownloadingEpisode> mCancelledDownloads;
 	private PonyExpressApp mPonyExpressApp;
 
 	/* (non-Javadoc)
@@ -63,8 +62,8 @@ public class DownloadOverviewActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.download_overview);
+
 		mDownloadsArrayList = new ArrayList<DownloadingEpisode>();
-		mCancelledDownloads = new ArrayList<DownloadingEpisode>();
 		mPonyExpressApp = (PonyExpressApp) getApplication();
 		mAdapter = new DownloadingEpisodeAdapter(this,R.layout.downloads_row, mDownloadsArrayList);
 		setListAdapter(mAdapter);
@@ -104,10 +103,7 @@ public class DownloadOverviewActivity extends ListActivity {
 		public void run() {
 			mAdapter.clear();
 			for (DownloadingEpisode episode: mDownloadsArrayList){
-				//Add episodes to the Adapter unless they have been cancelled
-				if (!mCancelledDownloads.contains(episode)){
-					mAdapter.add(episode);
-				}
+				mAdapter.add(episode);
 			}
 			mAdapter.notifyDataSetChanged();
 		}
@@ -184,7 +180,10 @@ public class DownloadOverviewActivity extends ListActivity {
 				public void onClick(View v) {
 					mDownloader.cancelDownload(
 							episode.getTitle());
-					mCancelledDownloads.add(episode);
+					//Refresh downloads list 
+					mDownloadsArrayList.clear();
+					mDownloadsArrayList = mDownloader.getDownloadingEpisodes();
+					mHandler.post(UpdateDataRunnable);
 					//remove from playlist if present
 					mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(episode.getPodcastName(), episode.getTitle());
 				}
