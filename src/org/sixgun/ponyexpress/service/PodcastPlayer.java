@@ -217,7 +217,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		pause();
+		if (mIsInitialised){
+			pause();
+		}
+
 		if (mFreePlayer != null){
 			mFreePlayer.release();
 			mFreePlayer = null;
