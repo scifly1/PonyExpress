@@ -77,6 +77,12 @@
 		<activity android:name=".activity.PlaylistActivity" />	
 		<activity android:name=".activity.DownloadOverviewActivity" />
 		<activity android:name=".activity.ShowNotesActivity" />
+		<receiver android:name=".receiver.RescheduledUpdateReceiver"  
+		    android:enabled="false">
+		    <intent-filter >
+		        <action android:name="android.net.conn.CONNECTIVITY_CHANGE"/>
+		    </intent-filter>
+		</receiver>
 		<receiver android:name=".receiver.UpdateAlarmReceiver" />
 		<receiver android:name=".receiver.BootServiceReceiver">
 			<intent-filter>

@@ -29,11 +29,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.sixgun.ponyexpress.Episode;
-import org.sixgun.ponyexpress.ReturnCodes;
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.ReturnCodes;
 import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.receiver.RescheduledUpdateReceiver;
 import org.sixgun.ponyexpress.receiver.UpdateAlarmReceiver;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import org.sixgun.ponyexpress.util.PodcastFeedParser;
@@ -45,9 +46,11 @@ import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
@@ -256,8 +259,15 @@ public class UpdaterService extends IntentService {
 		for (String podcast_name: podcast_names){
 			int return_code = updateFeed(podcast_name);
 			if (return_code == ReturnCodes.INTERNET_CONNECTIVITY_LOST){
-				//This means the internet is unreachable so this loop needs to stop
-				break;
+				//Internet unreachable, Listen for return of internet to launch update.
+				Log.d(TAG,"Registering connectivity reciever");
+				//Enable RescheduledUpdateReceiver
+				ComponentName receiver = new ComponentName(mPonyExpressApp, RescheduledUpdateReceiver.class);
+				PackageManager pm = mPonyExpressApp.getPackageManager();
+				pm.setComponentEnabledSetting(receiver, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, 
+					PackageManager.DONT_KILL_APP);
+				//Don't set next alarm as we haven't updated yet
+				return;
 			}
 		}
 		setLastUpdateTime();
@@ -275,8 +285,6 @@ public class UpdaterService extends IntentService {
 		
 		String podcast_url = mPonyExpressApp.getDbHelper().getPodcastUrl(podcast_name);
 		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()){
-			showErrorNotification(getText(R.string.interent_lost));
-			Log.e(TAG,"Internet connectivity lost during update");
 			return ReturnCodes.INTERNET_CONNECTIVITY_LOST;
 		}
 		
