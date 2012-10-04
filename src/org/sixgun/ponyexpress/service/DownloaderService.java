@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -212,7 +213,8 @@ public class DownloaderService extends Service {
 						InputStream inFile = null;
 						int totalDownloaded = 0;
 						try {
-							inFile = url.openStream();
+							HttpURLConnection conn = Utils.checkURL(url);
+							inFile = conn.getInputStream();
 						} catch (IOException e) {
 							IOe = true;
 						}
