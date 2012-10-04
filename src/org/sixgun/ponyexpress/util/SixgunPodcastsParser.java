@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -118,6 +119,13 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 				istream.close();
+			}
+		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
+			Throwable cause = e.getCause();
+			if (cause instanceof SocketTimeoutException){
+				Log.e(TAG, "SocketTimeoutException caught parsing sixgun podcasts");
+				NotifyError("Failed to read the feed");
+				return null;
 			}
 		} catch (Exception e) {
 			NotifyError("");

@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -186,6 +187,11 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 				istream.close();
+			}
+		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
+			Throwable cause = e.getCause();
+			if (cause instanceof SocketTimeoutException){
+				Log.e(TAG, "SocketTimeoutException caught parsing feed url");
 			}
 		} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
 			Log.e(TAG, "RSS feed is malformed, required data is missing!");

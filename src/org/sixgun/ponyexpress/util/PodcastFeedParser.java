@@ -22,6 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 
 import org.sixgun.ponyexpress.Podcast;
 import org.xml.sax.Attributes;
@@ -132,6 +133,13 @@ public class PodcastFeedParser extends BaseFeedParser {
 				NotifyError("");
 				return null;		
 			}
+		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
+			Throwable cause = e.getCause();
+			if (cause instanceof SocketTimeoutException){
+				Log.e(TAG, "SocketTimeoutException caught parsing podcast feed");
+				NotifyError("");
+				return null;
+			}
 		} catch (Exception e) {
 			NotifyError("");
 			return null;
@@ -201,6 +209,15 @@ public class PodcastFeedParser extends BaseFeedParser {
 				Xml.parse(istream, Xml.Encoding.UTF_8, 
 						root.getContentHandler());
 				istream.close();
+			} else {
+				NotifyError("");
+				return null;
+			}
+		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
+			Throwable cause = e.getCause();
+			if (cause instanceof SocketTimeoutException){
+				Log.e(TAG, "SocketTimeoutException caught parsing album art url");
+				return null;
 			}
 		} catch (Exception e) {
 			NotifyError("");

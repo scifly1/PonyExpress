@@ -415,6 +415,9 @@ public class UpdaterService extends IntentService {
 			// No album art.  Just return.
 			return;
 		}
+		if (art_url == null){
+			return;
+		}
 		mPonyExpressApp.getDbHelper().updateAlbumArtUrl(podcast_url, art_url);
 	}
 		
