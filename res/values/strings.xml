@@ -46,8 +46,8 @@
 	<string name="show_notes">Show notes</string>
 	<string name="downloading_episode">1 Podcast downloading.</string>
 	<string name="downloading_episodes">Podcasts downloading.</string>
-	<string name="verify_creds">Verifying credentials! Please wait...</string>
-	<string name="searching_dents">Searching for dents..."</string>
+	<string name="verify_creds">Verifying credentials! Please wait&#8230;</string>
+	<string name="searching_dents">Searching for dents&#8230;"</string>
 	<string name="no_dents">No dents for this episode yet! Go on, be the first!
 	</string>
 	<string name="can_not_encode_dent">Can not encode your dent.</string>
@@ -142,8 +142,8 @@
 	<string name="auto_download_summary">Automatically download episodes when adding to the playlist</string>
 	<string name="no_episodes">The playlist is empty.</string>
 	<string name="clear_playlist">Clear the playlist</string>
-	<string name="playlist_subtitle_pod">Select podcast...</string>
-	<string name="playlist_subtitle_eps">Select episodes...</string>
+	<string name="playlist_subtitle_pod">Select podcast&#8230;</string>
+	<string name="playlist_subtitle_eps">Select episodes&#8230;</string>
 	<string name="show_notes_title">Show notes</string>
 	<string name="not_downloaded_dialog">This episode is not downloaded. Do you want to download it now?</string>
 	<string name="always_auto_download">Always auto-download?</string>
@@ -157,6 +157,7 @@
 	<string name="no">No</string>
 	<string name="there_is_no_backup">There is no backup file to restore.</string>
 	<string name="error_parsing_backup_file">There was an error parsing the backup file. Required data may be missing or corrupt.</string>
+	<string name="counter">0:00:00</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.

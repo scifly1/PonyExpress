@@ -10,7 +10,6 @@
 		android:layout_centerHorizontal="true"
 		android:layout_height="wrap_content"
 		android:minWidth="250dp"
-		android:layout_below="@+id/album_art"
 		android:visibility="gone"
 		android:max="100"
 		android:indeterminate="false"
@@ -57,7 +56,7 @@
 			android:layout_height="wrap_content"
 			android:layout_toLeftOf="@+id/rewind"
 			android:layout_marginRight="1sp"
-			android:text="0:00:00"
+			android:text="@string/counter"
 			android:layout_marginTop="10dp" />
 		<TextView
 			android:id="@+id/length"
@@ -65,7 +64,7 @@
 			android:layout_height="wrap_content"
 			android:layout_toRightOf="@+id/fastforward"
 			android:layout_marginLeft="1sp"
-			android:text="0:00:00"
+			android:text="@string/counter"
 			android:layout_marginTop="10dp" />
 	</RelativeLayout>
 	<Button

@@ -1,69 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/playlist_header"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
+    android:background="#FF000000"
     android:orientation="vertical" >
 
-    <RelativeLayout
-        android:id="@+id/playlist_header"
-        android:layout_width="fill_parent"
+    <TextView
+        android:id="@+id/playlist_title"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="#FF000000"
-        android:orientation="vertical" >
+        android:paddingLeft="10dp"
+        android:paddingTop="10dp"
+        android:text="@string/Playlist_title"
+        android:textSize="24sp"
+        android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/playlist_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="#FF000000"
-            android:paddingLeft="10dp"
-            android:paddingTop="10dp"
-            android:text="@string/Playlist_title"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-        
-        <TextView
-            android:id="@+id/playlist_subtitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/playlist_title"
-            android:background="#FF000000"
-            android:paddingLeft="10dp"
-            android:paddingTop="4dp"
-            android:text="@string/playlist_subtitle_pod"
-            android:textSize="16sp" />
+    <TextView
+        android:id="@+id/playlist_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/playlist_title"
+        android:background="#FF000000"
+        android:paddingLeft="10dp"
+        android:paddingTop="4dp"
+        android:text="@string/playlist_subtitle_pod"
+        android:textSize="16sp" />
 
-        <ImageButton
-            android:id="@+id/play_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="#ff000000"
-            android:onClick="startPlaylist"
-            android:paddingTop="10dp"
-            android:src="@drawable/play_button" />
+    <ImageButton
+        android:id="@+id/play_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:background="#ff000000"
+        android:onClick="startPlaylist"
+        android:paddingTop="10dp"
+        android:src="@drawable/play_button" />
 
-        <ImageButton 
-            android:id="@+id/download_overview_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/play_button"
-            android:background="#ff000000"
-            android:onClick="openDownloadOverview"
-            android:paddingTop="10dp"
-            android:src="@drawable/download_overview_button"
-            /> 
-                   
-        <ImageButton
-            android:id="@+id/back_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/download_overview_button"
-            android:background="#ff000000"
-            android:onClick="goBack"
-            android:paddingTop="10dp"
-            android:src="@drawable/back_button" />
+    <ImageButton
+        android:id="@+id/download_overview_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/play_button"
+        android:background="#ff000000"
+        android:onClick="openDownloadOverview"
+        android:paddingTop="10dp"
+        android:src="@drawable/download_overview_button" />
 
-    </RelativeLayout>
+    <ImageButton
+        android:id="@+id/back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@+id/download_overview_button"
+        android:background="#ff000000"
+        android:onClick="goBack"
+        android:paddingTop="10dp"
+        android:src="@drawable/back_button" />
 
-</LinearLayout>
+</RelativeLayout>

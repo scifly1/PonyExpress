@@ -32,7 +32,7 @@
             android:background="#FF000000"
             android:paddingLeft="10dp"
             android:paddingTop="4dp"
-            android:text="Episode Title"
+            android:text=""
             android:textSize="20sp" />
                    
         <ImageButton
