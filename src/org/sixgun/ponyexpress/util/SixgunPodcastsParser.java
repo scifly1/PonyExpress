@@ -112,7 +112,7 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 			}
 		} catch (IOException e) {
 			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
-			NotifyError("Failed to read the feed.");
+			NotifyError("");
 		}
 		try {
 			if (istream != null){
@@ -124,7 +124,7 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 			Throwable cause = e.getCause();
 			if (cause instanceof SocketTimeoutException){
 				Log.e(TAG, "SocketTimeoutException caught parsing sixgun podcasts");
-				NotifyError("Failed to read the feed");
+				NotifyError("");
 				return null;
 			}
 		} catch (Exception e) {

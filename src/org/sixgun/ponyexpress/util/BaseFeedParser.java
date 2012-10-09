@@ -82,7 +82,7 @@ public abstract class BaseFeedParser {
 		} while (conn == null && attempts < 5);
     	if (conn != null){
     		return conn;
-    	} else { NotifyError("Failed to read the feed."); }
+    	} else { NotifyError(""); }
 		return null;
     }
     
@@ -96,7 +96,12 @@ public abstract class BaseFeedParser {
     private HttpURLConnection openConnection() throws SocketTimeoutException{
     	return Utils.checkURL(mFeedUrl);	
     }
-
+    /**
+     * Sends an error notification.
+     * The default error message is "There was an error getting a feed" which is used
+     * if an empty string is passed in.
+     * @param error_message
+     */
     protected void NotifyError(String error_message) {
     	//Send a notification to the user telling them of the error
 		//This uses an empty intent because there is no new activity to start.

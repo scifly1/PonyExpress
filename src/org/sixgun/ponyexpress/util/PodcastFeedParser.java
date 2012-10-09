@@ -121,7 +121,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			}
 		} catch (IOException e) {
 			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
-			NotifyError("Failed to read the feed.");
+			NotifyError("");
 		} 
 
 		try {
@@ -202,7 +202,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			}
 		} catch (IOException e) {
 			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
-			NotifyError("Failed to read the feed.");
+			NotifyError("");
 		} 
 		try {
 			if (istream != null){
