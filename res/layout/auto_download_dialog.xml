@@ -11,8 +11,7 @@
         <TextView
             android:id="@+id/auto_download_message"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" 
+            android:layout_height="wrap_content" 
             android:text="@string/not_downloaded_dialog"
             style="@android:style/TextAppearance.Medium"
             android:layout_marginBottom="9dp">
@@ -23,7 +22,6 @@
             android:id="@+id/always_download_checkBox"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:text="@string/always_auto_download" 
             android:layout_below="@+id/auto_download_message"
             android:checked="false"/>

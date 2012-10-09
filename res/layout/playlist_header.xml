@@ -30,6 +30,7 @@
 
     <ImageButton
         android:id="@+id/play_button"
+        android:contentDescription="@string/start_playlist_button_desc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
@@ -40,6 +41,7 @@
 
     <ImageButton
         android:id="@+id/download_overview_button"
+        android:contentDescription="@string/downloads_button_desc"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_toLeftOf="@+id/play_button"

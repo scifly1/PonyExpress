@@ -41,6 +41,7 @@
 
         <ImageButton
             android:id="@+id/settings_button"
+            android:contentDescription="@string/settings_button_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"

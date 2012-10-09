@@ -5,6 +5,7 @@
 	android:layout_height="fill_parent">
 	<ImageView
 		android:id="@+id/notification_image"
+		android:contentDescription="@string/error_icon_desc"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:layout_marginRight="10dp"

@@ -15,7 +15,6 @@
 		android:id="@+id/footer_button"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
-		android:layout_alignParentBottom="true"
 		android:text="@string/footer"
 		android:textSize="18sp"
 		android:textColor="#ffcccccc"

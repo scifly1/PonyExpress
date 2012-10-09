@@ -158,6 +158,14 @@
 	<string name="there_is_no_backup">There is no backup file to restore.</string>
 	<string name="error_parsing_backup_file">There was an error parsing the backup file. Required data may be missing or corrupt.</string>
 	<string name="counter">0:00:00</string>
+	<string name="settings_button_desc">Show settings button </string>
+	<string name="playlist_button_desc">Show playlist button </string>
+	<string name="play_button_desc">Play button </string>
+	<string name="rewind_button_desc">Rewind button </string>
+	<string name="fastforward_button_desc">Fastforward button </string>
+	<string name="start_playlist_button_desc">Start playlist button </string>
+	<string name="downloads_button_desc">Show current downloads button </string>
+	<string name="error_icon_desc">Error notification icon</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
