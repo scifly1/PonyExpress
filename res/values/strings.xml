@@ -144,7 +144,6 @@
 	<string name="clear_playlist">Clear the playlist</string>
 	<string name="playlist_subtitle_pod">Select podcast&#8230;</string>
 	<string name="playlist_subtitle_eps">Select episodes&#8230;</string>
-	<string name="show_notes_title">Show notes</string>
 	<string name="not_downloaded_dialog">This episode is not downloaded. Do you want to download it now?</string>
 	<string name="always_auto_download">Always auto-download?</string>
 	<string name="backup">Backup</string>

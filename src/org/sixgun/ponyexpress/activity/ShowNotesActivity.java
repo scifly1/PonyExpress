@@ -51,8 +51,5 @@ public class ShowNotesActivity extends Activity {
 		episode_title.setText(episode_name);
 	}
 	
-	public void goBack(View v){
-		finish();
-	}
 	
 }
