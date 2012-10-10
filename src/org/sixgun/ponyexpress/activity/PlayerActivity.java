@@ -47,6 +47,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -308,6 +309,18 @@ public class PlayerActivity extends Activity {
 			}
 		};
 		
+		OnLongClickListener fastForwardLongClickListener = new OnLongClickListener() {
+			
+			@Override
+			public boolean onLongClick(View v) {
+				if (mPodcastPlayer.isPlayingPlaylist()){
+					mPodcastPlayer.skipToNext();
+					return true;
+				} else return false;
+				
+			}
+		};
+		
 		OnSeekBarChangeListener seekBarListener = new OnSeekBarChangeListener(){
 
 			@Override
@@ -383,6 +396,7 @@ public class PlayerActivity extends Activity {
 		mRewindButton.setOnClickListener(rewindButtonListener);
 		mFastForwardButton = (ImageButton)findViewById(R.id.fastforward);
 		mFastForwardButton.setOnClickListener(fastForwardButtonListener);
+		mFastForwardButton.setOnLongClickListener(fastForwardLongClickListener);
 		mSeekBar = (SeekBar)findViewById(R.id.PlayerSeekBar);	
 		mSeekBar.setOnSeekBarChangeListener(seekBarListener);
 		mElapsed = (TextView)findViewById(R.id.elapsed_time);

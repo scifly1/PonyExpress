@@ -652,4 +652,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			break;
 		}
 	}
+
+	public boolean isPlayingPlaylist() {
+		return mPlayingPlaylist;
+	}
+
+	public void skipToNext() {
+		mPlayer.seekTo(getEpisodeLength());
+		
+	}
 }
