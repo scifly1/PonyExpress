@@ -22,15 +22,6 @@
 			android:background="#ff000000"
 			android:onClick="showSettings" />
 
-		<ImageButton
-			android:id="@+id/back_button"
-			android:paddingTop="10dp"
-			android:layout_toLeftOf="@+id/settings_button"
-			android:src="@drawable/back_button"
-			android:layout_width="wrap_content"
-			android:layout_height="wrap_content"
-			android:background="#ff000000"
-			android:onClick="goBack" />
 
 		<TextView
 			android:id="@+id/title"
@@ -42,7 +33,7 @@
 			android:paddingTop="10dp"
 			android:textSize="28sp"
 			android:background="#FF000000"
-			android:layout_toLeftOf="@+id/back_button"
+			android:layout_toLeftOf="@+id/settings_button"
 			android:layout_alignParentLeft="true" />
 		<TextView
 			android:id="@+id/Identica_group_title"

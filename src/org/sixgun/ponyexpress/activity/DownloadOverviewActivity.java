@@ -93,10 +93,6 @@ public class DownloadOverviewActivity extends ListActivity {
 		doBindDownloaderService();
 	}
 
-
-	public void goBack(View v){
-		finish();
-	}
 	
 	Runnable UpdateDataRunnable = new Runnable() {
 		@Override
