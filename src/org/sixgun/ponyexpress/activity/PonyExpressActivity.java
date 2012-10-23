@@ -31,6 +31,7 @@ import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.BackupFileWriter;
 
@@ -145,8 +146,12 @@ public class PonyExpressActivity extends ListActivity {
 		if (first){
 			onFirstRun(prefs);
 		}else{
-			//Make sure the update alarm is set properly.
+			//Make sure the update alarm and scheduled downloads are set properly.
 			updateFeed(SET_ALARM_ONLY);
+			
+			Intent intent = new Intent(mPonyExpressApp, ScheduledDownloadService.class);
+			intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+			mPonyExpressApp.startService(intent);
 		}
 		
 		//Check SDCard contents and database match.

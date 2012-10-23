@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 James Daws, Paul Elms
+ * Copyright 2012 Paul Elms
  *
  *  This file is part of PonyExpress.
  *
@@ -16,7 +16,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 package org.sixgun.ponyexpress.receiver;
 
 import org.sixgun.ponyexpress.activity.PonyExpressActivity;
@@ -26,21 +25,33 @@ import org.sixgun.ponyexpress.service.UpdaterService;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
+import android.util.Log;
 
 
-public class BootServiceReceiver extends BroadcastReceiver {
+public class ScheduledDownloadReceiver extends BroadcastReceiver {
 
+	private String TAG = "ScheduledDownloadReceiver";
+	
+	/* (non-Javadoc)
+	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
+	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
+		Log.d(TAG,"Recieved scheduled download alarm!");
 		
-		//Start UpdaterSevice with SET_ALARM_ONLY string
-		intent = new Intent(context,UpdaterService.class);
-		intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
-		context.startService(intent);
-		
-		//Start ScheduledDownloaderService with SET_ALARM_ONLY
-		intent = new Intent(context, ScheduledDownloadService.class);
-		intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+		//If device is asleep when alarm triggered it may go back
+		// to sleep before the service is started so we need a wakelock.
+		if (ScheduledDownloadService.sWakeLock == null){
+			PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+			ScheduledDownloadService.sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
+		}
+		if (!ScheduledDownloadService.sWakeLock.isHeld()){
+			Log.d(TAG, "Acquiring wake lock");
+			ScheduledDownloadService.sWakeLock.acquire();
+		}
+		//Start SheduledDownloadServiceSevice
+		intent = new Intent(context,ScheduledDownloadService.class);
 		context.startService(intent);
 	}
 

@@ -96,7 +96,7 @@ public class UpdaterService extends IntentService {
 			final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
 			final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
 
-			if (set_alarm_only){
+			if (checkBackgroundUpdate() && set_alarm_only){
 				final long nextUpdate = getNextUpdateTime();
 				if (nextUpdate >= System.currentTimeMillis()){
 					setNextAlarm();
