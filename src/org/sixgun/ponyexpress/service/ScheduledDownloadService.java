@@ -21,9 +21,11 @@ package org.sixgun.ponyexpress.service;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.PonyExpressActivity;
 import org.sixgun.ponyexpress.receiver.ScheduledDownloadReceiver;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -41,6 +43,7 @@ public class ScheduledDownloadService extends IntentService {
 
 	public static WakeLock sWakeLock;
 	private String TAG = "PonyExpress ScheduledDownloadService";
+	private PonyExpressApp mPonyExpressApp;
 
 
 	public ScheduledDownloadService() {
@@ -53,7 +56,7 @@ public class ScheduledDownloadService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Log.d(TAG, "Scheduled download service started.");
-		
+		mPonyExpressApp = (PonyExpressApp) getApplication();
 		try {
 			// See if we are to set the alarm only (after a reboot) or if we have to check 
 			//for downloads
@@ -71,8 +74,16 @@ public class ScheduledDownloadService extends IntentService {
 				setNextAlarm();
 			}else{
 				//TODO Check for downloads
+				//Get list of podcasts and find undownloaded episodes in each
 				Log.d(TAG, "Checking for downloads");
 				//TODO Start downloads
+				//Do all of this via binding DownloaderService.
+				//Check connectivity and permission for 3g downloads
+				Log.d(TAG, "CONNECTIVITY: " + mPonyExpressApp.getInternetHelper().getConnectivityType());
+				//Get a wifilock if required by permissions
+				//Make sure this method doesn't end before downloads complete
+				//or wake lock will be lost.
+				
 				Log.d(TAG, "Starting scheduled downloads");
 				
 				//Set the next update alarm
@@ -84,13 +95,13 @@ public class ScheduledDownloadService extends IntentService {
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
-					Log.d(TAG, "Releasing wakelock");
-					Log.d(TAG,"Scheduled Downloader stopped");
+					Log.d(TAG, "Releasing wakelock");					
 				}
 				sWakeLock = null;
 			}
 		}
-		
+		Log.d(TAG,"Scheduled Downloader stopped");
+		Utils.RecordLogToSDCard();
 	}
 
 	
@@ -143,10 +154,6 @@ public class ScheduledDownloadService extends IntentService {
 				//alarm doesn't set an alarm for 'now' triggering an new alarm.
 				cal.roll(Calendar.DAY_OF_YEAR,true);
 			}
-			Log.d(TAG, "Date: " + cal.get(Calendar.DATE));
-			Log.d(TAG, "Hour: " + cal.get(Calendar.HOUR_OF_DAY));
-			Log.d(TAG, "Min: " + cal.get(Calendar.MINUTE));
-			Log.d(TAG, "millis: " + cal.getTimeInMillis());
 			return cal.getTimeInMillis();
 		} else return 0; 
 	}

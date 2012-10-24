@@ -19,7 +19,9 @@
 package org.sixgun.ponyexpress.util;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
@@ -306,6 +308,28 @@ public class Utils {
 	static public String handleQuotes(String string){
 		String new_string =  string.replace("'", "''");
 		return "'" + new_string + "'";
+	}
+	/**
+	 * Records the log to a file in the PODCAST_PATH.
+	 * Requires the READ_LOG permission in the AndroidManifest.
+	 */
+	static public void RecordLogToSDCard(){
+		try {
+		    File filename = File.createTempFile(PonyExpressApp.PODCAST_PATH , "logfile.txt"); 
+		    Process process = Runtime.getRuntime().exec("logcat -v time");
+		    InputStream is = process.getInputStream();
+		    FileOutputStream fos = new FileOutputStream(filename);
+		    byte[] buffer = new byte[1024];
+		    int bytesRead;
+		    while ((bytesRead = is.read(buffer)) != -1)
+		    {
+		        fos.write(buffer, 0, bytesRead);
+		    }
+		    fos.close();
+		} catch (IOException e) {
+		    // TODO Auto-generated catch block
+		    e.printStackTrace();
+		} 
 	}
 
 	
