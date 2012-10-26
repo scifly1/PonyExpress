@@ -24,8 +24,7 @@
 	<string name="Add_feeds">Add other podcasts.</string>
 	<string name="footer">Pony Express is free software:\n Tap here for more information.\n
 	\n<b>New media. New rules.</b></string>
-	<string name="no_internet_connection">Cannot connect to the Internet. Check your
-		connectivity.</string>
+	<string name="no_internet_connection">Cannot connect to the Internet. Check your connectivity.</string>
 	<string name="cannot_write">Cannot write to the SD Card!</string>
 	<string name="setting_up">Setting up PonyExpress. Please wait.</string>
 	<string name="checking_sixgun">Checking for new Sixgun.org shows.</string>
@@ -179,6 +178,8 @@
 	<string name="start_playlist_button_desc">Start playlist button </string>
 	<string name="downloads_button_desc">Show current downloads button </string>
 	<string name="error_icon_desc">Error notification icon</string>
+	<string name="no_connection_for_sched_download">No internet connection for podcast download.</string>
+	<string name="prefs_dont_allow_downloads">Your preferences don\'t allow downloads on a mobile network.</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.

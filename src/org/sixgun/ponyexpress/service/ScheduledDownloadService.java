@@ -18,32 +18,48 @@
 */
 package org.sixgun.ponyexpress.service;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.List;
 
+import org.sixgun.ponyexpress.DownloadingEpisode;
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.PonyExpressActivity;
 import org.sixgun.ponyexpress.receiver.ScheduledDownloadReceiver;
-import org.sixgun.ponyexpress.util.Utils;
+import org.sixgun.ponyexpress.util.InternetHelper;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager.WifiLock;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 
 public class ScheduledDownloadService extends IntentService {
-
+	
+	private static final int NOTIFY_ID = 0;
 	public static WakeLock sWakeLock;
 	private String TAG = "PonyExpress ScheduledDownloadService";
 	private PonyExpressApp mPonyExpressApp;
+	private DownloaderService mDownloader;
+	private boolean mDownloaderBound;
+	public static WifiLock sWifiLock;
 
 
 	public ScheduledDownloadService() {
@@ -57,6 +73,7 @@ public class ScheduledDownloadService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		Log.d(TAG, "Scheduled download service started.");
 		mPonyExpressApp = (PonyExpressApp) getApplication();
+		
 		try {
 			// See if we are to set the alarm only (after a reboot) or if we have to check 
 			//for downloads
@@ -73,25 +90,79 @@ public class ScheduledDownloadService extends IntentService {
 			if (set_alarm_only && nextUpdate >= System.currentTimeMillis() ){
 				setNextAlarm();
 			}else{
-				//TODO Check for downloads
 				//Get list of podcasts and find undownloaded episodes in each
 				Log.d(TAG, "Checking for downloads");
-				//TODO Start downloads
-				//Do all of this via binding DownloaderService.
-				//Check connectivity and permission for 3g downloads
-				Log.d(TAG, "CONNECTIVITY: " + mPonyExpressApp.getInternetHelper().getConnectivityType());
-				//Get a wifilock if required by permissions
-				//Make sure this method doesn't end before downloads complete
-				//or wake lock will be lost.
-				
-				Log.d(TAG, "Starting scheduled downloads");
-				
-				//Set the next update alarm
-				setNextAlarm();
+				ArrayList<DownloadingEpisode> downloads = getEpisodesToDownload();
+				if (!downloads.isEmpty()){
+					if (mPonyExpressApp.getInternetHelper().getConnectivityType() !=
+							ConnectivityManager.TYPE_WIFI){
+						//Either NO_CONNECTION or TYPE_MOBILE so
+						Log.d(TAG, "Wait for WIFI");
+						try {
+							//Wait for WIFI to come up
+							Thread.sleep(60000);
+						} catch (InterruptedException e) {
+							Log.e(TAG,"Interupted sleep waiting for wifi to come on");
+						}
+					}
+					switch (mPonyExpressApp.getInternetHelper().getConnectivityType()){
+					case InternetHelper.NO_CONNECTION:
+						Log.d(TAG, "No connection for scheduled download");
+						NotifyError(getString(R.string.no_connection_for_sched_download));
+						setNextAlarm();
+						return;
+					case ConnectivityManager.TYPE_MOBILE:
+						if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
+							Log.d(TAG, "Scheduled downloads not allowed on mobile network");
+							NotifyError(getString(R.string.prefs_dont_allow_downloads));
+							setNextAlarm();
+							return;
+						}
+						//Fallthrough, download allowed on mobile network
+					case ConnectivityManager.TYPE_WIFI:
+						Log.d(TAG, "Starting scheduled downloads");
+						doBindDownloaderService();
+						//Send intent for each episode to download with packaged episode
+						for (DownloadingEpisode episode: downloads){
+							Intent download_intent = new Intent(this,DownloaderService.class);
+							Bundle bundle = Episode.packageEpisode(mPonyExpressApp, episode.getPodcastName(), episode.getRowID());
+							download_intent.putExtras(bundle);
+							download_intent.putExtra("action", DownloaderService.DOWNLOAD);
+							startService(download_intent);
+						}
+						if (mDownloader == null){
+							//Wait for the connection to be made
+							try {
+								Log.d(TAG, "Waiting for downloader to bind");
+								Thread.sleep(2000);
+							} catch (InterruptedException e) {
+								Log.e(TAG, "Interupted sleep waiting for Downloader to bind");
+							}
+						} 
+						do {  //wait for downloads to finish
+							try {
+								Thread.sleep(10000);
+							} catch (InterruptedException e) {
+								Log.e(TAG,"Interupted sleep while downloading");
+							}
+						}
+						while (mDownloader != null && mDownloader.isDownloading());
+						doUnbindDownloaderService();
+					}	
+					setNextAlarm();
+				}
 			}
 
-			
+
 		} finally {
+			//release wifilock
+			if (sWifiLock != null){
+				if (sWifiLock.isHeld()){
+					sWifiLock.release();
+					Log.d(TAG, "Releasing wifilock");
+				}
+				sWifiLock = null;
+			}
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
@@ -101,7 +172,6 @@ public class ScheduledDownloadService extends IntentService {
 			}
 		}
 		Log.d(TAG,"Scheduled Downloader stopped");
-		Utils.RecordLogToSDCard();
 	}
 
 	
@@ -160,6 +230,96 @@ public class ScheduledDownloadService extends IntentService {
 	
 	private SharedPreferences getPreferences(){
 		return PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+	}
+	
+	private ArrayList<DownloadingEpisode> getEpisodesToDownload(){
+		final ArrayList<String> podcasts = (ArrayList<String>) 
+				mPonyExpressApp.getDbHelper().listAllPodcasts();
+		List<DownloadingEpisode> downloads = new ArrayList<DownloadingEpisode>();
+		for (String podcast: podcasts){
+			Cursor c = mPonyExpressApp.getDbHelper().getAllUndownloadedAndUnlistened(podcast);
+			if (c != null && c.getCount() > 0){
+				c.moveToFirst();
+				for (int i = 0; i < c.getCount(); i++){
+					DownloadingEpisode episode = new DownloadingEpisode();
+					episode.setPodcastName(podcast);
+					episode.setRowID(c.getLong(0));
+					downloads.add(episode);
+					c.moveToNext();
+				}
+			}
+			c.close();
+		}
+		return (ArrayList<DownloadingEpisode>) downloads;
+	}
+	
+	protected void NotifyError(String error_message) {
+		if (error_message == ""){
+			return;
+		}
+		//Send a notification to the user telling them of the error
+		//This uses an empty intent because there is no new activity to start.
+		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp.getApplicationContext(), 
+				0, new Intent(), 0);
+		NotificationManager notifyManager = 
+			(NotificationManager) mPonyExpressApp.getSystemService(Context.NOTIFICATION_SERVICE);
+		int icon = R.drawable.stat_notify_error;
+
+		Notification notification = new Notification(
+				icon, null,
+				System.currentTimeMillis());
+		notification.flags |= Notification.FLAG_AUTO_CANCEL;
+		notification.setLatestEventInfo(mPonyExpressApp.getApplicationContext(), 
+				mPonyExpressApp.getText(R.string.app_name), error_message, intent);
+		notifyManager.notify(NOTIFY_ID,notification);
+		
+	}
+	
+	//This is all responsible for connecting/disconnecting to the Downloader service.
+	private ServiceConnection mDownloaderConnection = new ServiceConnection() {
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// This is called when the connection with the service has been
+			// unexpectedly disconnected -- that is, its process crashed.
+			// Because it is running in our same process, we should never
+			// see this happen.
+			mDownloader = null;
+
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// This is called when the connection with the service has been
+			// established, giving us the service object we can use to
+			// interact with the service.  Because we have bound to an explicit
+			// service that we know is running in our own process, we can
+			// cast its IBinder to a concrete class and directly access it.
+			mDownloader = ((DownloaderService.DownloaderServiceBinder)service).getService();
+			
+		}
+	};
+
+	protected void doBindDownloaderService() {
+		// Establish a connection with the service.  We use an explicit
+		// class name because we want a specific service implementation that
+		// we know will be running in our own process (and thus won't be
+		// supporting component replacement by other applications).
+		bindService(new Intent(this, 
+				DownloaderService.class), mDownloaderConnection, Context.BIND_AUTO_CREATE);
+		mDownloaderBound = true;
+	}
+
+
+	protected void doUnbindDownloaderService() {
+		if (mDownloaderBound) {
+			// Detach our existing connection.
+			//Must use getApplicationContext.unbindService() as 
+			//getApplicationContext().bindService was used to bind initially.
+			unbindService(mDownloaderConnection);
+			mDownloaderBound = false;
+			mDownloader = null;
+		}
 	}
 
 }

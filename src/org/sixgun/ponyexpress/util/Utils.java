@@ -314,6 +314,8 @@ public class Utils {
 	 * Requires the READ_LOG permission in the AndroidManifest.
 	 */
 	static public void RecordLogToSDCard(){
+		//FIXME this blocks when reading the log as logcat continues to
+		//output so the read never ends.
 		try {
 		    File filename = File.createTempFile(PonyExpressApp.PODCAST_PATH , "logfile.txt"); 
 		    Process process = Runtime.getRuntime().exec("logcat -v time");
@@ -321,7 +323,7 @@ public class Utils {
 		    FileOutputStream fos = new FileOutputStream(filename);
 		    byte[] buffer = new byte[1024];
 		    int bytesRead;
-		    while ((bytesRead = is.read(buffer)) != -1)
+		    while ((bytesRead = is.read(buffer)) > 0)
 		    {
 		        fos.write(buffer, 0, bytesRead);
 		    }

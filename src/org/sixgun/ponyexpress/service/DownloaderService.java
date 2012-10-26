@@ -132,13 +132,6 @@ public class DownloaderService extends Service {
 		Log.d(TAG, "Downloader Service Killed/Stopped");
 		mDownloaderAwake = false;
 	}
-	// This is the old onStart method that will be called on the pre-2.0
-	// platform.  On 2.0 or later we override onStartCommand() so this
-	// method will not be called.
-	@Override
-	public void onStart(Intent intent, int startId) {
-	    handleCommand(intent);
-	}
 
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {

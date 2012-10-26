@@ -233,6 +233,7 @@ public class EpisodesActivity extends ListActivity {
 				//for each, create intent for downloader service
 				for (int i = 0; i < c.getCount(); i++){
 					Intent intent = new Intent(this,DownloaderService.class);
+					//FIXME This should probably use Episode.packageEpisode for ease.
 					intent.putExtra(EpisodeKeys._ID, c.getLong(0));
 					intent.putExtra(PodcastKeys.NAME, mPodcastName);
 					intent.putExtra(EpisodeKeys.TITLE, c.getString(1));

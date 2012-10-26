@@ -18,13 +18,12 @@
 */
 package org.sixgun.ponyexpress.receiver;
 
-import org.sixgun.ponyexpress.activity.PonyExpressActivity;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
-import org.sixgun.ponyexpress.service.UpdaterService;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.net.wifi.WifiManager;
 import android.os.PowerManager;
 import android.util.Log;
 
@@ -32,6 +31,8 @@ import android.util.Log;
 public class ScheduledDownloadReceiver extends BroadcastReceiver {
 
 	private String TAG = "ScheduledDownloadReceiver";
+	private static final String WIFI_LOCK = "Pony Express scheduled download wifi lock";
+
 	
 	/* (non-Javadoc)
 	 * @see android.content.BroadcastReceiver#onReceive(android.content.Context, android.content.Intent)
@@ -49,6 +50,15 @@ public class ScheduledDownloadReceiver extends BroadcastReceiver {
 		if (!ScheduledDownloadService.sWakeLock.isHeld()){
 			Log.d(TAG, "Acquiring wake lock");
 			ScheduledDownloadService.sWakeLock.acquire();
+		}
+		//Get a wifiLock to use the wifi
+		if (ScheduledDownloadService.sWifiLock == null){
+			WifiManager wifiManager = (WifiManager)context.getSystemService(Context.WIFI_SERVICE);
+			ScheduledDownloadService.sWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL,WIFI_LOCK);
+		}
+		if (!ScheduledDownloadService.sWifiLock.isHeld()){
+			Log.d(TAG, "Acquiring Wifi lock");
+			ScheduledDownloadService.sWifiLock.acquire();
 		}
 		//Start SheduledDownloadServiceSevice
 		intent = new Intent(context,ScheduledDownloadService.class);
