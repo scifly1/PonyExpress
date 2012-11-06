@@ -1210,21 +1210,16 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public void removeEpisodeFromPlaylist(String podcastName, String title) {
-		//Find the rowId of the episode in the correct episode table
-		long rowId = -1;
-		final String table_name = getTableName(podcastName);
-		final String quotedTitle = Utils.handleQuotes(title);
-		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
-		final Cursor cursor = mDb.query(true, table_name,
-				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
-				null, null, null, null, null);
-		if (cursor.getCount() > 0){
-			cursor.moveToFirst();
-			rowId = cursor.getLong(0);						
-			}
-		cursor.close();
-		//Remove from the Playlist table
-		removeEpisodeFromPlaylist(podcastName, rowId);
+		//Find the rowId of the episode in the correct podcast table
+		long rowId;
+		try {
+			rowId = getRowIdOfEpisode(podcastName, title);
+			//Remove from the Playlist table
+			removeEpisodeFromPlaylist(podcastName, rowId);
+		} catch (EpisodeNotFoundException e) {
+			Log.e(TAG, "Seaching for an unknown episode", e);
+		}
+		
 		
 	}
 	
@@ -1252,5 +1247,54 @@ public class PonyExpressDbAdaptor {
 		c.close();
 		return;
 	}
-
+	
+	/**
+	 * Check if episode is already in the playlist
+	 * @return true if present
+	 */
+	public boolean episodeInPlaylist(String podcast_name, String episode_title){
+		long rowId = -1;
+		try {
+			rowId = getRowIdOfEpisode(podcast_name, episode_title);
+		} catch (EpisodeNotFoundException e) {
+			Log.e(TAG, "Seaching for an unknown episode", e);
+			return false;
+		}
+		final String quoted_name = Utils.handleQuotes(podcast_name);
+		final String[] columns = {PodcastKeys._ID};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				PodcastKeys.NAME + "="+ quoted_name + " AND " + 
+						EpisodeKeys.ROW_ID + "=" + rowId,
+						null, null, null, null); 
+		if (c.getCount() > 0){
+			c.close();
+			return true;
+		} else {
+			c.close();
+			return false;
+		}
+	}
+	
+	/**
+	 * Looks up the row_id of a particular episode in the appropriate podcast table.
+	 * @throws EpisodeNotFoundException 
+	 */
+	private long getRowIdOfEpisode(String podcast_name, String episode_title) throws EpisodeNotFoundException{
+		long rowId = -1;
+		final String table_name = getTableName(podcast_name);
+		final String quotedTitle = Utils.handleQuotes(episode_title);
+		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
+		final Cursor cursor = mDb.query(true, table_name,
+				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
+				null, null, null, null, null);
+		if (cursor.getCount() > 0){
+			cursor.moveToFirst();
+			rowId = cursor.getLong(0);						
+			}
+		cursor.close();
+		if (rowId == -1){
+			throw new EpisodeNotFoundException();
+		}
+		return rowId;
+	}
 }

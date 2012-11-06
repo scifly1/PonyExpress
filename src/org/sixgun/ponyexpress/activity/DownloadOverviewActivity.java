@@ -180,8 +180,10 @@ public class DownloadOverviewActivity extends ListActivity {
 					mDownloadsArrayList.clear();
 					mDownloadsArrayList = mDownloader.getDownloadingEpisodes();
 					mHandler.post(UpdateDataRunnable);
-					//remove from playlist if present
-					mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(episode.getPodcastName(), episode.getTitle());
+					
+					if (mPonyExpressApp.getDbHelper().episodeInPlaylist(episode.getPodcastName(), episode.getTitle())){
+						mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(episode.getPodcastName(), episode.getTitle());
+					}
 				}
 			});
 			

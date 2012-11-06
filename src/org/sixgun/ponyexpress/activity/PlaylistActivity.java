@@ -208,6 +208,29 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		intent.putExtras(bundle);
 		intent.putExtra("action", DownloaderService.DOWNLOAD);
 		startService(intent);
+		//Start a new thread and sleep for a few seconds then re-list playlist to update it 
+		//if a download error occurred. (DownloaderService will have removed 
+		//the episode from the playlist).
+		new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(3000);
+				} catch (InterruptedException e) {
+					Log.e(TAG, "Interupted sleep in startDownload", e);
+				}
+				runOnUiThread(new Runnable() {
+					
+					@Override
+					public void run() {
+						listPlaylist();
+						
+					}
+				});
+			}
+			
+		}).start();
 	}
 	
 	/* (non-Javadoc)

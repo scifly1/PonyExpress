@@ -207,7 +207,11 @@ public class DownloaderService extends Service {
 						int totalDownloaded = 0;
 						try {
 							HttpURLConnection conn = Utils.checkURL(url);
-							inFile = conn.getInputStream();
+							if (conn != null){
+								inFile = conn.getInputStream();
+							} else {
+								IOe = true;
+							}
 						} catch (IOException e) {
 							IOe = true;
 						}
@@ -241,11 +245,13 @@ public class DownloaderService extends Service {
 								//Error downloading so reset the Activity
 								Log.e(TAG, "Error reading/writing to file.", e);
 								setDownloadFailed(index);
+								clearEpisodeFromPlaylist(index);
 							}
 
 						} else {
 							Log.d(TAG, "No Internet Connection or outFile error.");
 							setDownloadFailed(index);
+							clearEpisodeFromPlaylist(index);
 							mHandler.post(new Runnable(){
 
 								@Override
@@ -277,7 +283,7 @@ public class DownloaderService extends Service {
 	
 	/**
 	 * If the download fails due to no connectivity or some other error calling 
-	 * this allows the PlayerActivity to react to the error and rest the UI.
+	 * this allows the PlayerActivity to react to the error and reset the UI.
 	 */
 	private void setDownloadFailed(int index){
 		mEpisodes.get(index).setDownloadFailed();
@@ -558,5 +564,13 @@ public class DownloaderService extends Service {
 			}
 		}
 		
+	}
+	
+	private void clearEpisodeFromPlaylist(int index){
+		final String podcast_name = mEpisodes.get(index).getPodcastName();
+		final String episode_title = mEpisodes.get(index).getTitle();
+		if (mPonyExpressApp.getDbHelper().episodeInPlaylist(podcast_name, episode_title)){
+			mPonyExpressApp .getDbHelper().removeEpisodeFromPlaylist(podcast_name, episode_title);
+		}
 	}
 }
