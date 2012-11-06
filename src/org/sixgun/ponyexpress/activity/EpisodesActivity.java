@@ -148,14 +148,18 @@ public class EpisodesActivity extends ListActivity {
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		super.onPrepareOptionsMenu(menu);
-		//Check that downloads are permitted under current network.
+		//Check that downloads are permitted under current network and that there
+		//are episodes to download, 
 		//If not remove the Download All menu item.
 		final SharedPreferences prefs = 
 				PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
 		final boolean onlyOnWiFi = 
 				prefs.getBoolean(getString(R.string.wifi_only_key), true);
-		if (onlyOnWiFi && mPonyExpressApp.getInternetHelper().getConnectivityType() 
-				== ConnectivityManager.TYPE_MOBILE) {
+		Cursor c = mPonyExpressApp.getDbHelper().getAllUndownloadedAndUnlistened(mPodcastName);
+		final int episodes_to_download = c.getCount();
+		c.close();
+		if ((onlyOnWiFi && mPonyExpressApp.getInternetHelper().getConnectivityType() 
+				== ConnectivityManager.TYPE_MOBILE) || episodes_to_download == 0 ) {
 				//Hide download all menu item	
 				menu.removeItem(DOWNLOAD_ALL);
 		} else if (mNumberUnlistened == 0){
