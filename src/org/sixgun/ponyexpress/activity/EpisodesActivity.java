@@ -162,9 +162,6 @@ public class EpisodesActivity extends ListActivity {
 				== ConnectivityManager.TYPE_MOBILE) || episodes_to_download == 0 ) {
 				//Hide download all menu item	
 				menu.removeItem(DOWNLOAD_ALL);
-		} else if (mNumberUnlistened == 0){
-			//Also hide download all menu item if no unlistened to episodes
-			menu.removeItem(DOWNLOAD_ALL);
 		} else if (menu.findItem(DOWNLOAD_ALL) == null){
 			menu.add(Menu.NONE,DOWNLOAD_ALL, Menu.FIRST, R.string.download_all);
 		}
