@@ -131,7 +131,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			public void onCompletion(MediaPlayer mp) {
 				abandonAudioFocus();
 				//Set Listened to 0				
-				if (savePlaybackPosition(0)) {
+				if (mPodcastName != null && savePlaybackPosition(0)) {
 					Log.d(TAG, "Updated listened to position to " + 0);
 				}
 				
@@ -361,14 +361,15 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		unRegisterHeadPhoneReceiver();
 		mPlayer.pause();
 		hideNotification();
-		//Record last listened position in database
-		final int playbackPosition = mPlayer.getCurrentPosition();
-
-		boolean save = savePlaybackPosition(playbackPosition);
-		if (save){
-			Log.d(TAG, "Updated listened to position to " + playbackPosition);
-		}else{
-			Log.d(TAG, "Error saving playback position at " + playbackPosition);
+		if (mPodcastName != null){ //null if playback hasn't started yet, and we are quitting
+			//Record last listened position in database
+			final int playbackPosition = mPlayer.getCurrentPosition();
+			boolean save = savePlaybackPosition(playbackPosition);
+			if (save){
+				Log.d(TAG, "Updated listened to position to " + playbackPosition);
+			}else{
+				Log.d(TAG, "Error saving playback position at " + playbackPosition);
+			}
 		}
 
 		stopSelf();
@@ -513,9 +514,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		if (mHeadPhoneReciever != null){
 			unregisterReceiver(mHeadPhoneReciever);
 			mHeadPhoneReciever = null;
-		} else {
-			Log.e(TAG, "Attempt to unregister null Headphone reciever");
-		}
+		} 
 	}
 
 	private void showNotification() {
