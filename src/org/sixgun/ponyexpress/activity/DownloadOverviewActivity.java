@@ -35,7 +35,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -174,22 +178,78 @@ public class DownloadOverviewActivity extends ListActivity {
 				
 				@Override
 				public void onClick(View v) {
-					mDownloader.cancelDownload(
-							episode.getTitle());
-					//Refresh downloads list 
-					mDownloadsArrayList.clear();
-					mDownloadsArrayList = mDownloader.getDownloadingEpisodes();
-					mHandler.post(UpdateDataRunnable);
-					
-					if (mPonyExpressApp.getDbHelper().episodeInPlaylist(episode.getPodcastName(), episode.getTitle())){
-						mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(episode.getPodcastName(), episode.getTitle());
-					}
+					cancelDownload(episode, true);
 				}
 			});
 			
 			return v;
 		}
 		
+	}
+	
+	/**
+	 * Cancel download of an episode
+	 * @param episode to cancel
+	 * @param refresh true if the listView should be refreshed immediately 
+	 * after the cancellation.
+	 */
+	private void cancelDownload(DownloadingEpisode episode, boolean refresh){
+		mDownloader.cancelDownload(
+				episode.getTitle());
+		 
+		if (mPonyExpressApp.getDbHelper().episodeInPlaylist(episode.getPodcastName(), episode.getTitle())){
+			mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(episode.getPodcastName(), episode.getTitle());
+		}
+		if (refresh){
+			refreshDownloadsList();
+		}
+	}
+	
+	private void cancelAllDownloads(){
+		for (DownloadingEpisode episode : mDownloadsArrayList){
+			cancelDownload(episode, false);
+		}
+		refreshDownloadsList();
+	}
+	
+	private void refreshDownloadsList(){
+		mDownloadsArrayList.clear();
+		mDownloadsArrayList = mDownloader.getDownloadingEpisodes();
+		mHandler.post(UpdateDataRunnable);
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.download_options_menu, menu);
+	    return true;
+	}
+	
+
+	@Override
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		//Check for the menu key press, if there are downloads occurring
+		//show the menu normally, otherwise ignore the key press.
+		if (keyCode == KeyEvent.KEYCODE_MENU && !mDownloader.isDownloading()){
+			return true; //Don't do anything
+		} else return super.onKeyUp(keyCode, event);
+	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.cancel_all:
+			cancelAllDownloads();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
 	}
 	
 	//This is all responsible for connecting/disconnecting to the Downloader service.

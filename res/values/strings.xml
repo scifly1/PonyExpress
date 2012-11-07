@@ -66,6 +66,7 @@
 	<string name="credentials_not_verified">Could not verify your credentials!</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
+	<string name="cancel_all">Cancel all downloads</string>
 	<string name="enter_username">Username:</string>
 	<string name="enter_password">Password:</string>
 	<string name="account_setup">Enter your Identi.ca account details.</string>
