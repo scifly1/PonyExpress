@@ -149,9 +149,11 @@ public class PonyExpressActivity extends ListActivity {
 			//Make sure the update alarm and scheduled downloads are set properly.
 			updateFeed(SET_ALARM_ONLY);
 			
-			Intent intent = new Intent(mPonyExpressApp, ScheduledDownloadService.class);
-			intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
-			mPonyExpressApp.startService(intent);
+			if (!isScheduledDownloadServiceRunning()){
+				Intent intent = new Intent(mPonyExpressApp, ScheduledDownloadService.class);
+				intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+				mPonyExpressApp.startService(intent);
+			}
 		}
 		
 		//Check SDCard contents and database match.
@@ -474,6 +476,19 @@ public class PonyExpressActivity extends ListActivity {
 	        }
 	    }
 	    return false;
+	}
+	
+	/** This method checks to see if the scheduled download service is running.
+	 * 
+	 */
+	private boolean isScheduledDownloadServiceRunning(){
+		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+			if (ScheduledDownloadService.class.getName().equals(service.service.getClassName())){
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/** 
