@@ -409,9 +409,7 @@ public class DownloaderService extends Service {
 		i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 0, i, 0);
 		
-		int icon;
 		CharSequence text = "";
-		int icon_counter = 0;
 		
 		if (mCurrentDownloads == 1){
 			text = getText(R.string.downloading_episode);
@@ -419,45 +417,15 @@ public class DownloaderService extends Service {
 			text = Integer.toString(mCurrentDownloads) + " " 
 			+ getText(R.string.downloading_episodes);
 		}
-		//FIXME Use a proper animated notification not this hack
-		switch (icon_counter) {
-			case 0:
-				icon = R.drawable.sixgunicon0;
-				break;
-			case 1:
-				icon = R.drawable.sixgunicon1;
-				break;
-			case 2:
-				icon = R.drawable.sixgunicon2;
-				break;
-			case 3:
-				icon = R.drawable.sixgunicon3;
-				break;
-			case 4:
-				icon = R.drawable.sixgunicon4;
-				break;
-			case 5:
-				icon = R.drawable.sixgunicon5;
-				break;
-			case 6:
-				icon = R.drawable.sixgunicon6;
-				break;
-			default:
-				icon = R.drawable.sixgunicon0;
-		}
-		
-		if (icon_counter > 5){
-			icon_counter = 0;
-		} else icon_counter++;
 		
 		Notification notification = new Notification(
-				icon, null,
+				R.drawable.pony_icon, null,
 				System.currentTimeMillis());
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;
 		notification.number = mCurrentDownloads + mQueue.size();
 		notification.setLatestEventInfo(mPonyExpressApp, 
 				getText(R.string.app_name), text, intent);
-		//FIXME should this use a handler to notify the UI thread?
+		
 		mNM.notify(NOTIFY_ID, notification);
 	}
 	
