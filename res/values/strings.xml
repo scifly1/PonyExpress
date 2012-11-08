@@ -115,15 +115,7 @@
 		<item>50 seconds</item>
 		<item>60 seconds</item>
 	</string-array>
-	<string-array name="schedule_downloads_entries">
-	    <item>Never</item>
-	    <item>2 AM</item>
-	    <item>4 AM</item>
-	    <item>6 AM</item>
-	    <item>8 PM</item>
-	    <item>10 PM</item>
-	    <item>Midnight</item>
-	</string-array>
+	
 	<string name="add_episode">Add to playlist</string>
 	<string name="view_shownotes">View show notes</string>
 	<string name="mark_all_listened">Mark all listened</string>
@@ -152,9 +144,10 @@
 	<string name="ff_seek_time_summary">The amount of time to skip forward when the fast forward button is pushed</string>
 	<string name="ff_seek_time">Fast Forward Seek Time</string>
 	<string name="auto_download">Auto-downloads</string>
-	<string name="auto_download_summary">Automatically download episodes when adding to the playlist</string>
+	<string name="auto_download_summary">Automatically download new episodes when adding them to the playlist</string>
 	<string name="schedule_downloads">Schedule downloads</string>
-	<string name="schedule_downloads_summary">Schedule new episodes to download automatically at a preset time.</string>
+	<string name="download_time">Scheduled download time</string>
+	<string name="schedule_downloads_summary">Schedule new episodes to download automatically at a preset time</string>
 	<string name="no_episodes">The playlist is empty.</string>
 	<string name="clear_playlist">Clear the playlist</string>
 	<string name="playlist_subtitle_pod">Select podcast&#8230;</string>
@@ -220,7 +213,8 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 	<string name="update_freqs_key">updateFreqsKey</string>
 	<string name="add_podcasts">ADD_PODCASTS</string>
 	<string name="auto_download_key">AutoDownloadKey</string>
-	<string name="schedule_downloads_key">ScheduleDownloadsKey</string>
+	<string name="schedule_download_key">ScheduleDownloadsKey</string>
+	<string name="schedule_download_time_key">ScheduleDownloadsTimeKey</string>
 	
 	<!-- The sixgun podcasts feedlist is found at this url.  It lists all current sixgun
 	feeds and associated tags and groups 
@@ -264,15 +258,7 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 		<item>50000</item>
 		<item>60000</item>
 	</string-array>
-	<string-array name="schedule_downloads_values">
-	    <item>Never</item>
-	    <item>2</item>
-	    <item>4</item>
-	    <item>6</item>
-	    <item>20</item>
-	    <item>22</item>
-	    <item>0</item>
-	</string-array>
+	
 	
 	
 

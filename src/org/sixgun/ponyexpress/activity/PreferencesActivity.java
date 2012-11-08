@@ -18,27 +18,37 @@
 */
 package org.sixgun.ponyexpress.activity;
 
-import org.sixgun.ponyexpress.R;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
-import android.content.pm.PackageManager;
+import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.TimePreference;
+import org.sixgun.ponyexpress.service.ScheduledDownloadService;
+
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 
 public class PreferencesActivity extends PreferenceActivity {
 
 	private static final String TAG = "PreferencesActivity";
-
+	SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
 	 */
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
 		addPreferencesFromResource(R.xml.preferences);
 		
 		//Get the version number and set it as the summary of the version pref.
@@ -49,12 +59,32 @@ public class PreferencesActivity extends PreferenceActivity {
 		} catch (NameNotFoundException e) {
 			Log.e(TAG,"Cannot find package info..");
 		}
+			
 		Preference version = (Preference)findPreference(getString(R.string.version_key));
 		version.setSummary(info.versionName);
+		
+		mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+			public void onSharedPreferenceChanged(SharedPreferences prefs,String key) {
+				if (key.equals(getString(R.string.schedule_download_key))) 
+				{
+					//if scheduled download pref has not been set yet, set it to the default
+					if (prefs.getLong(getString(R.string.schedule_download_time_key), 0) == 0){
+						Calendar cal = new GregorianCalendar();
+						cal.set(Calendar.HOUR_OF_DAY,TimePreference.DEFAULT_HOUR);
+						cal.set(Calendar.MINUTE, TimePreference.DEFAULT_MINUTE);
+						final long default_time = cal.getTimeInMillis();
+						prefs.edit().putLong(getString(R.string.schedule_download_time_key), default_time).commit();
+					}
+					
+					//Set new alarm
+					Intent intent = new Intent(getApplicationContext(), ScheduledDownloadService.class);
+					intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+					getApplicationContext().startService(intent);
+				}
+			} 
 
-		
-		
-		
+		};
+		PreferenceManager.getDefaultSharedPreferences(getApplicationContext()).registerOnSharedPreferenceChangeListener(mPrefListener);
 	}
 	
 }

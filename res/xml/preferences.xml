@@ -54,7 +54,16 @@
             android:key="@string/wifi_only_key"
             android:summary="@string/only_on_wifi_summary"
             android:title="@string/only_on_wifi" />
-        <ListPreference android:defaultValue="0" android:dialogTitle="@string/schedule_downloads" android:entries="@array/schedule_downloads_entries" android:entryValues="@array/schedule_downloads_values" android:key="@string/schedule_downloads_key" android:summary="@string/schedule_downloads_summary" android:title="@string/schedule_downloads" /><CheckBoxPreference
+        <CheckBoxPreference  
+            android:key="@string/schedule_download_key" 
+            android:summary="@string/schedule_downloads_summary" 
+            android:title="@string/schedule_downloads"
+            android:defaultValue="false" />
+        <org.sixgun.ponyexpress.TimePreference
+            android:title="@string/download_time"
+            android:key="@string/schedule_download_time_key"
+            android:dependency="@string/schedule_download_key"/>
+        <CheckBoxPreference
             android:defaultValue="false"
             android:key="@string/auto_download_key"
             android:summary="@string/auto_download_summary"

@@ -99,7 +99,6 @@ public class PonyExpressActivity extends ListActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 		
-		
 		ViewGroup list_root = (ViewGroup) findViewById(R.id.podcast_list_root);
 		list_root.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 			

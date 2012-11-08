@@ -196,13 +196,7 @@ public class ScheduledDownloadService extends IntentService {
 
 	private boolean checkBackgroundUpdate() {
 		SharedPreferences prefs = getPreferences();
-		try{
-			Long.parseLong(prefs.getString(getString(R.string.schedule_downloads_key), "12"));
-		}catch (NumberFormatException e){
-			return false;
-		}
-		return true;
-		
+		return prefs.getBoolean(getString(R.string.schedule_download_key), true);	
 	}
 
 	/**
@@ -213,11 +207,10 @@ public class ScheduledDownloadService extends IntentService {
 	 */
 	private long getNextUpdateTime() {
 		if (checkBackgroundUpdate()){
-			SharedPreferences prefs = getPreferences();
-			int updateTime = Integer.parseInt(prefs.getString(getString(R.string.schedule_downloads_key), "0"));
 			Calendar cal = new GregorianCalendar();
-			cal.set(Calendar.HOUR_OF_DAY, updateTime);
-			cal.set(Calendar.MINUTE, 00);
+			SharedPreferences prefs = getPreferences();
+			long updateTime = prefs.getLong(getString(R.string.schedule_download_time_key), cal.getTimeInMillis());
+			cal.setTimeInMillis(updateTime);
 			//Check if we want tomorrow
 			if (System.currentTimeMillis() > cal.getTimeInMillis() - 60000){
 				//-60000 so that a call to getNextUpdateTime from setNextAlarm after an
