@@ -175,6 +175,7 @@
 	<string name="error_icon_desc">Error notification icon</string>
 	<string name="no_connection_for_sched_download">No internet connection for podcast download.</string>
 	<string name="prefs_dont_allow_downloads">Your preferences don\'t allow downloads on a mobile network.</string>
+	<string name="alarm_set_to_past">Error: Tried to set downloading in the past.</string>
 	<string name="about_message">
 		"
 Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.

@@ -88,7 +88,7 @@ public class ScheduledDownloadService extends IntentService {
 				return;
 			}
 			if (set_alarm_only && nextUpdate >= System.currentTimeMillis() ){
-				setNextAlarm();
+				setNextAlarm(nextUpdate);
 			}else{
 				//Get list of podcasts and find undownloaded episodes in each
 				Log.d(TAG, "Checking for downloads");
@@ -109,13 +109,13 @@ public class ScheduledDownloadService extends IntentService {
 					case InternetHelper.NO_CONNECTION:
 						Log.d(TAG, "No connection for scheduled download");
 						NotifyError(getString(R.string.no_connection_for_sched_download));
-						setNextAlarm();
+						setNextAlarm(nextUpdate);
 						return;
 					case ConnectivityManager.TYPE_MOBILE:
 						if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
 							Log.d(TAG, "Scheduled downloads not allowed on mobile network");
 							NotifyError(getString(R.string.prefs_dont_allow_downloads));
-							setNextAlarm();
+							setNextAlarm(nextUpdate);
 							return;
 						}
 						//Fallthrough, download allowed on mobile network
@@ -149,7 +149,7 @@ public class ScheduledDownloadService extends IntentService {
 						while (mDownloader != null && mDownloader.isDownloading());
 						doUnbindDownloaderService();
 					}	
-					setNextAlarm();
+					setNextAlarm(nextUpdate);
 				}
 			}
 
@@ -180,9 +180,14 @@ public class ScheduledDownloadService extends IntentService {
 	 * This method sets the alarm manger based on the last update and the
 	 * preferences.
 	 */
-	private void setNextAlarm() {
+	private void setNextAlarm(long update_time) {
 		if(checkBackgroundUpdate()){
-			final Long updateTime = getNextUpdateTime();
+			long updateTime = update_time;
+			if (updateTime < System.currentTimeMillis()){
+				//Shouldn't happen
+				NotifyError(getString(R.string.alarm_set_to_past));
+				return;
+			} 
 			final AlarmManager alarm_mgr = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
 			final Intent intent = new Intent(this, ScheduledDownloadReceiver.class);
 			final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
@@ -210,7 +215,8 @@ public class ScheduledDownloadService extends IntentService {
 			Calendar cal = new GregorianCalendar();
 			SharedPreferences prefs = getPreferences();
 			long updateTime = prefs.getLong(getString(R.string.schedule_download_time_key), cal.getTimeInMillis());
-			cal.setTimeInMillis(updateTime);
+			cal.setTimeInMillis(updateTime); //sets the correct time, but the date is when the preference was set.
+			cal.set(Calendar.DATE, Calendar.getInstance().get(Calendar.DATE));
 			//Check if we want tomorrow
 			if (System.currentTimeMillis() > cal.getTimeInMillis() - 60000){
 				//-60000 so that a call to getNextUpdateTime from setNextAlarm after an
