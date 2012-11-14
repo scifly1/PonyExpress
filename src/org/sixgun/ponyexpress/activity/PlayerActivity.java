@@ -531,7 +531,7 @@ public class PlayerActivity extends Activity {
 		super.onPause();
 		unregisterReceiver(mDownloadReciever);
 		//If PodcastPlayer has been started and is not playing stop it.
-		if (mEpisodeDownloaded && !mPodcastPlayer.isPlaying()){
+		if (mEpisodeDownloaded && mPodcastPlayer != null && !mPodcastPlayer.isPlaying()){
 			mPodcastPlayer.pause(); //leads to a call to stopSelf
 		}
 	}
