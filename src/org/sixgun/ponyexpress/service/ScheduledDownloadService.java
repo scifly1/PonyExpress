@@ -90,6 +90,20 @@ public class ScheduledDownloadService extends IntentService {
 			if (set_alarm_only && nextUpdate >= System.currentTimeMillis() ){
 				setNextAlarm(nextUpdate);
 			}else{
+				//Update the feeds to ensure they are current.
+				if (!mPonyExpressApp.isUpdaterServiceRunning()){
+					Intent up_intent = new Intent(mPonyExpressApp,UpdaterService.class);
+					up_intent.putExtra(PonyExpressActivity.UPDATE_ALL, true);
+					startService(up_intent);
+				}
+				while (mPonyExpressApp.isUpdaterServiceRunning()){
+					//wait for it to finish
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						Log.e(TAG, "Interrupted waiting for updaterservice to finish");
+					}
+				}
 				//Get list of podcasts and find undownloaded episodes in each
 				Log.d(TAG, "Checking for downloads");
 				ArrayList<DownloadingEpisode> downloads = getEpisodesToDownload();

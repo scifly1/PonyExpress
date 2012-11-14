@@ -18,11 +18,15 @@
 */
 package org.sixgun.ponyexpress;
 
+import org.sixgun.ponyexpress.service.ScheduledDownloadService;
+import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.ImageManager;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
 
+import android.app.ActivityManager;
 import android.app.Application;
+import android.app.ActivityManager.RunningServiceInfo;
 
 /**
  * Application class to provide an application context for the DbAdaptor
@@ -76,6 +80,34 @@ public class PonyExpressApp extends Application {
 	 */
 	public InternetHelper getInternetHelper() {
 		return mInternetHelper;
+	}
+	
+	/**
+	 * This method checks to see if the Updater service is running.
+	 * @return
+	 * boolean
+	 */
+	public boolean isUpdaterServiceRunning() {
+		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+	        if (UpdaterService.class.getName().equals(service.service.getClassName())) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
+	/** This method checks to see if the scheduled download service is running.
+	 * 
+	 */
+	public boolean isScheduledDownloadServiceRunning(){
+		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
+			if (ScheduledDownloadService.class.getName().equals(service.service.getClassName())){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	

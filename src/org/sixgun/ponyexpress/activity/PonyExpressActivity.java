@@ -35,8 +35,6 @@ import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.BackupFileWriter;
 
-import android.app.ActivityManager;
-import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Dialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -148,7 +146,7 @@ public class PonyExpressActivity extends ListActivity {
 			//Make sure the update alarm and scheduled downloads are set properly.
 			updateFeed(SET_ALARM_ONLY);
 			
-			if (!isScheduledDownloadServiceRunning()){
+			if (!mPonyExpressApp.isScheduledDownloadServiceRunning()){
 				Intent intent = new Intent(mPonyExpressApp, ScheduledDownloadService.class);
 				intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
 				mPonyExpressApp.startService(intent);
@@ -378,7 +376,7 @@ public class PonyExpressActivity extends ListActivity {
 	}
 
 	private void updateFeed(String podcastName){
-		if (isUpdaterServiceRunning() && podcastName != SET_ALARM_ONLY){
+		if (mPonyExpressApp.isUpdaterServiceRunning() && podcastName != SET_ALARM_ONLY){
         	Toast.makeText(mPonyExpressApp, 
 					R.string.please_wait, Toast.LENGTH_LONG).show();
 		}else{
@@ -462,33 +460,7 @@ public class PonyExpressActivity extends ListActivity {
 		}
 	}
 
-	/**
-	 * This method checks to see if the Updater service is running.
-	 * @return
-	 * boolean
-	 */
-	private boolean isUpdaterServiceRunning() {
-		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-	    for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-	        if (UpdaterService.class.getName().equals(service.service.getClassName())) {
-	            return true;
-	        }
-	    }
-	    return false;
-	}
 	
-	/** This method checks to see if the scheduled download service is running.
-	 * 
-	 */
-	private boolean isScheduledDownloadServiceRunning(){
-		ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-		for (RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)){
-			if (ScheduledDownloadService.class.getName().equals(service.service.getClassName())){
-				return true;
-			}
-		}
-		return false;
-	}
 	
 	/** 
 	* Parse the RSS feed and update the database with new episodes in a background thread.
@@ -507,7 +479,7 @@ public class PonyExpressActivity extends ListActivity {
 						R.string.no_internet_connection, Toast.LENGTH_LONG).show();
 				cancel(true);
 			}
-			if (isUpdaterServiceRunning()){
+			if (mPonyExpressApp.isUpdaterServiceRunning()){
 				cancel(true);
 			}
 		}
@@ -524,7 +496,7 @@ public class PonyExpressActivity extends ListActivity {
 			startService(intent);
 						
 			//Pause until all UpdaterServices are done
-			while (isUpdaterServiceRunning()){
+			while (mPonyExpressApp.isUpdaterServiceRunning()){
 				try {
 					Thread.sleep(500);
 				} catch (InterruptedException e) {
