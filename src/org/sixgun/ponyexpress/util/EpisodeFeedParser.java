@@ -61,6 +61,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
     private static final String MPEG = "audio/mpeg";
     private static final String MP3 = "audio/mp3";
     private static final String OLD_OGG = "application/ogg";
+    private static final String LINK = "link";
 	private static final String TAG = "EpisodeFeedParser";
 	
 	private String mDescription = "";
@@ -127,6 +128,16 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				new_episode.setDate(body);
 			}
 		});
+		//This listener catches the link to YouTube items in the feed.
+		item.getChild(LINK).setEndTextElementListener(new EndTextElementListener() {
+			
+			@Override
+			public void end(String body) {
+				if (body.contains("www.youtube.com")){
+					new_episode.setLink(body);
+				} 
+			}
+		});
 		//This Listener catches the length and url of the podcast.
 		item.getChild(CONTENT).setStartElementListener(new StartElementListener() {
 			
@@ -144,6 +155,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 					String url = attributes.getValue("", "url");
 					new_episode.setLink(url);
 				}
+				
 			}
 		});
 		//This Listener catches the Description of the podcast.
@@ -170,8 +182,9 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		//Finally, now the listeners are set up we can parse the XML file.
 		
 		HttpURLConnection conn = getConnection();
-		//To debug with test feeds comment out the above line and uncomment the next line.
-	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.testfeed);
+		//To debug with test feeds comment out the try block and uncomment the next line.
+	    //InputStream istream = mCtx.getResources().openRawResource(R.raw.youtubefeed);
+	    
 		InputStream istream = null;
 		try {
 			if (conn != null){
@@ -194,7 +207,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				Log.e(TAG, "SocketTimeoutException caught parsing feed url");
 			}
 		} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
-			Log.e(TAG, "RSS feed is malformed, required data is missing!");
+			Log.e(TAG, "RSS feed is malformed, required data is missing!",e);
 			NotifyError(mCtx.getString(R.string.malformed_feed));
 		} catch (IOException e) {
 			NotifyError("");
