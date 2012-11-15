@@ -301,7 +301,18 @@ public class PonyExpressDbAdaptor {
 		return mDb.query(
 				true,table_name,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
 	}
-	
+	/**
+	 * Gets all unique Episode names and descriptions from the correct podcast table.
+	 * @param podcast_name
+	 * @return A Cursor object, which is positioned before the first entry
+	 */
+	public Cursor getAllEpisodeNamesDescriptionsAndLinks(String podcast_name){
+		final String table_name = getTableName(podcast_name);
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.LISTENED, 
+				EpisodeKeys.DESCRIPTION, EpisodeKeys.URL};
+		return mDb.query(
+				true,table_name,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
+	}
 	/**
 	 * Get a list of the names of all the podcasts.
 	 */

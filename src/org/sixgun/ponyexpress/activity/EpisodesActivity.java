@@ -212,7 +212,7 @@ public class EpisodesActivity extends ListActivity {
 	@Override
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
-				
+		
 		Intent intent = new Intent(this,EpisodeTabs.class);
 		intent.putExtras(Episode.packageEpisode(mPonyExpressApp, mPodcastName, id));
 		startActivity(intent);
@@ -318,7 +318,7 @@ public class EpisodesActivity extends ListActivity {
 	 * Query the database for all Episode titles to populate the ListView.
 	 */
 	private void listEpisodes(){
-		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames(mPodcastName);
+		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNamesDescriptionsAndLinks(mPodcastName);
 		startManagingCursor(c);		
 		
 		EpisodeCursorAdapter episodes = new EpisodeCursorAdapter(this, c);

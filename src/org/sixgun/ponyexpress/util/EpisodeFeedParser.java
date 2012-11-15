@@ -103,7 +103,6 @@ public class EpisodeFeedParser extends BaseFeedParser{
             	} else {
             		new_episode.setDescription(mDescription);
             	}
-            	
             	episodes.add(new Episode(new_episode));
             	
             	new_episode.clear();
