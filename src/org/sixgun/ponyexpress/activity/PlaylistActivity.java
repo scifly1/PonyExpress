@@ -193,7 +193,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		//to the episodes adapter.
 		mListingEpisodes = true;
 		
-		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNames(podcast_name);
+		Cursor c = mPonyExpressApp.getDbHelper().getAllEpisodeNamesDescriptionsAndLinks(podcast_name);
 		startManagingCursor(c);		
 		
 		EpisodeCursorAdapter episodes = new PlaylistEpisodeCursorAdapter(this, c);

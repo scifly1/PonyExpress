@@ -290,19 +290,9 @@ public class PonyExpressDbAdaptor {
 		final String table_name = getTableName(podcast_name);
 		return mDb.delete(table_name, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
+	
 	/**
-	 * Gets all unique Episode names from the correct podcast table.
-	 * @param podcast_name
-	 * @return A Cursor object, which is positioned before the first entry
-	 */
-	public Cursor getAllEpisodeNames(String podcast_name){
-		final String table_name = getTableName(podcast_name);
-		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.LISTENED};
-		return mDb.query(
-				true,table_name,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
-	}
-	/**
-	 * Gets all unique Episode names and descriptions from the correct podcast table.
+	 * Gets all unique Episode names, descriptions and urls from the correct podcast table.
 	 * @param podcast_name
 	 * @return A Cursor object, which is positioned before the first entry
 	 */
