@@ -533,6 +533,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 
 				@Override
 				public void onClick(View v) {
+					//TODO Check if a Youtube video
 					selectEpisode(id);
 
 				}
@@ -591,7 +592,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 				}
 				break;
 			default:
-				Log.e(TAG, "Unkown return from InternetHelper.isDownloadPossible");
+				Log.e(TAG, "Unknown return from InternetHelper.isDownloadPossible");
 				return;
 			}
 		} else {

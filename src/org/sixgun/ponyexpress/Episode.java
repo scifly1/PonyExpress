@@ -127,6 +127,10 @@ public class Episode implements Comparable<Episode> {
 		return mTitle;
 	}
 	
+	/**
+	 * FIXME Unused at present
+	 * @return
+	 */
 	public boolean isYouTube(){
 		if (mLink.getHost().contains("www.youtube.com")){
 			return true;

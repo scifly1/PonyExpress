@@ -18,6 +18,8 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.util.List;
+
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeCursorAdapter;
 import org.sixgun.ponyexpress.EpisodeKeys;
@@ -30,11 +32,14 @@ import org.sixgun.ponyexpress.util.Utils;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.view.ContextMenu;
@@ -213,9 +218,28 @@ public class EpisodesActivity extends ListActivity {
 	protected void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 		
-		Intent intent = new Intent(this,EpisodeTabs.class);
-		intent.putExtras(Episode.packageEpisode(mPonyExpressApp, mPodcastName, id));
-		startActivity(intent);
+		Bundle episode = Episode.packageEpisode(mPonyExpressApp, mPodcastName, id);
+		final String url = episode.getString(EpisodeKeys.URL);
+		if (url != null && url.contains("www.youtube.com")){
+			//Launch youtube app if available.
+			Uri uri = Uri.parse(url);
+			uri = Uri.parse("vnd.youtube:" + uri.getQueryParameter("v"));
+			Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+			//Check intent can be resolved to youtube app
+			List<ResolveInfo> list = getPackageManager().queryIntentActivities(intent, 
+		            PackageManager.MATCH_DEFAULT_ONLY);
+		    if (list.size() > 0){
+		    	startActivity(intent);
+		    } else {
+		    	//Tell user youtube app is not installed
+		    	Toast.makeText(mPonyExpressApp, R.string.no_youtube, Toast.LENGTH_LONG).show();
+		    }
+			
+		} else {
+			Intent intent = new Intent(this,EpisodeTabs.class);
+			intent.putExtras(episode);
+			startActivity(intent);
+		}
 	}
 
 	/* (non-Javadoc)
