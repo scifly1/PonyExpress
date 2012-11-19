@@ -340,7 +340,7 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	/**
-	 * Gets all undownloaded and unlistened episodes.
+	 * Gets all undownloaded and unlistened episodes excluding youtube episodes.
 	 * @param the name of the Podcast
 	 * @return a cursor of all undownloaded and unlistened episodes.
 	 */
@@ -348,7 +348,8 @@ public class PonyExpressDbAdaptor {
 		final String table_name = getTableName(podcast_name);
 		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.URL,
 				EpisodeKeys.SIZE};
-		final String where = EpisodeKeys.DOWNLOADED + "= 0 AND " + EpisodeKeys.LISTENED + "= -1";
+		final String where = EpisodeKeys.DOWNLOADED + "= 0 AND " + EpisodeKeys.LISTENED + "= -1 AND " + 
+				EpisodeKeys.URL + " NOT LIKE '%www.youtube.com%'";
 		return mDb.query(true, table_name, columns, where, null, null, null, null, null);
 	}
 	
