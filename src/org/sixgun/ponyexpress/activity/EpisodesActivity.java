@@ -234,6 +234,7 @@ public class EpisodesActivity extends ListActivity {
 		            PackageManager.MATCH_DEFAULT_ONLY);
 		    if (list.size() > 0){
 		    	startActivity(intent);
+		    	markListened(id);
 		    } else {
 		    	//Tell user youtube app is not installed
 		    	Toast.makeText(mPonyExpressApp, R.string.no_youtube, Toast.LENGTH_LONG).show();
