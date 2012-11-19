@@ -3,29 +3,34 @@
 	<item
 		android:id="@+id/mark_listened"
 		android:title="@string/mark_listened"
-		android:orderInCategory="4" />
+		android:orderInCategory="5" />
 	<item
 		android:title="@string/mark_not_listened"
 		android:id="@+id/mark_not_listened"
-		android:orderInCategory="5" />
+		android:orderInCategory="6" />
 	<item
 		android:title="@string/download"
 		android:id="@+id/download"
-		android:orderInCategory="2" />
+		android:orderInCategory="3" />
 	<item
 		android:id="@+id/re_download"
 		android:title="@string/re_download"
-		android:orderInCategory="7" />
+		android:orderInCategory="8" />
 	<item
 		android:id="@+id/listen"
 		android:title="@string/listen"
 		android:orderInCategory="1" />
 	<item
+	    android:id="@+id/view"
+		android:title="@string/view"
+		android:orderInCategory="2"
+		android:visible="false" />
+	<item
 		android:id="@+id/delete"
-		android:orderInCategory="6"
+		android:orderInCategory="7"
 		android:title="@string/delete_episode" />
 	<item 
 	    android:id="@+id/shownotes"
-	    android:orderInCategory="3"
+	    android:orderInCategory="4"
 	    android:title="@string/view_shownotes" />
 </menu>

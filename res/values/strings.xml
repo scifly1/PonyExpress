@@ -38,6 +38,7 @@
 	<string name="not_downloaded_wrong_network_type">Episode not yet downloaded and you are on a mobile network and have disabled
 		downloads unless on WiFi</string>
 	<string name="download">Download</string>
+	<string name="view">View</string>
 	<string name="in_queue">Queued</string>
 	<string name="re_download">Re-download</string>
 	<string name="listen">Listen</string>
@@ -95,7 +96,8 @@
 	<string name="move_down">Move down one</string>
 	<string name="move_top">Move to the top</string>
 	<string name="move_bottom">Move to the bottom</string>
-	<string name="remove_from_playlist">Remove from playlist</string>	
+	<string name="remove_from_playlist">Remove from playlist</string>
+	<string name="youtube_to_playlist">Cannot add YouTube vidoes to a playlist</string>	
 	<!--
 		Do not change these numbers without also changing the corresponding
 		numbers in the "values" string array !!

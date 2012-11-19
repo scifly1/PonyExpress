@@ -357,6 +357,20 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
 			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
 			menu.setHeaderTitle(episode_name.getText());
+			//Find which listened option to show
+			boolean listened = true;
+			if (mPonyExpressApp.getDbHelper().getListened(item.id, mPodcastName) == -1){
+				listened = false;
+			}
+			if (listened){
+				menu.removeItem(R.id.mark_listened);
+			} else {
+				menu.removeItem(R.id.mark_not_listened);
+			}
+			//Check if it is a youtube video
+			if (item.targetView.getTag().equals(EpisodeCursorAdapter.YOUTUBE_EPISODE)){
+				menu.removeItem(R.id.add_to_playlist);
+			}
 		} else {
 			super.onCreateContextMenu(menu, v, menuInfo);
 		}
@@ -533,9 +547,12 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 
 				@Override
 				public void onClick(View v) {
-					//TODO Check if a Youtube video
-					selectEpisode(id);
-
+					//Check if a Youtube video or regular episode
+					if (v.getTag().equals(EpisodeCursorAdapter.REGULAR_EPISODE)){
+						selectEpisode(id);
+					} else {
+						Toast.makeText(mPonyExpressApp, R.string.youtube_to_playlist, Toast.LENGTH_SHORT).show();
+					}
 				}
 			});
 			

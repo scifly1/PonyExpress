@@ -35,6 +35,8 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 	
 	private static final String YOUTUBE_THUMBNAIL_LINK_END = "jpg";
 	private static final String YOUTUBE_THUMBNAIL_LINK_START = "src=\"http";
+	public static final Object REGULAR_EPISODE = "regular_episode";
+	public static final Object YOUTUBE_EPISODE = "YouTube_Episode";
 
 	public EpisodeCursorAdapter(Context context, Cursor c) {
 		super(context, c);
@@ -83,8 +85,10 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 		View v = new View(context);
 		if (getItemViewType(cursor)== 0){
 			v = vi.inflate(R.layout.episode_row, null);
+			v.setTag(REGULAR_EPISODE);
 		} else {
 			v = vi.inflate(R.layout.youtube_episode_row, null);
+			v.setTag(YOUTUBE_EPISODE);
 		}
 		return v;
 	}
@@ -97,7 +101,7 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 	 */
 	private int getItemViewType(Cursor cursor) {
 		if (cursor.getString(cursor.getColumnIndexOrThrow(EpisodeKeys.URL)).
-				contains("www.youtube.com")){
+				contains(Episode.YOUTUBE_URL)){
 			return 1;
 		} else {
 	        return 0;

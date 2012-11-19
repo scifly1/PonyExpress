@@ -209,6 +209,10 @@ public class EpisodesActivity extends ListActivity {
 			menu.removeItem(R.id.listen);
 			menu.removeItem(R.id.delete);
 		}
+		if (item.targetView.getTag().equals(EpisodeCursorAdapter.YOUTUBE_EPISODE)){
+			menu.removeItem(R.id.download);
+			menu.add(Menu.NONE, R.id.view, Menu.NONE, R.string.view);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -220,7 +224,7 @@ public class EpisodesActivity extends ListActivity {
 		
 		Bundle episode = Episode.packageEpisode(mPonyExpressApp, mPodcastName, id);
 		final String url = episode.getString(EpisodeKeys.URL);
-		if (url != null && url.contains("www.youtube.com")){
+		if (url != null && url.contains(Episode.YOUTUBE_URL)){
 			//Launch youtube app if available.
 			Uri uri = Uri.parse(url);
 			uri = Uri.parse("vnd.youtube:" + uri.getQueryParameter("v"));
@@ -302,6 +306,8 @@ public class EpisodesActivity extends ListActivity {
 			markNotListened(info.id);
 			listEpisodes();
 			return true;
+		case R.id.view:
+			//Fallthrough: onListItemClick will handle it
 		case R.id.download:
 			//Fallthrough: onListItemClick determines if can listen or download
 		case R.id.listen:

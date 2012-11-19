@@ -132,7 +132,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 			
 			@Override
 			public void end(String body) {
-				if (body.contains("www.youtube.com")){
+				if (body.contains(Episode.YOUTUBE_URL)){
 					new_episode.setLink(body);
 				} 
 			}

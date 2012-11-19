@@ -39,6 +39,7 @@ import android.util.Log;
 public class Episode implements Comparable<Episode> {
 
 	private static final String TAG = "PonyExpress Episode";
+	public static final String YOUTUBE_URL = "www.youtube.com";
 	static SimpleDateFormat FORMATTER = 
         new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z", Locale.US);
 	private final static String EPOCH = "Thu, 01 Jan 1970 00:00:00 GMT";
@@ -132,7 +133,7 @@ public class Episode implements Comparable<Episode> {
 	 * @return
 	 */
 	public boolean isYouTube(){
-		if (mLink.getHost().contains("www.youtube.com")){
+		if (mLink.getHost().contains(YOUTUBE_URL)){
 			return true;
 		} else return false;
 	}	
