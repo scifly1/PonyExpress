@@ -82,6 +82,7 @@ public class PonyExpressActivity extends ListActivity {
 		
 	private static final int ABOUT_DIALOG = 4;
 	private static final int ADD_FEED = 0;
+	private static final String LAST_CACHE_CLEAR = "last_cache_clear";
 
 	protected PonyExpressApp mPonyExpressApp; 
 	private ProgressDialog mProgDialog;
@@ -152,7 +153,9 @@ public class PonyExpressActivity extends ListActivity {
 				mPonyExpressApp.startService(intent);
 			}
 		}
-		
+		//Clear the ImageCache if it has not been done for a month
+		maintainImageCache(prefs);
+				
 		//Check SDCard contents and database match.
 		new DatabaseCheck().execute();
 		
@@ -173,7 +176,30 @@ public class PonyExpressActivity extends ListActivity {
 			addPodcast(null, url);
 		}
 	}
-	
+	/**
+	 * Clears the image cache every 30 days so that it does not waste resources.
+	 * @param prefs
+	 */
+	private void maintainImageCache(SharedPreferences prefs) {
+		final long now = System.currentTimeMillis();
+		final long last_cache_clear = prefs.getLong(LAST_CACHE_CLEAR, now);
+		if (last_cache_clear == now){
+			//prefs not set yet, set it now
+			prefs.edit().putLong(LAST_CACHE_CLEAR, now).commit();
+		}
+		final long delta = 1000l*60l*60l*24l*30l; //30 days 
+		final long next = last_cache_clear + delta;
+		if (next < now && 
+				mPonyExpressApp.getInternetHelper().isDownloadAllowed() ){
+			PonyExpressApp.sImageManager.clear();
+			prefs.edit().putLong(LAST_CACHE_CLEAR, now).commit();
+			Log.d(TAG, "Clearing image cache");
+		} else {
+			Log.d(TAG, "Not clearing cache");
+		}
+		
+	}
+
 	// This method shows a dialog, and calls updateFeed() if this is the first time Pony 
 	// has been run.  The SharedPrefrences then get changed to false.
 	private void onFirstRun(SharedPreferences prefs) {

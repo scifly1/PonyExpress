@@ -71,7 +71,8 @@ public class InternetHelper {
 	}
 	
 	/**
-	 * Returns true if the preferences allow download over a mobile network.
+	 * Returns true if the preferences allow download over a mobile network or
+	 * we are on wifi.
 	 * @return
 	 */
 	public boolean isDownloadAllowed() {
