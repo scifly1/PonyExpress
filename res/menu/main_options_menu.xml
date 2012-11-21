@@ -18,7 +18,8 @@
 		android:icon="@drawable/ic_menu_identica"/>
 	<item
 		android:title="@string/about"
-		android:id="@+id/about" />
+		android:id="@+id/about"
+		android:icon="@drawable/ic_menu_about" />
 	<item android:id="@+id/add_sixgun" 
 	    android:title="@string/add_sixgun" 
 	    android:icon="@drawable/ic_sixgun_prod"></item>
