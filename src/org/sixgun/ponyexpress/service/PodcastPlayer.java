@@ -445,7 +445,15 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	//Simple save the current play back position to the DB, and
 	//return a boolean of success.
 	public boolean savePlaybackPosition(int playbackPosition){
-		return mPonyExpressApp.getDbHelper().update(mPodcastName,mRowID,
+		String podcast_name = mPodcastName;
+		long row_id = mRowID;
+		if (podcast_name == null){ //if playback hasn't started yet
+			//Moving the progress bar before play starts needs to update position
+			//for the queued podcast.
+			podcast_name = mPodcastNameQueued;
+			row_id = mRowIDQueued;
+		}
+		return mPonyExpressApp.getDbHelper().update(podcast_name,row_id,
 				EpisodeKeys.LISTENED, playbackPosition);
 	}
 
