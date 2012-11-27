@@ -168,7 +168,7 @@ public class EpisodesActivity extends ListActivity {
 				//Hide download all menu item	
 				menu.removeItem(DOWNLOAD_ALL);
 		} else if (menu.findItem(DOWNLOAD_ALL) == null){
-			menu.add(Menu.NONE,DOWNLOAD_ALL, Menu.FIRST, R.string.download_all);
+			menu.add(Menu.NONE,DOWNLOAD_ALL, Menu.FIRST, R.string.download_all).setIcon(R.drawable.ic_menu_download);
 		}
 		return true;
 	}
