@@ -142,8 +142,10 @@ public class EpisodesActivity extends ListActivity {
 		//Call super to create the general menu
 		super.onCreateOptionsMenu(menu);
 		//Add other specific menu items
-		menu.add(Menu.NONE,MARK_ALL_LISTENED,Menu.FIRST+1,R.string.mark_all_listened);
-		menu.add(Menu.NONE,MARK_ALL_NOT_LISTENED,Menu.FIRST+2,R.string.mark_all_not_listened);
+		menu.add(Menu.NONE,MARK_ALL_LISTENED,Menu.FIRST+1,R.string.mark_all_listened).
+		setIcon(R.drawable.ic_menu_mark);
+		menu.add(Menu.NONE,MARK_ALL_NOT_LISTENED,Menu.FIRST+2,R.string.mark_all_not_listened).
+		setIcon(R.drawable.ic_menu_revert);
 		return true;
 	}
 
@@ -168,7 +170,7 @@ public class EpisodesActivity extends ListActivity {
 				//Hide download all menu item	
 				menu.removeItem(DOWNLOAD_ALL);
 		} else if (menu.findItem(DOWNLOAD_ALL) == null){
-			menu.add(Menu.NONE,DOWNLOAD_ALL, Menu.FIRST, R.string.download_all);
+			menu.add(Menu.NONE,DOWNLOAD_ALL, Menu.FIRST, R.string.download_all).setIcon(R.drawable.ic_menu_download);
 		}
 		return true;
 	}

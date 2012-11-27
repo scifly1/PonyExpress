@@ -6,13 +6,15 @@
 		android:icon="@drawable/ic_menu_preferences" />
 	<item
 		android:title="@string/clear_playlist"
-		android:id="@+id/clear_playlist" />
+		android:id="@+id/clear_playlist"
+		android:icon="@drawable/ic_menu_clear_playlist" />
 	<item 
 	    android:title="@string/Downloads_title"
 	    android:id="@+id/downloads"
 	    android:icon="@drawable/ic_download_overview" />
 	<item
 		android:title="@string/about"
-		android:id="@+id/about" />
+		android:id="@+id/about" 
+		android:icon="@drawable/ic_menu_about"/>
 	
 </menu>

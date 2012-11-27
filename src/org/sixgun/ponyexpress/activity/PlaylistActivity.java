@@ -71,6 +71,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	private static final int START_PLAYBACK = 0;
 	private static final int NOT_DOWNLOADED_DIALOG = 0;
 	private static final String TAG = "PlaylistActivity";
+	private static final int ABOUT_DIALOG = 1;
 	private ListView mPlaylist;
 	private View mNoPlaylist;
 	private PonyExpressApp mPonyExpressApp;
@@ -238,11 +239,11 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	 */
 	@Override
 	protected Dialog onCreateDialog(int id) {
-		AlertDialog dialog;
+		Dialog dialog;
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		final SharedPreferences.Editor editor = prefs.edit();
-		//If more dialogs are added this should be a switch case block.
-		if (id == NOT_DOWNLOADED_DIALOG){
+		switch (id){
+		case NOT_DOWNLOADED_DIALOG:
 			AlertDialog.Builder builder = new Builder(this);
 			LayoutInflater inflater = this.getLayoutInflater();
 			View message = inflater.inflate(R.layout.auto_download_dialog,(ViewGroup) findViewById(R.id.auto_download_dialog_root));
@@ -271,9 +272,17 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 					
 				}
 			});
-			dialog = builder.create();
-		} else dialog = null;
+			dialog = (AlertDialog) builder.create();
+		break;
+		case ABOUT_DIALOG:
+			dialog = AboutDialog.create(this);
+			break;
+		default:	
+			dialog = null;
+			break;
+		}
 		return dialog;
+		
 	}
 
 	/* (non-Javadoc)
@@ -282,10 +291,20 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	@Override
 	protected void onPrepareDialog(int id, Dialog dialog, Bundle episode) {
 		super.onPrepareDialog(id, dialog, episode);
-		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-		final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
-		mAlwaysDownloadCheckbox.setChecked(auto_download);
-		mRowIdForNotDownloadedDialog = episode.getLong(EpisodeKeys.ROW_ID);
+		switch (id){
+		case NOT_DOWNLOADED_DIALOG:
+			final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+			final boolean auto_download = prefs.getBoolean(getString(R.string.auto_download_key), false);
+			mAlwaysDownloadCheckbox.setChecked(auto_download);
+			mRowIdForNotDownloadedDialog = episode.getLong(EpisodeKeys.ROW_ID);
+			break;
+		case ABOUT_DIALOG:
+			//Nothing to prepare
+			break;
+		default:
+			break;
+		}
+		
 	}
 
 	/* (non-Javadoc)
@@ -330,6 +349,8 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			startActivity(new Intent(
 					mPonyExpressApp, DownloadOverviewActivity.class));
 			return true;
+		case R.id.about:
+			showDialog(ABOUT_DIALOG);
 		default: 
 			return super.onOptionsItemSelected(item);
 		}

@@ -7,16 +7,20 @@
 	<item 
 	    android:title="@string/add_podcast"
 	    android:id="@+id/add_podcast" 
-	    android:icon="@drawable/add_podcasts_button"/>
+	    android:icon="@drawable/ic_menu_add"/>
 	<item
 		android:title="@string/settings"
 		android:id="@+id/settings_menu" 
 		android:icon="@drawable/ic_menu_preferences" />
 	<item
 		android:title="@string/identica_account_settings"
-		android:id="@+id/identica_account_settings" android:icon="@drawable/ic_menu_identica"/>
+		android:id="@+id/identica_account_settings" 
+		android:icon="@drawable/ic_menu_identica"/>
 	<item
 		android:title="@string/about"
-		android:id="@+id/about" />
-	<item android:id="@+id/add_sixgun" android:title="@string/add_sixgun" android:icon="@drawable/ic_sixgun_prod"></item>
+		android:id="@+id/about"
+		android:icon="@drawable/ic_menu_about" />
+	<item android:id="@+id/add_sixgun" 
+	    android:title="@string/add_sixgun" 
+	    android:icon="@drawable/ic_sixgun_prod"></item>
 </menu>
