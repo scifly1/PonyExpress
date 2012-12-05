@@ -263,7 +263,6 @@ public class PonyExpressDbAdaptor {
      * @return The row ID of the inserted row or -1 if an error occurred.
      */
     public long insertEpisode(Episode episode, String podcast_name) {
-    	//FIXME Check if episode is already in the database first?.
     	final String table_name = getTableName(podcast_name); 
         ContentValues episodeValues = new ContentValues();
         episodeValues.put(EpisodeKeys.TITLE, episode.getTitle());

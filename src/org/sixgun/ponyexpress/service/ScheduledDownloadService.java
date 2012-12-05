@@ -83,6 +83,7 @@ public class ScheduledDownloadService extends IntentService {
 				set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
 			}
 			final long nextUpdate = getNextUpdateTime();
+			Log.d(TAG, "Next download scheduled for: " + nextUpdate);
 			if (nextUpdate == 0){
 				Log.d(TAG, "Scheduled downloads not active");
 				return;
@@ -229,8 +230,12 @@ public class ScheduledDownloadService extends IntentService {
 			Calendar cal = new GregorianCalendar();
 			SharedPreferences prefs = getPreferences();
 			long updateTime = prefs.getLong(getString(R.string.schedule_download_time_key), cal.getTimeInMillis());
-			cal.setTimeInMillis(updateTime); //sets the correct time, but the date is when the preference was set.
-			cal.set(Calendar.DATE, Calendar.getInstance().get(Calendar.DATE));
+			cal.setTimeInMillis(updateTime); 
+			//the correct time is now set, but the date is when the preference was set.
+			final Calendar now = Calendar.getInstance();
+			cal.set(Calendar.DATE, now.get(Calendar.DATE));
+			cal.set(Calendar.MONTH, now.get(Calendar.MONTH));
+			cal.set(Calendar.YEAR, now.get(Calendar.YEAR));
 			//Check if we want tomorrow
 			if (System.currentTimeMillis() > cal.getTimeInMillis() - 60000){
 				//-60000 so that a call to getNextUpdateTime from setNextAlarm after an

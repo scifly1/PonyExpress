@@ -176,7 +176,7 @@
 	<string name="error_icon_desc">Error notification icon</string>
 	<string name="no_connection_for_sched_download">No internet connection for podcast download.</string>
 	<string name="prefs_dont_allow_downloads">Your preferences don\'t allow downloads on a mobile network.</string>
-	<string name="alarm_set_to_past">Error: Tried to set downloading in the past.</string>
+	<string name="alarm_set_to_past">Can\'t schedule downloads in the past.</string>
 	<string name="no_youtube">The YouTube app is not installed. Install it to view this video. </string>
 	<string name="about_message">
 		"
