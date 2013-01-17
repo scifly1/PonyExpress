@@ -240,7 +240,7 @@ public class ScheduledDownloadService extends IntentService {
 			if (System.currentTimeMillis() > cal.getTimeInMillis() - 60000){
 				//-60000 so that a call to getNextUpdateTime from setNextAlarm after an
 				//alarm doesn't set an alarm for 'now' triggering an new alarm.
-				cal.roll(Calendar.DAY_OF_YEAR,true);
+				cal.add(Calendar.DAY_OF_YEAR,1);
 			}
 			return cal.getTimeInMillis();
 		} else return 0; 
