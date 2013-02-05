@@ -1,0 +1,14 @@
+The following libraries are used by Pony Express and are not part of it's 
+source control. They therefore need to be installed seperately as per the instructions 
+below. If any of these instructions could be improved please do so!
+
+android-filechooser (version 5.0.)  http://code.google.com/p/android-filechooser/
+
+Download the code and unpack it into a libs directory under your Eclipse 
+workspace directory.
+ie: ../Workspace/libs/android-filechooser where PonyExpress is in ../Workspace/PonyExpress.
+The project properties expect it to be in this location. 
+
+I followed these instructions http://code.google.com/p/android-filechooser/wiki/QuickUse to set it up, 
+but some of that is under source control, ie: AndroidManifiest and project.properties so you shouldn't 
+have to do much more.
