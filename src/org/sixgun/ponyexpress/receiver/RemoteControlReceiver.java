@@ -63,6 +63,7 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 					break;
 				case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
 					//Fallthrough
+					//TODO Should use skip to next properly, can't test, no headset.
 				case KeyEvent.KEYCODE_MEDIA_NEXT:
 					Log.d(TAG,"Fast forward received");
 					serviceIntent.putExtra(ACTION, PodcastPlayer.FASTFORWARD);

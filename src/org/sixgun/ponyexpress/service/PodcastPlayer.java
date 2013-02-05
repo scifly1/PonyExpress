@@ -195,6 +195,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				fastForward();
 			}
 			break;
+			//TODO Should recieve a skip from the reciever too, but can't test at present.
 		case -2:
 			Log.e(TAG, "no action received from RemoteControlReceiver!");
 			break;

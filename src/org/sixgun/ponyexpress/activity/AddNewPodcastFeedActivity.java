@@ -18,6 +18,10 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import group.pals.android.lib.ui.filechooser.FileChooserActivity;
+import group.pals.android.lib.ui.filechooser.io.localfile.LocalFile;
+
+import java.io.File;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -33,9 +37,7 @@ import org.sixgun.ponyexpress.util.BackupParser;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -48,7 +50,9 @@ import android.widget.Toast;
 
 public class AddNewPodcastFeedActivity extends Activity {
 
+	public static final String PONY_EXPRESS_PODCASTS_OPML = "PonyExpress_Podcasts.opml";
 	private static final String TAG = "PonyExpress AddNewPopdcastFeedActivity";
+	private static final int FILE_CHOOSER = 0;
 
 	private TextView mFeedText;
 	private TextView mGroupText;
@@ -135,22 +139,61 @@ public class AddNewPodcastFeedActivity extends Activity {
 	}
 	
 	public void backupButtonPressed(View v){
-		Log.d(TAG,"Backing up to file...");
-		//Start the backup Async
-		Backup task = (Backup) new Backup().execute();
-		if (task.isCancelled()){
-			Log.d(TAG, "Backup canceled");
-		}
+		Log.d(TAG,"Opening FileChooser...");
+		Intent intent = new Intent(mPonyExpressApp, FileChooserActivity.class);
+		intent.putExtra(FileChooserActivity._Theme, android.R.style.Theme_Dialog);
+		intent.putExtra(FileChooserActivity._SaveDialog, true);
+		intent.putExtra(FileChooserActivity._DefaultFilename, PONY_EXPRESS_PODCASTS_OPML);
+		
+		startActivityForResult(intent, FILE_CHOOSER);
+		
 	}
 	
 	public void restoreButtonPressed(View v){
 		Log.d(TAG,"Restore from backup file...");
-		//Start the restore Async
-		Restore task = (Restore) new Restore().execute();
-		if (task.isCancelled()){
-			Log.d(TAG, "Restore canceled");
+		Intent intent = new Intent(mPonyExpressApp, FileChooserActivity.class);
+		intent.putExtra(FileChooserActivity._Theme, android.R.style.Theme_Dialog);
+		intent.putExtra(FileChooserActivity._MultiSelection, false);
+		
+		startActivityForResult(intent, FILE_CHOOSER);
+
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		switch (requestCode) {
+		case FILE_CHOOSER:
+			if (resultCode == RESULT_OK) {
+				boolean saveDialog = data.getBooleanExtra(FileChooserActivity._SaveDialog, false);
+				/*
+				 * a list of files will always return,
+				 * if selection mode is single, the list contains one file
+				 */
+				@SuppressWarnings("unchecked")
+				List<LocalFile> files = (List<LocalFile>)
+						data.getSerializableExtra(FileChooserActivity._Results);
+				
+				if (!files.isEmpty()){
+					if (saveDialog){ //Backing up
+						Log.d(TAG, "Path returned is: " + files.get(0).getPath());
+						//Start the backup Async
+						Backup task = (Backup) new Backup().execute(files.get(0));
+						if (task.isCancelled()){
+							Log.d(TAG, "Backup canceled");
+						}
+					} else {
+						//Start the restore Async
+						Restore task = (Restore) new Restore().execute(files.get(0));
+						if (task.isCancelled()){
+							Log.d(TAG, "Restore canceled");
+						}
+					}
+				}
+				break;
+			}
 		}
 	}
+
 
 	/**
 	 * Bring up the Settings (preferences) menu via a button click.
@@ -173,7 +216,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 	}
 
-	private class Backup extends AsyncTask<Void,Integer,Integer>{
+	private class Backup extends AsyncTask<File,Integer,Integer>{
 
 		/*
 		 * This is carried out in the UI thread before the background tasks are started.
@@ -186,23 +229,16 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 
 		@Override
-		protected Integer doInBackground(Void... v) {
+		protected Integer doInBackground(File... f){
 			List<String> podcastlist = mPonyExpressApp.getDbHelper().getAllPodcastsUrls();
 			final BackupFileWriter backupwriter = new BackupFileWriter();
-			return backupwriter.writeBackupOpml(podcastlist);
+			return backupwriter.writeBackupOpml(podcastlist,f[0]);
 		}
 
 		protected void onPostExecute(Integer return_code) {
 			mProgDialog.hide();
 			//Handle the return codes.
 			switch (return_code) {
-			case ReturnCodes.ASK_TO_OVERWRITE:
-				startOverwriteDialog();
-				break;
-			case ReturnCodes.SD_CARD_NOT_WRITABLE:
-				Toast.makeText(mPonyExpressApp,
-						R.string.cannot_write, Toast.LENGTH_LONG).show();
-				break;
 			case ReturnCodes.ALL_OK:
 				Toast.makeText(mPonyExpressApp,
 						R.string.backup_successful, Toast.LENGTH_LONG).show();
@@ -216,7 +252,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	 * This Async uses BackupParser to restore podcast feeds from a backup file that is 
 	 * compatible with gPodder.net.
 	 */
-	private class Restore extends AsyncTask <Void,Void,Integer>{
+	private class Restore extends AsyncTask <File,Void,Integer>{
 
 		/*
 		 * This is carried out in the UI thread before the background tasks are started.
@@ -230,9 +266,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 
 		@Override
-		protected Integer doInBackground(Void... params) {
+		protected Integer doInBackground(File... f) {
 
-			final BackupParser backupparser = new BackupParser();
+			final BackupParser backupparser = new BackupParser(f[0]);
 			List<String> podcasts = backupparser.parse();
 
 			//This is where we handle the return from backupparser.parse().
@@ -300,29 +336,4 @@ public class AddNewPodcastFeedActivity extends Activity {
 		finish();
 	}
 
-	/**
-	 * This is the method that creates and shows the "Ask to overwrite" dialog.
-	 */
-	private void startOverwriteDialog(){
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
-		builder.setMessage(getText(R.string.a_backup_file_));
-		builder.setCancelable(false);
-		builder.setPositiveButton(getText(R.string.yes), new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				Utils.deleteBackupFile();
-				//Start the backup Async
-				Backup task = (Backup) new Backup().execute();
-				if (task.isCancelled()){
-					Log.d(TAG, "Backup canceled");
-				}
-			}
-		});
-		builder.setNegativeButton(getText(R.string.no), new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int id) {
-				dialog.cancel();
-			}
-		});
-		AlertDialog alert = builder.create();
-		alert.show();
-	}
 }

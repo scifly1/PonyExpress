@@ -33,7 +33,6 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.service.UpdaterService;
-import org.sixgun.ponyexpress.util.BackupFileWriter;
 
 import android.app.Dialog;
 import android.app.ListActivity;
@@ -564,8 +563,8 @@ public class PonyExpressActivity extends ListActivity {
 			if (podcastsOnDisk != null){
 				for (String podcast: podcastsOnDisk){
 					//Check if podcast is really the backup file.
-					if (podcast.equals(BackupFileWriter.BACKUP_FILENAME)){
-						continue;
+					if (podcast.contains("opml")){
+						continue; 
 					}
 					File podcast_path = new File(path,podcast);
 					String[] files = podcast_path.list();

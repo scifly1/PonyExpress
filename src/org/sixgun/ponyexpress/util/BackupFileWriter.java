@@ -27,45 +27,29 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.xmlpull.v1.XmlSerializer;
 
-import android.os.Environment;
 import android.util.Log;
 import android.util.Xml;
 
 public class BackupFileWriter {
 
 private static final String TAG = "PonyExpress BackupFileWriter";
-public static final String BACKUP_FILENAME = "all-subscriptions.opml";
 
-	public int writeBackupOpml(List<String> podcasts){
+	public int writeBackupOpml(List<String> podcasts, File f){
 
 		Log.d(TAG, "BackupFileWriter started");
 
-		//Check if SD card is writable...
-		if (!Utils.isSDCardWritable()){
-			//SD card is not writable, so return with error code
-			Log.d(TAG,"Sdcard is not writable");
-			return ReturnCodes.SD_CARD_NOT_WRITABLE;
-		}
-
 		//create a new backup file in the SD card
 		Utils.writePodcastPath();
-		File opmlfile = new File(Environment.getExternalStorageDirectory()
-				+ PonyExpressApp.PODCAST_PATH + BACKUP_FILENAME);
+		File opmlfile = f;
 
-		//Check is the file already exists...
-		if (opmlfile.isFile()){
-			return ReturnCodes.ASK_TO_OVERWRITE;
-		}else{
-			//Create an empty file
-			try{
-				opmlfile.createNewFile();
-			}catch(IOException e){
-				Log.e(TAG, "exception in createNewFile() method");
-			}
+		//File Chooser checks if file already exists and if SDcard is mounted
+		try{
+			opmlfile.createNewFile();
+		}catch(IOException e){
+			Log.e(TAG, "exception in createNewFile() method");
 		}
 
 		FileOutputStream fileos = null;
