@@ -77,6 +77,8 @@
 		<service android:name=".service.IdenticaHandler" />
 		<service android:name=".service.PodcastPlayer" />
 		<service android:name=".service.DownloaderService" />
+		<service android:name="group.pals.android.lib.ui.filechooser.services.LocalFileProvider" />
+		
 		<activity android:name=".activity.EpisodesActivity" />
 		<activity android:name=".activity.PlayerActivity" />
 		<activity android:name=".activity.EpisodeTabs"
@@ -97,6 +99,11 @@
 		<activity android:name=".activity.PlaylistActivity" />	
 		<activity android:name=".activity.DownloadOverviewActivity" />
 		<activity android:name=".activity.ShowNotesActivity" />
+		<activity android:name="group.pals.android.lib.ui.filechooser.FileChooserActivity" 
+		   android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
+		   android:theme="@android:style/Theme.Dialog" />
+		
+		
 		<receiver android:name=".receiver.ScheduledDownloadReceiver" />
 		<receiver android:name=".receiver.RescheduledUpdateReceiver"  
 		    android:enabled="false">

@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.util;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,12 +26,10 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
-import android.os.Environment;
 import android.sax.Element;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
@@ -46,6 +45,11 @@ public class BackupParser {
 	private static final String OUTLINE = "outline";
 
 	private static final String TAG = "BackupParser";
+	private final File backupFile;
+
+	public BackupParser(File file) {
+		backupFile = file;
+	}
 
 	public List<String> parse() {
 
@@ -54,7 +58,7 @@ public class BackupParser {
 		InputStream filename = null;
 
 		try {
-			filename = new FileInputStream(Environment.getExternalStorageDirectory() + PonyExpressApp.PODCAST_PATH + BackupFileWriter.BACKUP_FILENAME);
+			filename = new FileInputStream(backupFile);
 		} catch (FileNotFoundException e){
 			urllist.add(Integer.toString(ReturnCodes.NO_BACKUP_FILE));
 			return urllist;
