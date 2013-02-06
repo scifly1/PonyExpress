@@ -39,8 +39,7 @@ import android.widget.TextView;
 
 
 /**
- * Tabbed Activity to hold the applicable IdenticaActivity (PlayerActivity or DownloadActivity),
- * the Identi.ca stream and commenter.
+ * Tabbed Activity to hold the Player/Downloader and the show notes.
  *
  */
 public class EpisodeTabs extends GeneralOptionsMenuActivity {
@@ -142,16 +141,6 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    spec = mTabHost.newTabSpec("notes").setIndicator
 	    (mRes.getText(R.string.show_notes),mRes.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
 	    mTabHost.addTab(spec);
-	    
-	    //Add Identi.ca feed Activity if a tag has been set.
-	    if (bundle.containsKey(PodcastKeys.TAG)){
-	    	intent = new Intent(this,IdenticaEpisodeActivity.class);
-	    	intent.putExtras(bundle);
-	    	
-	    	spec = mTabHost.newTabSpec("identica").setIndicator
-	    	(mRes.getText(R.string.comment),mRes.getDrawable(R.drawable.ic_tab_dent)).setContent(intent);
-	    	mTabHost.addTab(spec);
-	    }
 	    
 	    mTabHost.setCurrentTab(0);
 	    

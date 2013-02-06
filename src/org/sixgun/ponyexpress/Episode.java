@@ -195,7 +195,6 @@ public class Episode implements Comparable<Episode> {
 	public static Bundle packageEpisode(PonyExpressApp app, String podcast_name, long row_id){
 		final String title = app.getDbHelper().getEpisodeTitle(row_id, podcast_name);
 		final String description = app.getDbHelper().getDescription(row_id, podcast_name);
-		final String identicaTag = app.getDbHelper().getIdenticaTag(podcast_name);
 		final String album_art_url = app.getDbHelper().getAlbumArtUrl(podcast_name);
 		final String filename = app.getDbHelper().getEpisodeFilename(row_id, podcast_name);
 		final int listened = app.getDbHelper().getListened(row_id, podcast_name);
@@ -216,9 +215,6 @@ public class Episode implements Comparable<Episode> {
 		bundle.putString(PodcastKeys.NAME, podcast_name);
 		bundle.putString(EpisodeKeys.TITLE, title);
 		bundle.putString(EpisodeKeys.DESCRIPTION, description);
-		if (!identicaTag.equals("")){
-			bundle.putString(PodcastKeys.TAG, identicaTag);
-		}
 		bundle.putString(EpisodeKeys.EP_NUMBER, epNumber);
 		bundle.putLong(EpisodeKeys._ID, row_id);
 		bundle.putString(PodcastKeys.ALBUM_ART_URL, album_art_url);

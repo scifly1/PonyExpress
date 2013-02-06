@@ -18,8 +18,6 @@
 	</string>
 	<string name="Playlist_title">Playlist</string>
 	<string name="Downloads_title">Downloads</string>
-	<string name="Identica_group_title">Group Dents</string>
-	<string name="Identica_episode_title">Episode Dents</string>
 	<string name="sixgun">Sixgun Productions</string>
 	<string name="Add_feeds">Add other podcasts.</string>
 	<string name="footer">Pony Express is free software:\n Tap here for more information.\n
@@ -41,36 +39,16 @@
 	<string name="in_queue">Queued</string>
 	<string name="re_download">Re-download</string>
 	<string name="listen">Listen</string>
-	<string name="dent">Dent about this episode..</string>
-	<string name="comment">Comments</string>
 	<string name="show_notes">Show notes</string>
 	<string name="downloading_episode">1 Podcast downloading.</string>
 	<string name="downloading_episodes">Podcasts downloading.</string>
-	<string name="verify_creds">Verifying credentials! Please wait&#8230;</string>
-	<string name="searching_dents">Searching for dents&#8230;"</string>
-	<string name="no_dents">No dents for this episode yet! Go on, be the first!
-	</string>
-	<string name="can_not_encode_dent">Can not encode your dent.</string>
-	<string name="successful_dent">Successful dent!</string>
-	<string name="dent_here">Type new dent here:</string>
-	<string name="dent_ok">Dent!</string>
-	<string name="conn_err_query_failed">Connection error! Cannot get dents.</string>
 	<string name="error_generic">Sorry, something has gone wrong&#8230;</string>
 	<string name="parse_error">There was a parsing error</string>
 	<string name="feed_error">There was an error getting a feed&#8230;</string>
 	<string name="malformed_feed">The RSS feed is malformed, data is missing!</string>
-	<string name="sending_dent">Sending message, please wait.</string>
-	<string name="login_successful">Identi.ca login successful. Dent away!</string>
-	<string name="login_failed">Identi.ca login failed! Have you set up your
-		account?</string>
-	<string name="identica_offline">Identi.ca appears to be offline. Please try again later.</string>
-	<string name="credentials_not_verified">Could not verify your credentials!</string>
 	<string name="ok">OK</string>
 	<string name="cancel">Cancel</string>
 	<string name="cancel_all">Cancel all downloads</string>
-	<string name="enter_username">Username:</string>
-	<string name="enter_password">Password:</string>
-	<string name="account_setup">Enter your Identi.ca account details.</string>
 	<string name="pause">Pause</string>
 	<string name="play">Play</string>
 	<string name="settings">Settings</string>
@@ -78,7 +56,6 @@
 	<string name="download_settings">Download Settings</string>
 	<string name="player_settings">Player Settings</string>
 	<string name="add_podcast">Add a podcast</string>
-	<string name="identica_account_settings">Setup Identi.ca Account</string>
 	<string name="updatefeeds">Refresh subscriptions</string>
 	<string name="version">Pony Express Version</string>
 	<string name="about">About</string>
@@ -86,8 +63,6 @@
 	<string name="refresh_feeds_summary">Hours between feed refreshes\nNote: This takes effect after the next update.</string>
 	<string name="refresh_dialog_title">Interval in hours</string>
 	<string name="Feed_uri" >Feed URL:</string>
-	<string name="Enter_tag">Identi.ca tag:</string>
-	<string name="Enter_group">Identi.ca group:</string>
 	<string name="http">http://</string>
 	<string name="exclamation">!</string>
 	<string name="hash">#</string>
@@ -160,7 +135,6 @@
 	<string name="restoring">Restoring feeds from the backup file.</string>
 	<string name="backing_up_feeds">Backing up the list of feeds. Please wait.</string>
 	<string name="backup_successful">Backup successful! Yippee ki-yay! </string>
-	<string name="a_backup_file_">A backup file already exists. Do you want to overwrite?</string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 	<string name="there_is_no_backup">There is no backup file to restore.</string>
@@ -214,7 +188,6 @@ Pony Express is a podcatcher and player for Android brought to you by <a href="h
 	<string name="eps_stored_key">epsStoredKey</string>
 	<string name="version_key">versionKey</string>
 	<string name="update_freqs_key">updateFreqsKey</string>
-	<string name="add_podcasts">ADD_PODCASTS</string>
 	<string name="auto_download_key">AutoDownloadKey</string>
 	<string name="schedule_download_key">ScheduleDownloadsKey</string>
 	<string name="schedule_download_time_key">ScheduleDownloadsTimeKey</string>

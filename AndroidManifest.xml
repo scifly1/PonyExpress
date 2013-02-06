@@ -74,7 +74,6 @@
 		</activity>
 		<service android:name=".service.ScheduledDownloadService" />
 		<service android:name=".service.UpdaterService" />
-		<service android:name=".service.IdenticaHandler" />
 		<service android:name=".service.PodcastPlayer" />
 		<service android:name=".service.DownloaderService" />
 		<service android:name="group.pals.android.lib.ui.filechooser.services.LocalFileProvider" />
@@ -84,11 +83,6 @@
 		<activity android:name=".activity.EpisodeTabs"
 			android:windowSoftInputMode="adjustPan" android:launchMode="singleTop" />
 		<activity android:name=".activity.EpisodeNotesActivity" />
-		<activity android:name=".activity.IdenticaActivity"
-			android:windowSoftInputMode="adjustPan" />
-		<activity android:name=".activity.IdenticaEpisodeActivity"
-			android:windowSoftInputMode="adjustPan" />
-		<activity android:name=".activity.IdenticaAccountSetupActivity" />
 		<activity android:name=".activity.PreferencesActivity" android:exported="false">
 		   <intent-filter>
        			<action android:name="android.intent.action.MANAGE_NETWORK_USAGE" />

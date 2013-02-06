@@ -241,8 +241,6 @@ public class UpdaterService extends IntentService {
 		PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
 		Podcast default_podcast = default_parser.parse();
 		if (default_podcast != null){
-			default_podcast.setIdenticaTag(default_feed[1]);
-			default_podcast.setIdenticaGroup(default_feed[2]);
 			addSixgunShow(default_podcast);
 			}	
 		}

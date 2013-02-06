@@ -56,15 +56,13 @@ public class PonyExpressDbAdaptor {
         EpisodeKeys.DESCRIPTION + " TEXT," +
         EpisodeKeys.DOWNLOADED + " INTEGER," +
         EpisodeKeys.LISTENED + " INTEGER);";
-    private static final String PODCAST_TABLE_CREATE = 
+    private static final String PODCAST_TABLE_1_CREATE = 
     	"CREATE TABLE " + PODCAST_TABLE + " (" + 
     	PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
     	PodcastKeys.NAME + " TEXT," +
     	PodcastKeys.FEED_URL + " TEXT," +
     	PodcastKeys.ALBUM_ART_URL + " TEXT," +
-    	PodcastKeys.TABLE_NAME + " TEXT," + 
-    	PodcastKeys.TAG + " TEXT," +
-    	PodcastKeys.GROUP + " TEXT);";
+    	PodcastKeys.TABLE_NAME + " TEXT);" ;
     
     private static final String PLAYLIST_TABLE_CREATE =
     		"CREATE TABLE IF NOT EXISTS " + PLAYLIST_TABLE + " (" +
@@ -93,7 +91,7 @@ public class PonyExpressDbAdaptor {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(PODCAST_TABLE_CREATE);
+            db.execSQL(PODCAST_TABLE_1_CREATE);
             //Call onUpgrade to ensure new users get the updated db
             onUpgrade(db,1,DATABASE_VERSION);
         }
@@ -150,10 +148,28 @@ public class PonyExpressDbAdaptor {
 					//feeds do not need updating with this db upgrade.
 					db.setTransactionSuccessful();
 				} catch (SQLException e) {
-					Log.e(TAG, "SQLException on db upgrade", e);
+					Log.e(TAG, "SQLException on db upgrade to 12", e);
 				} finally {
 					db.endTransaction();
 				}
+    			//Fallthrough
+//    		case 13:
+//    			//Begin transaction
+//    			db.beginTransaction();
+//    			try {
+//    				//TODO
+//    				//if Podcast_table exists (it won't on new installs)
+//    				//Create new podcasts table without identi.ca tags 
+//    				
+//    				//Move data to new podcasts_table_1
+//    				
+//    				//Drop old podacsts table
+//    				
+//    			} catch (SQLException e) {
+//					Log.e(TAG, "SQLException on db upgrade to 13", e);
+//				} finally {
+//					db.endTransaction();
+//				}
     			break; //Only the final upgrade case has a break.   			
 			default:
 				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
@@ -648,8 +664,6 @@ public class PonyExpressDbAdaptor {
 		PodcastFeedParser parser = new PodcastFeedParser(mCtx,podcast.getFeed_Url().toString());
 		Podcast new_podcast = parser.parse();
 		if (new_podcast != null){
-			new_podcast.setIdenticaTag(podcast.getIdenticaTag());
-			new_podcast.setIdenticaGroup(podcast.getIdenticaGroup());
 			//Insert Podcast into Podcast table
 			insertPodcast(new_podcast);
 			
@@ -678,9 +692,6 @@ public class PonyExpressDbAdaptor {
         } else {
         	podcastValues.putNull(PodcastKeys.ALBUM_ART_URL);
         }
-        
-        podcastValues.put(PodcastKeys.TAG, podcast.getIdenticaTag());
-        podcastValues.put(PodcastKeys.GROUP, podcast.getIdenticaGroup());
         podcastValues.putNull(PodcastKeys.TABLE_NAME);
      
         //Insert the record and then update it with the created Episode table name
@@ -807,40 +818,6 @@ public class PonyExpressDbAdaptor {
 			Log.e(TAG, "Empty cursor at updateAlbumArtUrl()");
 		}
 		cursor.close();
-	}
-
-	public String getIdenticaTag(String podcast_name) {
-		final String quotedName = Utils.handleQuotes(podcast_name);
-		final String[] columns = {PodcastKeys._ID,PodcastKeys.TAG};
-		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
-				columns, PodcastKeys.NAME + "=" + quotedName ,
-				null, null, null, null, null);
-		String url = "";
-		if (cursor != null && cursor.getCount() > 0){
-			cursor.moveToFirst();
-			url = cursor.getString(1);
-		} else {
-			Log.e(TAG, "Empty cursor at getIdenticaTag()");
-		}
-		cursor.close();
-		return url;
-	}
-
-	public String getIdenticaGroup(String podcast_name) {
-		final String quotedName = Utils.handleQuotes(podcast_name);
-		final String[] columns = {PodcastKeys._ID,PodcastKeys.GROUP};
-		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
-				columns, PodcastKeys.NAME + "=" + quotedName ,
-				null, null, null, null, null);
-		String url = "";
-		if (cursor != null && cursor.getCount() > 0){
-			cursor.moveToFirst();
-			url = cursor.getString(1);
-		} else {
-			Log.e(TAG, "Empty cursor at getIdenticaGroup()");
-		}
-		cursor.close();
-		return url;
 	}
 	
 	public int countUnlistened(String podcast_name){

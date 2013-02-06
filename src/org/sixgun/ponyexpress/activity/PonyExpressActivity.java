@@ -384,11 +384,6 @@ public class PonyExpressActivity extends ListActivity {
 	    case R.id.add_podcast:
 	    	addPodcast(null, "");
 	    	return true;
-	    case R.id.identica_account_settings:
-	    	//Fire off AccountSetup screen
-	    	startActivity(new Intent(
-					mPonyExpressApp,IdenticaAccountSetupActivity.class));
-	    	return true;
 	    case R.id.about:
 	    	showDialog(ABOUT_DIALOG);
 	    	return true;

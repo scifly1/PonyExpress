@@ -30,14 +30,11 @@ public class Podcast {
 	private String mName;
     private URL mFeed_Url;
     private URL mArt_Url;
-    private String mIdenticaTag;
-    private String mIdenticaGroup;
     
     /**
      * Constructor.  Creates 'empty' podcast.
      */
     public Podcast() {
-    	mIdenticaTag = "";  //If this is not set later it will remain empty and can be checked for.
 	}
     
     /**
@@ -45,7 +42,7 @@ public class Podcast {
      * @param episode to copy.
      */
     public Podcast(Podcast newPodcast) {
-    	this(newPodcast.mName,newPodcast.mFeed_Url,newPodcast.mArt_Url,newPodcast.mIdenticaTag, newPodcast.mIdenticaGroup);
+    	this(newPodcast.mName,newPodcast.mFeed_Url,newPodcast.mArt_Url);
 	}
     
     /**
@@ -54,12 +51,10 @@ public class Podcast {
      * @param _link
      * @param _title
      */
-    private Podcast(String _name, URL _feed, URL _art, String _tag, String _group){
+    private Podcast(String _name, URL _feed, URL _art){
     	this.mName = _name;
     	this.mFeed_Url = _feed;
     	this.mArt_Url = _art;
-    	this.mIdenticaTag = _tag;
-    	this.mIdenticaGroup = _group;
     }
     
 	/*
@@ -107,35 +102,7 @@ public class Podcast {
 		return mArt_Url;
 	}
 
-	/**
-	 * @param mIdenticaTag the mIdenticaTag to set
-	 */
-	public void setIdenticaTag(String mIdenticaTag) {
-		this.mIdenticaTag = mIdenticaTag;
-	}
-
-	/**
-	 * @return the mIdenticaTag
-	 */
-	public String getIdenticaTag() {
-		return mIdenticaTag;
-	}
-
-	/**
-	 * @param mIdenticaGroup the mIdenticaGroup to set
-	 */
-	public void setIdenticaGroup(String mIdenticaGroup) {
-		this.mIdenticaGroup = mIdenticaGroup;
-	}
-
-	/**
-	 * @return the mIdenticaGroup
-	 */
-	public String getIdenticaGroup() {
-		if (mIdenticaGroup == null){
-			return mIdenticaTag;
-		}else return mIdenticaGroup;
-	}
+	
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
@@ -146,10 +113,6 @@ public class Podcast {
 		int result = 1;
 		result = prime * result
 				+ ((mFeed_Url == null) ? 0 : mFeed_Url.hashCode());
-		result = prime * result
-				+ ((mIdenticaGroup == null) ? 0 : mIdenticaGroup.hashCode());
-		result = prime * result
-				+ ((mIdenticaTag == null) ? 0 : mIdenticaTag.hashCode());
 		result = prime * result + ((mName == null) ? 0 : mName.hashCode());
 		return result;
 	}
@@ -170,16 +133,6 @@ public class Podcast {
 			if (other.mFeed_Url != null)
 				return false;
 		} else if (!mFeed_Url.equals(other.mFeed_Url))
-			return false;
-		if (mIdenticaGroup == null) {
-			if (other.mIdenticaGroup != null)
-				return false;
-		} else if (!mIdenticaGroup.equals(other.mIdenticaGroup))
-			return false;
-		if (mIdenticaTag == null) {
-			if (other.mIdenticaTag != null)
-				return false;
-		} else if (!mIdenticaTag.equals(other.mIdenticaTag))
 			return false;
 		if (mName == null) {
 			if (other.mName != null)

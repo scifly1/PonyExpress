@@ -55,8 +55,6 @@ public class AddNewPodcastFeedActivity extends Activity {
 	private static final int FILE_CHOOSER = 0;
 
 	private TextView mFeedText;
-	private TextView mGroupText;
-	private TextView mTagText;
 	private PonyExpressApp mPonyExpressApp;
 	private ProgressDialog mProgDialog;
 
@@ -73,8 +71,6 @@ public class AddNewPodcastFeedActivity extends Activity {
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mFeedText = (EditText) findViewById(R.id.feed_entry);
-		mGroupText = (EditText) findViewById(R.id.group_entry);
-		mTagText = (EditText) findViewById(R.id.tag_entry);
 
 		//If the feedURl has been sent in the intent populate the text box
 		if (!getIntent().getExtras().getString(PodcastKeys.FEED_URL).equals("")){
@@ -93,8 +89,6 @@ public class AddNewPodcastFeedActivity extends Activity {
 	
 	public void okButtonPressed(View v) {
 		final String feed = mFeedText.getText().toString();
-		final String group = mGroupText.getText().toString();
-		final String tag = mTagText.getText().toString();
 
 		Podcast podcast = new Podcast();
 
@@ -108,18 +102,6 @@ public class AddNewPodcastFeedActivity extends Activity {
 		if (conn != null){
 			conn.disconnect();
 			podcast.setFeedUrl(feedUrl);
-			//TODO Check identica group exists, (query identica).
-			if (!group.equals("") && !group.equals("!")){
-				//Remove the leading '!' and store.
-				podcast.setIdenticaGroup(group.substring(1));
-			}
-			if(!tag.equals("") && !tag.equals("#")){
-				if(tag.startsWith("#")) {
-					podcast.setIdenticaTag(tag.substring(1));
-				} else {
-					podcast.setIdenticaTag(tag);
-				}
-			}
 			//Check if the new url is already in the database
 			boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
 			if (checkDatabase) {

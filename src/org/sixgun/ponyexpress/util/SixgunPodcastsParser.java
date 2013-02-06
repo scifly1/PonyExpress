@@ -42,8 +42,6 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 	// names of the XML tags
 	static final String PODCAST = "podcast";
     static final String FEED_URL = "podcast_url";
-    static final String IDENTICA_TAG = "identica_tag";
-    static final String IDENTICA_GROUP = "identica_group";
     
     static final String TAG = "EpisodeFeedParser";
     
@@ -79,24 +77,6 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 			@Override
 			public void end(String body) {
 				new_podcast.setFeedUrl(Utils.getURL(body));
-			}
-		});
-		
-		//This listener catches the identi.ca tag
-		podcast.getChild(IDENTICA_TAG).setEndTextElementListener(new EndTextElementListener() {
-			
-			@Override
-			public void end(String body) {
-				new_podcast.setIdenticaTag(body);
-			}
-		});
-		
-		//This listener catches the identi.ca group
-		podcast.getChild(IDENTICA_GROUP).setEndTextElementListener(new EndTextElementListener() {
-			
-			@Override
-			public void end(String body) {
-				new_podcast.setIdenticaGroup(body);
 			}
 		});
 		

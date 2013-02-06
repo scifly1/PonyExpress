@@ -13,10 +13,6 @@
 		android:id="@+id/settings_menu" 
 		android:icon="@drawable/ic_menu_preferences" />
 	<item
-		android:title="@string/identica_account_settings"
-		android:id="@+id/identica_account_settings" 
-		android:icon="@drawable/ic_menu_identica"/>
-	<item
 		android:title="@string/about"
 		android:id="@+id/about"
 		android:icon="@drawable/ic_menu_about" />

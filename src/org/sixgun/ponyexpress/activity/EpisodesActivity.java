@@ -48,7 +48,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
@@ -76,17 +75,6 @@ public class EpisodesActivity extends ListActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.episodes);
-		
-		//Need to get the identica button explicitly for android1.5
-		OnClickListener identica = new OnClickListener() {
-			
-			@Override
-			public void onClick(View v) {
-				startIdenticaActivity(v);
-			}
-		};
-		
-		findViewById(R.id.comment_button).setOnClickListener(identica);
 		
 		TextView title = (TextView)findViewById(R.id.title);
 		mUnlistenedText = (TextView)findViewById(R.id.unlistened_eps);
@@ -400,19 +388,6 @@ public class EpisodesActivity extends ListActivity {
 		}
 	}
 	
-	/**
-	 * Start the identica activity from the edit button.
-	 * @param v the calling View
-	 */
-	public void startIdenticaActivity(View v){
-		final String identicagroup = mPonyExpressApp.getDbHelper().getIdenticaGroup(mPodcastName);
-	    final String identicatag = mPonyExpressApp.getDbHelper().getIdenticaTag(mPodcastName);
-	    Intent intent = new Intent(this,IdenticaActivity.class);
-	    intent.putExtra(PodcastKeys.GROUP, identicagroup);
-	    intent.putExtra(PodcastKeys.TAG, identicatag);
-	    intent.putExtra(PodcastKeys.NAME, mPodcastNameStripped);
-	    intent.putExtra(PodcastKeys.ALBUM_ART_URL, mAlbumArtUrl);
-	    startActivity(intent);
-	}
+	
 	
 }

@@ -69,11 +69,6 @@ public class GeneralOptionsMenuActivity extends TabActivity {
 	        startActivity(new Intent(
 	        		mPonyExpressApp,PreferencesActivity.class));
 	        return true;
-	    case R.id.identica_account_settings:
-	    	//Fire off AccountSetup screen
-			startActivity(new Intent(
-					mPonyExpressApp,IdenticaAccountSetupActivity.class));
-	    	return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
 		}
