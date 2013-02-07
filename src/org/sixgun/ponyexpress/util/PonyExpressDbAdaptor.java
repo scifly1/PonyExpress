@@ -28,11 +28,12 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 13;
+	private static final int DATABASE_VERSION = 14;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String PODCAST_TABLE = "Podcasts";
     private static final String PLAYLIST_TABLE = "Playlist";
     private static final String TEMP_TABLE_NAME = "Temp_Episodes";
+    private static final String TEMP_PODCASTS_NAME = "Temp_podcasts";
     private static final String EPISODE_TABLE_FIELDS =
                 " (" +
                 EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
@@ -56,13 +57,32 @@ public class PonyExpressDbAdaptor {
         EpisodeKeys.DESCRIPTION + " TEXT," +
         EpisodeKeys.DOWNLOADED + " INTEGER," +
         EpisodeKeys.LISTENED + " INTEGER);";
-    private static final String PODCAST_TABLE_1_CREATE = 
+    @SuppressWarnings("deprecation")
+	private static final String PODCAST_TABLE_CREATE = 
     	"CREATE TABLE " + PODCAST_TABLE + " (" + 
     	PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
     	PodcastKeys.NAME + " TEXT," +
     	PodcastKeys.FEED_URL + " TEXT," +
     	PodcastKeys.ALBUM_ART_URL + " TEXT," +
-    	PodcastKeys.TABLE_NAME + " TEXT);" ;
+    	PodcastKeys.TABLE_NAME + " TEXT," +
+    	PodcastKeys.TAG + " TEXT, " +
+    	PodcastKeys.GROUP + " TEXT);";
+    
+    private static final String NEW_PODCAST_TABLE_CREATE = 
+    		"CREATE TABLE " + PODCAST_TABLE + " (" + 
+    				PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
+    				PodcastKeys.NAME + " TEXT," +
+    				PodcastKeys.FEED_URL + " TEXT," +
+    				PodcastKeys.ALBUM_ART_URL + " TEXT," +
+    				PodcastKeys.TABLE_NAME + " TEXT);";
+
+    private static final String TEMP_PODCAST_TABLE_CREATE = 
+        	"CREATE TEMP TABLE " + TEMP_PODCASTS_NAME + " (" + 
+        	PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
+        	PodcastKeys.NAME + " TEXT," +
+        	PodcastKeys.FEED_URL + " TEXT," +
+        	PodcastKeys.ALBUM_ART_URL + " TEXT," +
+        	PodcastKeys.TABLE_NAME + " TEXT);" ;
     
     private static final String PLAYLIST_TABLE_CREATE =
     		"CREATE TABLE IF NOT EXISTS " + PLAYLIST_TABLE + " (" +
@@ -91,7 +111,7 @@ public class PonyExpressDbAdaptor {
 
         @Override
         public void onCreate(SQLiteDatabase db) {
-            db.execSQL(PODCAST_TABLE_1_CREATE);
+            db.execSQL(PODCAST_TABLE_CREATE);
             //Call onUpgrade to ensure new users get the updated db
             onUpgrade(db,1,DATABASE_VERSION);
         }
@@ -153,23 +173,34 @@ public class PonyExpressDbAdaptor {
 					db.endTransaction();
 				}
     			//Fallthrough
-//    		case 13:
-//    			//Begin transaction
-//    			db.beginTransaction();
-//    			try {
-//    				//TODO
-//    				//if Podcast_table exists (it won't on new installs)
-//    				//Create new podcasts table without identi.ca tags 
-//    				
-//    				//Move data to new podcasts_table_1
-//    				
-//    				//Drop old podacsts table
-//    				
-//    			} catch (SQLException e) {
-//					Log.e(TAG, "SQLException on db upgrade to 13", e);
-//				} finally {
-//					db.endTransaction();
-//				}
+    		case 13:
+    			//Begin transaction
+    			db.beginTransaction();
+    			try {
+    				//Remove identica columns from Podcasts table
+    				//Create Temp podcasts table without identi.ca columns 
+    				db.execSQL(TEMP_PODCAST_TABLE_CREATE);
+    				//Move data to temp podcasts_table
+    				String columns = PodcastKeys._ID + ", " + PodcastKeys.NAME + 
+    						", " + PodcastKeys.FEED_URL + ", " + 
+    						PodcastKeys.ALBUM_ART_URL + ", " + 
+    						PodcastKeys.TABLE_NAME;
+    				db.execSQL("INSERT INTO " + TEMP_PODCASTS_NAME + " SELECT " 
+    						+ columns + " FROM " + PODCAST_TABLE + ";");
+    				//Drop old podcasts table	
+    				db.execSQL("DROP TABLE IF EXISTS " + PODCAST_TABLE);
+					//Create new table
+					db.execSQL(NEW_PODCAST_TABLE_CREATE);
+					//INSERT into new table.
+					db.execSQL("INSERT INTO " + PODCAST_TABLE + " SELECT * FROM " 
+					+ TEMP_PODCASTS_NAME + ";");
+					db.execSQL("DROP TABLE " + TEMP_PODCASTS_NAME);
+    				db.setTransactionSuccessful();
+    			} catch (SQLException e) {
+					Log.e(TAG, "SQLException on db upgrade to 13", e);
+				} finally {
+					db.endTransaction();
+				}
     			break; //Only the final upgrade case has a break.   			
 			default:
 				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");

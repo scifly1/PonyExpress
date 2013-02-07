@@ -29,6 +29,10 @@ public class PodcastKeys implements BaseColumns {
 	public static final String ALBUM_ART_URL = "art";
 	public static final String FEED_URL = "url";
 	public static final String TABLE_NAME = "table_name";
+	@Deprecated
+	public static final String TAG = "identica_tag"; 
+	@Deprecated
+	public static final String GROUP = "identica_group"; 
 	public static final String UNLISTENED = "unlistened";
 	//This is a key in the Playlist table
 	public static final String PLAY_ORDER = "play_order";
