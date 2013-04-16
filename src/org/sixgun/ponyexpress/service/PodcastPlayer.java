@@ -29,6 +29,7 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
 import org.sixgun.ponyexpress.activity.EpisodesActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
+import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -134,7 +135,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				if (mPodcastName != null && savePlaybackPosition(0)) {
 					Log.d(TAG, "Updated listened to position to " + 0);
 				}
-				
+				//Delete episode if preference is set.
+				final boolean delete_episode = mPrefs.getBoolean(getString(R.string.auto_delete_key), false);
+				if (delete_episode){
+					if (Utils.deleteFile(mPonyExpressApp, mRowID, mPodcastName)){
+						mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, EpisodeKeys.DOWNLOADED, "false");
+					}
+				}
 				//Get next episode in playlist.
 				if (mPlayingPlaylist && !mPonyExpressApp.getDbHelper().playlistEnding())
 				{
@@ -154,6 +161,12 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				} else { //Just stop
 					hideNotification();
 					unRegisterHeadPhoneReceiver();
+					//Go back to episodes activity if episode was deleted and not 
+					//playing playlist
+					if (delete_episode){
+						Intent intent = new Intent("org.sixgun.ponyexpress.COMPLETED");
+						sendBroadcast(intent);
+					}
 				}
 			}
 			

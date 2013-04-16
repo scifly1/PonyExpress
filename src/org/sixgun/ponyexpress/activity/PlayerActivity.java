@@ -103,6 +103,7 @@ public class PlayerActivity extends Activity {
 	static private boolean mIsDownloading;
 	private int mIndex;
 	private DownloadStarted mDownloadReciever;
+	private EpisodeCompletedAndDeleted mEpisodeCompletedReciever;
 	private String mEpisodeTitle;
 	
 	
@@ -261,6 +262,7 @@ public class PlayerActivity extends Activity {
 		}
 		
 		mDownloadReciever = new DownloadStarted();
+		mEpisodeCompletedReciever = new EpisodeCompletedAndDeleted();
 		
 		//Set up click listeners for all player butttons and seek bar
 		OnClickListener playButtonListener = new OnClickListener() {
@@ -506,6 +508,8 @@ public class PlayerActivity extends Activity {
 		}
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
 		registerReceiver(mDownloadReciever,filter);
+		IntentFilter completed = new IntentFilter("org.sixgun.ponyexpress.COMPLETED");
+		registerReceiver(mEpisodeCompletedReciever, completed);
 		
 		if(mIsDownloading){
 			activateDownloadCancelButton();
@@ -530,6 +534,7 @@ public class PlayerActivity extends Activity {
 	protected void onPause() {
 		super.onPause();
 		unregisterReceiver(mDownloadReciever);
+		unregisterReceiver(mEpisodeCompletedReciever);
 		//If PodcastPlayer has been started and is not playing stop it.
 		if (mEpisodeDownloaded && mPodcastPlayer != null && !mPodcastPlayer.isPlaying()){
 			mPodcastPlayer.pause(); //leads to a call to stopSelf
@@ -706,6 +711,15 @@ public class PlayerActivity extends Activity {
 		public void onReceive(Context context, Intent intent) {
 			mIndex  = intent.getExtras().getInt("index");
 			startDownloadProgressBar(mIndex);
+		}
+		
+	}
+	
+	private class EpisodeCompletedAndDeleted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			finish();			
 		}
 		
 	}

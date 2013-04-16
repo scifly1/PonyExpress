@@ -47,6 +47,12 @@
             android:key="@string/recap_on_resume_key"
             android:summary="@string/recap_on_resume_summary"
             android:title="@string/recap_on_resume" />
+        <CheckBoxPreference 
+            android:defaultValue="falses"
+            android:key="@string/auto_delete_key"
+            android:summary="@string/auto_delete_summary"
+            android:title="@string/auto_delete"
+            />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/download_settings" >
         <CheckBoxPreference
