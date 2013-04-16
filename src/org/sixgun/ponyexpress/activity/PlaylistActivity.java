@@ -426,6 +426,14 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			mPonyExpressApp.getDbHelper().moveDownPlaylist(info.position);
 			listPlaylist();
 			return true;
+		case R.id.shownotes_playlist:
+			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist(info.id);
+			final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist(info.id);
+			final Bundle playlist_episode_data = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+			Intent i = new Intent(this, ShowNotesActivity.class);
+			i.putExtras(playlist_episode_data);
+			startActivity(i);
+			return true;
 		//Episode context menu items
 		case R.id.add_to_playlist:
 			selectEpisode(info.id);

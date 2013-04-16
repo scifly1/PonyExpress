@@ -5,5 +5,6 @@
     <item android:id="@+id/move_down" android:title="@string/move_down"></item>
     <item android:id="@+id/move_bottom" android:title="@string/move_bottom"></item>
     <item android:id="@+id/remove_from_playlist" android:title="@string/remove_from_playlist"></item>
+    <item android:id="@+id/shownotes_playlist" android:title="@string/view_shownotes" ></item>
     
 </menu>

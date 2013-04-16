@@ -1119,7 +1119,32 @@ public class PonyExpressDbAdaptor {
 		c.close();
 		return true;
 	}
-
+	/**
+	 * Returns the podcast name for the episode with id in the playlist
+	 * table
+	 * @params id
+	 * @return podcast name
+	 */
+	public String getPodcastFromPlaylist(long id){
+		final String[] columns = {PodcastKeys._ID, PodcastKeys.NAME};
+		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
+				columns, PodcastKeys._ID + "=" + id ,
+				null, null, null, null, null);
+		String podcast_name = "";
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			podcast_name = cursor.getString(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getPodcastFromPlaylist(long)");
+		}
+		cursor.close();
+		return podcast_name;
+	}
+	
+	/**
+	 * Returns the Podcast name for the next episode on the playlist.
+	 * @return podcast name
+	 */
 	public String getPodcastFromPlaylist() {
 		final String[] columns = {PodcastKeys._ID, PodcastKeys.NAME};
 		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
@@ -1135,7 +1160,10 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return podcast_name;
 	}
-
+	/**
+	 * Returns the episode id for the next episode on the playlist.
+	 * @return row_id
+	 */
 	public long getEpisodeFromPlaylist() {
 		final String[] columns = {PodcastKeys._ID, EpisodeKeys.ROW_ID};
 		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
@@ -1151,7 +1179,26 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return episode_id;
 	}
-
+	/**
+	 * Returns the episode id for the episode with id in the playlist.
+	 * @params id in playlist table
+	 * @return row_id in podcast table
+	 */
+	public long getEpisodeFromPlaylist(long id) {
+		final String[] columns = {PodcastKeys._ID, EpisodeKeys.ROW_ID};
+		final Cursor cursor = mDb.query(true, PLAYLIST_TABLE,
+				columns, PodcastKeys._ID + "=" + id ,
+				null, null, null, null, null);
+		long episode_id = 0;
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			episode_id = cursor.getLong(1);
+		} else {
+			Log.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
+		}
+		cursor.close();
+		return episode_id;
+	}
 	/**
 	 * Removes the top episode from the playlist table
 	 * and reorders the remaining episodes
