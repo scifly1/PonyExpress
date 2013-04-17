@@ -1353,4 +1353,30 @@ public class PonyExpressDbAdaptor {
 		}
 		return rowId;
 	}
+
+	public void compileAutoPlaylist() {
+		clearPlaylist();
+		compilePlaylistByDate();
+		
+	}
+
+	private void compilePlaylistByDate() {
+		final Cursor c = getAllUnlistenedDownloadedEpisodesByDate();
+		compilePlaylist(c);
+	}
+
+	private void compilePlaylist(Cursor c) {
+		if (c.getCount() > 0){
+			c.moveToFirst();
+			addEpisodeToPlaylist(c.getString(1), c.getLong(0));
+			c.close();
+		}
+		
+	}
+
+	private Cursor getAllUnlistenedDownloadedEpisodesByDate() {
+		//TODO
+		return null;
+		
+	}
 }
