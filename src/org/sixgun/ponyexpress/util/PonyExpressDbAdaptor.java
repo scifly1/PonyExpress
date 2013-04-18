@@ -28,9 +28,10 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 14;
+	private static final int DATABASE_VERSION = 15;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String PODCAST_TABLE = "Podcasts";
+    private static final String EPISODES_TABLE = "Episodes";
     private static final String PLAYLIST_TABLE = "Playlist";
     private static final String TEMP_TABLE_NAME = "Temp_Episodes";
     private static final String TEMP_PODCASTS_NAME = "Temp_podcasts";
@@ -90,6 +91,22 @@ public class PonyExpressDbAdaptor {
     		PodcastKeys.NAME + " TEXT," + 
     		EpisodeKeys.ROW_ID + " INTEGER," + 
     		PodcastKeys.PLAY_ORDER + " INTEGER);";
+    
+    private static final String NEW_UNIFIED_EPISODES_TABLE_CREATE =
+    		"CREATE TABLE IF NOT EXISTS " + EPISODES_TABLE + " (" + 
+    				EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
+                    EpisodeKeys.TITLE + " TEXT," +
+                    EpisodeKeys.DATE + " INTEGER," +
+                    EpisodeKeys.URL + " TEXT," +
+                    EpisodeKeys.FILENAME + " TEXT," +
+                    EpisodeKeys.DESCRIPTION + " TEXT," +
+                    EpisodeKeys.DOWNLOADED + " INTEGER," +
+                    EpisodeKeys.LISTENED + " INTEGER," +
+                    EpisodeKeys.SIZE + " INTEGER," +
+                    EpisodeKeys.PODCAST_ID + " INTEGER," +
+                    " FOREIGN KEY (" + EpisodeKeys.PODCAST_ID + ") " +
+                    		"REFERENCES " + PODCAST_TABLE + " (" + 
+                    PodcastKeys._ID + "));";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
 	private PonyExpressDbHelper mDbHelper;
@@ -153,7 +170,7 @@ public class PonyExpressDbAdaptor {
 //				}
     		
     		//NOTE: no break; Fallthrough
-    		case 12:
+    		case 12: //Added a playlist table to pony
     			//Begin transaction
     			db.beginTransaction();
     			try {
@@ -173,7 +190,7 @@ public class PonyExpressDbAdaptor {
 					db.endTransaction();
 				}
     			//Fallthrough
-    		case 13:
+    		case 13:  //Removed Identi.ca column from Podcast table
     			//Begin transaction
     			db.beginTransaction();
     			try {
@@ -201,7 +218,58 @@ public class PonyExpressDbAdaptor {
 				} finally {
 					db.endTransaction();
 				}
-    			break; //Only the final upgrade case has a break.   			
+    			//Fallthrough
+    		case 14:  //Upgraded to unified Episodes table with added foreign key
+    			//Begin transaction
+    			db.beginTransaction();
+    			try {
+    				//Create new Episodes table
+    				db.execSQL(NEW_UNIFIED_EPISODES_TABLE_CREATE);
+    				//Get a cursor of the PodEps tables
+    				final String[] columns = {"name"};
+    				final String selection = "type='table' AND name LIKE 'PodEps%'";
+    				Cursor c = db.query("sqlite_master", columns, selection, null, null, null, null);
+    				if (c.getCount() > 0){
+    					//For each table Insert the data into the new table together with the 
+    					//foreign key
+    					c.moveToFirst();
+    					for (int i=0; i < c.getCount(); i++){
+    						//Get the Podcast Row_id from the PodEps* name.
+    						String podcast_key = c.getString(0).substring(6);
+    						//INSERT into new table.
+    						final String wanted_columns = 
+    								EpisodeKeys.TITLE + ", " +
+    								EpisodeKeys.DATE + ", " +
+    								EpisodeKeys.URL + ", " +
+    								EpisodeKeys.FILENAME + ", " +
+    								EpisodeKeys.DESCRIPTION + ", " +
+    								EpisodeKeys.DOWNLOADED + ", " +
+    								EpisodeKeys.LISTENED + ", " +
+    								EpisodeKeys.SIZE ;
+    						db.execSQL("INSERT INTO " + EPISODES_TABLE + "("+ 
+    								wanted_columns +", "+ EpisodeKeys.PODCAST_ID + ")" 
+    								+ " SELECT "+ wanted_columns + ", " + podcast_key
+    								+ " FROM " + c.getString(0) + ";");
+    						//Drop the old table
+    						db.execSQL("DROP TABLE IF EXISTS " + c.getString(0));
+    						c.moveToNext();
+    					}
+    				} else {
+    					Log.d(TAG, "No old PodEps tables to update");
+    				}
+    				c.close();
+    				
+    				//TODO Upgrade the Podcasts table to remove the TableName column. 
+    				
+    				//No need to set mDatabaseUpgraded to true as the 
+					//feeds do not need updating with this db upgrade.
+    				db.setTransactionSuccessful();
+    			} catch (SQLException e) {
+					Log.e(TAG, "SQLException on db upgrade to 14", e);
+				} finally {
+					db.endTransaction();
+				}
+    			break; //Only the final upgrade case has a break.  
 			default:
 				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
 				break;

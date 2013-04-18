@@ -32,6 +32,8 @@ public final class EpisodeKeys implements BaseColumns {
 	public static final String DOWNLOADED = "downloaded";
 	public static final String LISTENED = "listened";
 	public static final String SIZE = "length";
+	//This is the foreign key that relates each episode to its parent podcast.
+	public static final String PODCAST_ID = "podcast_id";
 	//This is the row_id of the episode in the episodes table as used in the 
 	//playlist table (a different string is required, else it clashes with
 	// the _ID key of the playlist table.
@@ -39,6 +41,7 @@ public final class EpisodeKeys implements BaseColumns {
 	
 	//This is not a key in the Db, only a useful constant.
 	public static final String EP_NUMBER = "episode_number";
+	
 	
 	
 	
