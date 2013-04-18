@@ -137,7 +137,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				}
 				//Delete episode if preference is set.
 				final boolean delete_episode = mPrefs.getBoolean(getString(R.string.auto_delete_key), false);
-				if (delete_episode){
+				if (mPodcastName != null && delete_episode){
+					Log.d(TAG, "Trying to delete episode");
 					if (Utils.deleteFile(mPonyExpressApp, mRowID, mPodcastName)){
 						mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, EpisodeKeys.DOWNLOADED, "false");
 					}
