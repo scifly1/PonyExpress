@@ -86,7 +86,6 @@ public class PreferencesActivity extends PreferenceActivity {
 				} else if (key.equals(getString(R.string.auto_playlist_key))){
 					if (prefs.getBoolean(key, false) == true){
 						//compile playlist
-						Log.d(TAG, "Autoplaylist set");
 						mPonyExpressApp.getDbHelper().compileAutoPlaylist();
 					} 					
 				}

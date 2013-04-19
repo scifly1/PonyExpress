@@ -1343,7 +1343,7 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public void removeEpisodeFromPlaylist(String podcastName, String title) {
-		//Find the rowId of the episode in the correct podcast table
+		//Find the rowId of the episode in the episode table
 		long rowId;
 		try {
 			rowId = getRowIdOfEpisode(podcastName, title);
@@ -1409,7 +1409,7 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	/**
-	 * Looks up the row_id of a particular episode in the appropriate podcast table.
+	 * Looks up the episode table row_id of a particular episode.
 	 * @throws EpisodeNotFoundException 
 	 */
 	private long getRowIdOfEpisode(String podcast_name, String episode_title) throws EpisodeNotFoundException{
@@ -1437,6 +1437,23 @@ public class PonyExpressDbAdaptor {
 		compilePlaylistByDate();
 		
 	}
+	
+	public void recompileAutoPlaylist(){
+		//Check for a partially listened episode at the top of the current playlist
+		//Want to retain this episode as the user hasn't finished it.
+		final long episode_id = getEpisodeFromPlaylist();
+		final String podcast_name = getPodcastFromPlaylist();
+		boolean retainTopEpisode = false;
+		if (getListened(episode_id) > -1){
+			retainTopEpisode = true;
+		}
+		clearPlaylist();
+		if (retainTopEpisode){
+			addEpisodeToPlaylist(podcast_name, episode_id);
+		}
+		compilePlaylistByDate();
+		
+	}
 
 	private void compilePlaylistByDate() {
 		final Cursor c = getAllUnlistenedDownloadedEpisodesByDate();
@@ -1446,15 +1463,21 @@ public class PonyExpressDbAdaptor {
 	private void compilePlaylist(Cursor c) {
 		if (c.getCount() > 0){
 			c.moveToFirst();
-			addEpisodeToPlaylist(c.getString(1), c.getLong(0));
-			c.close();
+			for (int i = 0; i < c.getCount(); i++){
+				addEpisodeToPlaylist(getPodcastName(c.getLong(0)), c.getLong(1));
+				c.moveToNext();
+			}
 		}
 		
 	}
 
 	private Cursor getAllUnlistenedDownloadedEpisodesByDate() {
-		//TODO
-		return null;
+		final String[] columns = {EpisodeKeys.PODCAST_ID, EpisodeKeys._ID};
+		final String where = EpisodeKeys.DOWNLOADED + "= 1 AND " + 
+		EpisodeKeys.LISTENED + "= -1 AND " + EpisodeKeys.URL + " NOT LIKE '%www.youtube.com%'";
+		Cursor c = mDb.query(true, EPISODES_TABLE, columns, where, null, null,
+				null, EpisodeKeys.DATE + " ASC", null );
+		return c;
 		
 	}
 }
