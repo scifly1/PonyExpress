@@ -23,6 +23,13 @@
             android:key="@string/eps_stored_key"
             android:summary="@string/episodes_stored_dialog"
             android:title="@string/episodes_stored_title" />
+        <CheckBoxPreference 
+            android:defaultValue="false"
+            android:key="@string/auto_playlist_key"
+            android:summary="@string/auto_playlist_summary"
+            android:title="@string/auto_playlist"
+            android:dependency="@string/schedule_download_key"
+            />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/player_settings" >
         <ListPreference
@@ -48,7 +55,7 @@
             android:summary="@string/recap_on_resume_summary"
             android:title="@string/recap_on_resume" />
         <CheckBoxPreference 
-            android:defaultValue="falses"
+            android:defaultValue="false"
             android:key="@string/auto_delete_key"
             android:summary="@string/auto_delete_summary"
             android:title="@string/auto_delete"

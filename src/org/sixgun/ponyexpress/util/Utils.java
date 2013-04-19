@@ -154,7 +154,7 @@ public class Utils {
 	static public boolean deleteFile(PonyExpressApp ponyApp, long rowID, String podcast_name) {
 		File rootPath = Environment.getExternalStorageDirectory();
 		File dirPath = new File(rootPath,PonyExpressApp.PODCAST_PATH);
-		String filename = ponyApp.getDbHelper().getEpisodeFilename(rowID, podcast_name);
+		String filename = ponyApp.getDbHelper().getEpisodeFilename(rowID);
 		//Add the podcast name as a folder under the PODCAST_PATH
 		filename = podcast_name + filename;
 		File fullPath = new File(dirPath,filename);

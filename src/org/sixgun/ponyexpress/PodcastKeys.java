@@ -28,6 +28,7 @@ public class PodcastKeys implements BaseColumns {
 	public static final String NAME = "name";
 	public static final String ALBUM_ART_URL = "art";
 	public static final String FEED_URL = "url";
+	@Deprecated
 	public static final String TABLE_NAME = "table_name";
 	@Deprecated
 	public static final String TAG = "identica_tag"; 

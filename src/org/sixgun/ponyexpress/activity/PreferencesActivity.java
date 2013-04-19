@@ -21,6 +21,7 @@ package org.sixgun.ponyexpress.activity;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.TimePreference;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
@@ -41,6 +42,7 @@ public class PreferencesActivity extends PreferenceActivity {
 
 	private static final String TAG = "PreferencesActivity";
 	SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
+	protected PonyExpressApp mPonyExpressApp;
 	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -50,6 +52,7 @@ public class PreferencesActivity extends PreferenceActivity {
 		super.onCreate(savedInstanceState);
 		
 		addPreferencesFromResource(R.xml.preferences);
+		mPonyExpressApp = (PonyExpressApp) getApplication();
 		
 		//Get the version number and set it as the summary of the version pref.
 		PackageManager pm = getPackageManager();
@@ -80,6 +83,11 @@ public class PreferencesActivity extends PreferenceActivity {
 					Intent intent = new Intent(getApplicationContext(), ScheduledDownloadService.class);
 					intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
 					getApplicationContext().startService(intent);
+				} else if (key.equals(getString(R.string.auto_playlist_key))){
+					if (prefs.getBoolean(key, false) == true){
+						//compile playlist
+						mPonyExpressApp.getDbHelper().compileAutoPlaylist();
+					} 					
 				}
 			} 
 

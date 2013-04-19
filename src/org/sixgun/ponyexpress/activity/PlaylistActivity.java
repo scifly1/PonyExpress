@@ -380,7 +380,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			menu.setHeaderTitle(episode_name.getText());
 			//Find which listened option to show
 			boolean listened = true;
-			if (mPonyExpressApp.getDbHelper().getListened(item.id, mPodcastName) == -1){
+			if (mPonyExpressApp.getDbHelper().getListened(item.id) == -1){
 				listened = false;
 			}
 			if (listened){
@@ -445,12 +445,12 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			startActivity(intent);
 			return true;
 		case R.id.mark_listened:
-			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, 
+			mPonyExpressApp.getDbHelper().update(info.id, 
 					EpisodeKeys.LISTENED, 0);
 			listEpisodes(mPodcastName);
 			return true;
 		case R.id.mark_not_listened:
-			mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, 
+			mPonyExpressApp.getDbHelper().update(info.id, 
 					EpisodeKeys.LISTENED, -1);
 			listEpisodes(mPodcastName);
 			return true;
@@ -476,12 +476,10 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			int listened = -1;
 			if (cursor != null){
 				final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
-				final int podcast_name_column_index = cursor.getColumnIndex(PodcastKeys.NAME);
 				final long row_id = cursor.getLong(row_id_column_index);
-				final String podcast_name = cursor.getString(podcast_name_column_index);
 				episode_title = mPonyExpressApp.getDbHelper().
-						getEpisodeTitle(row_id, podcast_name);
-				listened = mPonyExpressApp.getDbHelper().getListened(row_id, podcast_name);
+						getEpisodeTitle(row_id);
+				listened = mPonyExpressApp.getDbHelper().getListened(row_id);
 			}
 			
 			TextView episodeName = (TextView) view.findViewById(R.id.episode_text);
@@ -614,7 +612,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	
 	private void selectEpisode(long id) {
 		//is episode downloaded?
-		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id, mPodcastName)){
+		if (!mPonyExpressApp.getDbHelper().isEpisodeDownloaded(id)){
 			// is Connectivity ok and are downloads allowed?
 			switch (mPonyExpressApp.getInternetHelper().isDownloadPossible()){
 			case InternetHelper.NO_CONNECTION:

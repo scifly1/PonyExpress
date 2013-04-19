@@ -98,7 +98,6 @@ public class PlayerActivity extends Activity {
 	private boolean mEpisodeDownloaded;
 	volatile private int mDownloadPercent = 0;
 	
-	private String mPodcastName;
 	private Long mRow_ID;
 	static private boolean mIsDownloading;
 	private int mIndex;
@@ -250,7 +249,6 @@ public class PlayerActivity extends Activity {
 		mData = getIntent().getExtras();
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
-		mPodcastName = (mData.getString(PodcastKeys.NAME));
 		mRow_ID = mData.getLong(EpisodeKeys._ID);
 		mEpisodeTitle = mData.getString(EpisodeKeys.TITLE);
 		setContentView(R.layout.player);
@@ -419,7 +417,7 @@ public class PlayerActivity extends Activity {
 		/**Check if episode is downloaded, show player buttons
 		*if it is or download button if not.
 		*/
-		mEpisodeDownloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(mRow_ID, mPodcastName);
+		mEpisodeDownloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(mRow_ID);
 		if (!mEpisodeDownloaded){
 			mPlayerControls.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.GONE);

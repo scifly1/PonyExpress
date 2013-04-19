@@ -337,14 +337,14 @@ public class UpdaterService extends IntentService {
 			final long rowID = 
 					mPonyExpressApp.getDbHelper().getOldestEpisode(podcast_name);
 			if (rowID != -1){
-				if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID, podcast_name)){
+				if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(rowID)){
 					//delete from SD Card
 					Utils.deleteFile(mPonyExpressApp, rowID, podcast_name);
 					//remove from playlist if in it.
 					mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(podcast_name, rowID);
 				}
 				//remove from database after deleting.
-				mPonyExpressApp.getDbHelper().deleteEpisode(rowID, podcast_name);
+				mPonyExpressApp.getDbHelper().deleteEpisode(rowID);
 			} else {Log.e(TAG, "Cannot find oldest episode");}
 		}
 	}

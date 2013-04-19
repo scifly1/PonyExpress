@@ -568,19 +568,19 @@ public class PonyExpressActivity extends ListActivity {
 					}catch(NullPointerException e){
 						Log.d(TAG,"NullPOinter");
 					}
-					//Get a Map of filenames (and their index) that are in the database
-					final Map<Long, String> filesInDatabase = 
-						mPonyExpressApp.getDbHelper().getFilenamesOnDisk(podcast);
-					if (filesOnDisk != null){
-						//If file is in database but not on disk, mark as not downloaded in database.
-						final int mapSize = filesInDatabase.size();
-						Iterator<Entry<Long, String>> fileIter = filesInDatabase.entrySet().iterator();
-						for (int i = 0; i < mapSize; i++){
-							Map.Entry<Long, String> entry = (Map.Entry<Long, String>)fileIter.next();
-							if (!filesOnDisk.contains(entry.getValue())){
-								mPonyExpressApp.getDbHelper().update(podcast, entry.getKey(), 
-										EpisodeKeys.DOWNLOADED, "false");
-							}
+				}
+				//Get a Map of filenames (and their index) that are in the database
+				final Map<Long, String> filesInDatabase = 
+					mPonyExpressApp.getDbHelper().getFilenamesOnDisk();
+				if (filesOnDisk != null){
+					//If file is in database but not on disk, mark as not downloaded in database.
+					final int mapSize = filesInDatabase.size();
+					Iterator<Entry<Long, String>> fileIter = filesInDatabase.entrySet().iterator();
+					for (int i = 0; i < mapSize; i++){
+						Map.Entry<Long, String> entry = (Map.Entry<Long, String>)fileIter.next();
+						if (!filesOnDisk.contains(entry.getValue())){
+							mPonyExpressApp.getDbHelper().update(entry.getKey(), 
+									EpisodeKeys.DOWNLOADED, "false");
 						}
 					}
 				}
