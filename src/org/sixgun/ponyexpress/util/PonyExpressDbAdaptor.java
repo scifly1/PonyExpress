@@ -28,7 +28,7 @@ import android.util.Log;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 15;
+	private static final int DATABASE_VERSION = 16;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String PODCAST_TABLE = "Podcasts";
     private static final String EPISODES_TABLE = "Episodes";
@@ -86,6 +86,20 @@ public class PonyExpressDbAdaptor {
                     " FOREIGN KEY (" + EpisodeKeys.PODCAST_ID + ") " +
                     		"REFERENCES " + PODCAST_TABLE + " (" + 
                     PodcastKeys._ID + "));";
+    
+    private static final String TEMP2_PODCAST_TABLE_CREATE = 
+        	"CREATE TEMP TABLE " + TEMP_PODCASTS_NAME + " (" + 
+        	PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
+        	PodcastKeys.NAME + " TEXT," +
+        	PodcastKeys.FEED_URL + " TEXT," +
+        	PodcastKeys.ALBUM_ART_URL + " TEXT);" ;
+    
+    private static final String NEWER_PODCAST_TABLE_CREATE = 
+    		"CREATE TABLE " + PODCAST_TABLE + " (" + 
+    				PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
+    				PodcastKeys.NAME + " TEXT," +
+    				PodcastKeys.FEED_URL + " TEXT," +
+    				PodcastKeys.ALBUM_ART_URL + " TEXT);";
     	
     private static final String TAG = "PonyExpressDbAdaptor";
 	private PonyExpressDbHelper mDbHelper;
@@ -238,14 +252,42 @@ public class PonyExpressDbAdaptor {
     					Log.d(TAG, "No old PodEps tables to update");
     				}
     				c.close();
-    				
-    				//TODO Upgrade the Podcasts table to remove the TableName column. 
-    				
     				//No need to set mDatabaseUpgraded to true as the 
 					//feeds do not need updating with this db upgrade.
     				db.setTransactionSuccessful();
     			} catch (SQLException e) {
 					Log.e(TAG, "SQLException on db upgrade to 14", e);
+				} finally {
+					db.endTransaction();
+				}
+    			//Fallthrough
+    		case 15:
+    			//Begin transaction
+    			db.beginTransaction();
+    			try {
+    				//Upgrade the Podcasts table to remove the TableName column. 
+    				//Create temp table
+					db.execSQL(TEMP2_PODCAST_TABLE_CREATE);
+					//Move data to temp podcasts_table
+					String podcast_columns = PodcastKeys._ID + ", " + PodcastKeys.NAME + 
+    						", " + PodcastKeys.FEED_URL + ", " + 
+    						PodcastKeys.ALBUM_ART_URL;
+    				db.execSQL("INSERT INTO " + TEMP_PODCASTS_NAME + " SELECT " 
+    						+ podcast_columns + " FROM " + PODCAST_TABLE + ";");
+    				//Drop old podcasts table	
+    				db.execSQL("DROP TABLE IF EXISTS " + PODCAST_TABLE);
+					//Create new table
+					db.execSQL(NEWER_PODCAST_TABLE_CREATE);
+					//INSERT into new table.
+					db.execSQL("INSERT INTO " + PODCAST_TABLE + " SELECT * FROM " 
+					+ TEMP_PODCASTS_NAME + ";");
+					db.execSQL("DROP TABLE " + TEMP_PODCASTS_NAME);
+    				
+    				//No need to set mDatabaseUpgraded to true as the 
+					//feeds do not need updating with this db upgrade.
+    				db.setTransactionSuccessful();
+    			} catch (SQLException e) {
+					Log.e(TAG, "SQLException on db upgrade to 15", e);
 				} finally {
 					db.endTransaction();
 				}
@@ -763,10 +805,8 @@ public class PonyExpressDbAdaptor {
         			podcast.getArt_Url().toString());
         } else {
         	podcastValues.putNull(PodcastKeys.ALBUM_ART_URL);
-        }
-        podcastValues.putNull(PodcastKeys.TABLE_NAME);
-     
-        //Insert the record and then update it with the created Episode table name
+        }     
+        //Insert the record
 		Long row_ID = mDb.insert(PODCAST_TABLE, null , podcastValues);
 		if (row_ID != -1){
 			return true;
