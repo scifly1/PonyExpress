@@ -179,11 +179,11 @@ public class EpisodesActivity extends ListActivity {
 		menu.setHeaderTitle(episodeText.getText());
 		//Gather data to determine which menu items to show
 		boolean listened = true;
-		if (mPonyExpressApp.getDbHelper().getListened(item.id, mPodcastName) == -1){
+		if (mPonyExpressApp.getDbHelper().getListened(item.id) == -1){
 			listened = false;
 		}
 		boolean downloaded = false;
-		if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(item.id, mPodcastName)){
+		if (mPonyExpressApp.getDbHelper().isEpisodeDownloaded(item.id)){
 			downloaded = true;
 		}
 		//Hide unneeded items
@@ -309,14 +309,14 @@ public class EpisodesActivity extends ListActivity {
 			if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
 				Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
 			} else {
-				mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
+				mPonyExpressApp.getDbHelper().update(info.id, EpisodeKeys.DOWNLOADED, "false");
 				startDownload(info.id);
 			}
 			return true;
 		case R.id.delete:
 			markListened(info.id);
 			if (Utils.deleteFile(mPonyExpressApp, info.id, mPodcastName)){
-				mPonyExpressApp.getDbHelper().update(mPodcastName, info.id, EpisodeKeys.DOWNLOADED, "false");
+				mPonyExpressApp.getDbHelper().update(info.id, EpisodeKeys.DOWNLOADED, "false");
 				//Remove from playlist if in it
 				mPonyExpressApp.getDbHelper().removeEpisodeFromPlaylist(mPodcastName, info.id);
 			}
@@ -354,7 +354,7 @@ public class EpisodesActivity extends ListActivity {
 	
 	private void markListened(Long rowID) {
 		//Sets listened to 0 ie: the start of the episode
-		mPonyExpressApp.getDbHelper().update(mPodcastName, rowID, 
+		mPonyExpressApp.getDbHelper().update(rowID, 
 				EpisodeKeys.LISTENED, 0);
 	}
 	
@@ -372,7 +372,7 @@ public class EpisodesActivity extends ListActivity {
 	
 	private void markNotListened(long rowID) {
 		//Sets listened to -1, which flags as not listened
-		mPonyExpressApp.getDbHelper().update(mPodcastName, rowID, 
+		mPonyExpressApp.getDbHelper().update(rowID, 
 				EpisodeKeys.LISTENED, -1);
 	}
 	

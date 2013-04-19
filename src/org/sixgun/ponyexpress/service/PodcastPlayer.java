@@ -139,7 +139,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				final boolean delete_episode = mPrefs.getBoolean(getString(R.string.auto_delete_key), false);
 				if (delete_episode){
 					if (Utils.deleteFile(mPonyExpressApp, mRowID, mPodcastName)){
-						mPonyExpressApp.getDbHelper().update(mPodcastName, mRowID, EpisodeKeys.DOWNLOADED, "false");
+						mPonyExpressApp.getDbHelper().update(mRowID, EpisodeKeys.DOWNLOADED, "false");
 					}
 				}
 				//Get next episode in playlist.
@@ -441,7 +441,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	//This is needed because MediaPlayer.getCurrentPosition() can be unreliable in it's
 	//position returns.
 	private int getPlaybackPosition(){
-		int playbackPosition = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued, mPodcastNameQueued);
+		int playbackPosition = mPonyExpressApp.getDbHelper().getListened(mRowIDQueued);
 
 		//Adds a 10sec recap on resume if that option is marked true in the prefs,
 		//and then return playbackPosition. Otherwise, simply return playbackPosition.
@@ -467,7 +467,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			podcast_name = mPodcastNameQueued;
 			row_id = mRowIDQueued;
 		}
-		return mPonyExpressApp.getDbHelper().update(podcast_name,row_id,
+		return mPonyExpressApp.getDbHelper().update(row_id,
 				EpisodeKeys.LISTENED, playbackPosition);
 	}
 

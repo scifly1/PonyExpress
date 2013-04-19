@@ -193,11 +193,11 @@ public class Episode implements Comparable<Episode> {
 	 * into a bundle for sending via intent to the player/downloader.
 	 */
 	public static Bundle packageEpisode(PonyExpressApp app, String podcast_name, long row_id){
-		final String title = app.getDbHelper().getEpisodeTitle(row_id, podcast_name);
-		final String description = app.getDbHelper().getDescription(row_id, podcast_name);
+		final String title = app.getDbHelper().getEpisodeTitle(row_id);
+		final String description = app.getDbHelper().getDescription(row_id);
 		final String album_art_url = app.getDbHelper().getAlbumArtUrl(podcast_name);
-		final String filename = app.getDbHelper().getEpisodeFilename(row_id, podcast_name);
-		final int listened = app.getDbHelper().getListened(row_id, podcast_name);
+		final String filename = app.getDbHelper().getEpisodeFilename(row_id);
+		final int listened = app.getDbHelper().getListened(row_id);
 
 		//Seperate episode number from filename for hashtag.
 		//FIXME This only works for filename with xxxxxxnn format not 
@@ -221,11 +221,11 @@ public class Episode implements Comparable<Episode> {
 		bundle.putString(EpisodeKeys.FILENAME, filename);
 		bundle.putInt(EpisodeKeys.LISTENED, listened);
 		//Determine if Episode has been downloaded and add required extras.
-		final boolean downloaded = app.getDbHelper().isEpisodeDownloaded(row_id, podcast_name);
+		final boolean downloaded = app.getDbHelper().isEpisodeDownloaded(row_id);
 		if (!downloaded){
-			final String url = app.getDbHelper().getEpisodeUrl(row_id, podcast_name);
+			final String url = app.getDbHelper().getEpisodeUrl(row_id);
 			bundle.putString(EpisodeKeys.URL, url);
-			final int size = app.getDbHelper().getEpisodeSize(row_id, podcast_name);
+			final int size = app.getDbHelper().getEpisodeSize(row_id);
 			bundle.putInt(EpisodeKeys.SIZE, size);
 		}
 		return bundle;

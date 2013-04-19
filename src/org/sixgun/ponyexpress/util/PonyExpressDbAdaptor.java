@@ -33,31 +33,8 @@ public class PonyExpressDbAdaptor {
     private static final String PODCAST_TABLE = "Podcasts";
     private static final String EPISODES_TABLE = "Episodes";
     private static final String PLAYLIST_TABLE = "Playlist";
-    private static final String TEMP_TABLE_NAME = "Temp_Episodes";
     private static final String TEMP_PODCASTS_NAME = "Temp_podcasts";
-    private static final String EPISODE_TABLE_FIELDS =
-                " (" +
-                EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
-                EpisodeKeys.TITLE + " TEXT," +
-                EpisodeKeys.DATE + " INTEGER," +
-                EpisodeKeys.URL + " TEXT," +
-                EpisodeKeys.FILENAME + " TEXT," +
-                EpisodeKeys.DESCRIPTION + " TEXT," +
-                EpisodeKeys.DOWNLOADED + " INTEGER," +
-                EpisodeKeys.LISTENED + " INTEGER," +
-                EpisodeKeys.SIZE + " INTEGER);";
-//  FIXME Updates to Database do not yet account for podcasts table or multiple episodes tables
-    @SuppressWarnings("unused")
-	private static final String TEMP_TABLE_CREATE = 
-    	"CREATE TEMP TABLE " + TEMP_TABLE_NAME + " (" +
-    	EpisodeKeys._ID + " INTEGER PRIMARY KEY," +
-        EpisodeKeys.TITLE + " TEXT," +
-        EpisodeKeys.DATE + " INTEGER," +
-        EpisodeKeys.URL + " TEXT," +
-        EpisodeKeys.FILENAME + " TEXT," +
-        EpisodeKeys.DESCRIPTION + " TEXT," +
-        EpisodeKeys.DOWNLOADED + " INTEGER," +
-        EpisodeKeys.LISTENED + " INTEGER);";
+    
     @SuppressWarnings("deprecation")
 	private static final String PODCAST_TABLE_CREATE = 
     	"CREATE TABLE " + PODCAST_TABLE + " (" + 
@@ -69,7 +46,8 @@ public class PonyExpressDbAdaptor {
     	PodcastKeys.TAG + " TEXT, " +
     	PodcastKeys.GROUP + " TEXT);";
     
-    private static final String NEW_PODCAST_TABLE_CREATE = 
+    @SuppressWarnings("deprecation")
+	private static final String NEW_PODCAST_TABLE_CREATE = 
     		"CREATE TABLE " + PODCAST_TABLE + " (" + 
     				PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
     				PodcastKeys.NAME + " TEXT," +
@@ -77,7 +55,8 @@ public class PonyExpressDbAdaptor {
     				PodcastKeys.ALBUM_ART_URL + " TEXT," +
     				PodcastKeys.TABLE_NAME + " TEXT);";
 
-    private static final String TEMP_PODCAST_TABLE_CREATE = 
+    @SuppressWarnings("deprecation")
+	private static final String TEMP_PODCAST_TABLE_CREATE = 
         	"CREATE TEMP TABLE " + TEMP_PODCASTS_NAME + " (" + 
         	PodcastKeys._ID + " INTEGER PRIMARY KEY, " +
         	PodcastKeys.NAME + " TEXT," +
@@ -198,7 +177,8 @@ public class PonyExpressDbAdaptor {
     				//Create Temp podcasts table without identi.ca columns 
     				db.execSQL(TEMP_PODCAST_TABLE_CREATE);
     				//Move data to temp podcasts_table
-    				String columns = PodcastKeys._ID + ", " + PodcastKeys.NAME + 
+    				@SuppressWarnings("deprecation")
+					String columns = PodcastKeys._ID + ", " + PodcastKeys.NAME + 
     						", " + PodcastKeys.FEED_URL + ", " + 
     						PodcastKeys.ALBUM_ART_URL + ", " + 
     						PodcastKeys.TABLE_NAME;
@@ -280,6 +260,7 @@ public class PonyExpressDbAdaptor {
 		 * Find empty tables from where Podcasts have been deleted
 		 *  and drop them during a database upgrade.
 		 */
+		@Deprecated
 		private List<String> findEmptyTables(SQLiteDatabase db){
 			List<String> empty_tables = new ArrayList<String>();
 			//Get a list of all PodEps* tables
@@ -350,26 +331,26 @@ public class PonyExpressDbAdaptor {
         mDbHelper.close();
     }
     
-    private String getTableName(String podcastName) {
-		final String[] columns = {PodcastKeys.TABLE_NAME};
+    private long getPodcastId(String podcast_name){
+    	final String[] columns = {PodcastKeys._ID};
 		//Use double quote here for the podcastName as it is an identifier.
-		final String quotedName = Utils.handleQuotes(podcastName);
+		final String quotedName = Utils.handleQuotes(podcast_name);
 		final Cursor cursor = mDb.query(true, PODCAST_TABLE,
 				columns, PodcastKeys.NAME + "= " + quotedName, null, null, null, null, null);
-		String tablename = "";
+		long id = 0;
 		boolean cursor_not_empty;
 		if (cursor != null){
 			cursor_not_empty = cursor.moveToFirst();
 			if (cursor_not_empty){
-				tablename = cursor.getString(0);
-				Log.d(TAG, "Tablename of Episode is: "+ tablename);
+				id = cursor.getLong(0);
+				Log.d(TAG, "Podcast Id of Episode is: "+ id);
 			} else {
 				Log.e(TAG, "Looking for a Podcast name not in the database!");
 			}
 		}
 		cursor.close();
-		return tablename;	
-	}
+    	return id;
+    }
     
     /**
      * Adds each episode to the database.
@@ -378,7 +359,7 @@ public class PonyExpressDbAdaptor {
      * @return The row ID of the inserted row or -1 if an error occurred.
      */
     public long insertEpisode(Episode episode, String podcast_name) {
-    	final String table_name = getTableName(podcast_name); 
+    	final long podcast_id = getPodcastId(podcast_name); 
         ContentValues episodeValues = new ContentValues();
         episodeValues.put(EpisodeKeys.TITLE, episode.getTitle());
         episodeValues.put(EpisodeKeys.DATE, episode.getDate().getTime());
@@ -389,8 +370,9 @@ public class PonyExpressDbAdaptor {
         episodeValues.put(EpisodeKeys.DOWNLOADED, episode.beenDownloaded());
         episodeValues.put(EpisodeKeys.LISTENED, episode.beenListened());
         episodeValues.put(EpisodeKeys.SIZE, episode.getLength());
+        episodeValues.put(EpisodeKeys.PODCAST_ID, podcast_id);
 
-        return mDb.insert(table_name, null, episodeValues);
+        return mDb.insert(EPISODES_TABLE, null, episodeValues);
     }
     
 
@@ -400,9 +382,8 @@ public class PonyExpressDbAdaptor {
      * @param podcast_name
      * @return True if successful.
      */
-	public boolean deleteEpisode(Long rowID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
-		return mDb.delete(table_name, EpisodeKeys._ID + "=" + rowID, null) > 0;
+	public boolean deleteEpisode(Long rowID) {
+		return mDb.delete(EPISODES_TABLE, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
 	
 	/**
@@ -411,11 +392,11 @@ public class PonyExpressDbAdaptor {
 	 * @return A Cursor object, which is positioned before the first entry
 	 */
 	public Cursor getAllEpisodeNamesDescriptionsAndLinks(String podcast_name){
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.LISTENED, 
 				EpisodeKeys.DESCRIPTION, EpisodeKeys.URL};
 		return mDb.query(
-				true,table_name,columns,null,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
+				true,EPISODES_TABLE,columns,EpisodeKeys.PODCAST_ID + "=" + podcast_id,null,null,null,EpisodeKeys.DATE +" DESC" ,null);
 	}
 	/**
 	 * Get a list of the names of all the podcasts.
@@ -440,17 +421,21 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	public Cursor getAllListened(String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = {EpisodeKeys._ID};
+		final String where = EpisodeKeys.LISTENED + "!=? AND " + EpisodeKeys.PODCAST_ID + "=?";
+		final String[] args = {String.valueOf(-1),String.valueOf(podcast_id)};
 		return mDb.query(
-				true,table_name,columns,EpisodeKeys.LISTENED + "!= -1",null,null,null,null,null);
+				true,EPISODES_TABLE,columns,where,args,null,null,null,null);
 	}
 	
 	public Cursor getAllNotListened(String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = {EpisodeKeys._ID};
+		final String where = EpisodeKeys.LISTENED + "=? AND " + EpisodeKeys.PODCAST_ID + "=?";
+		final String[] args = {String.valueOf(-1),String.valueOf(podcast_id)};
 		return mDb.query(
-				true,table_name,columns,EpisodeKeys.LISTENED + "= -1",null,null,null,null,null);
+				true,EPISODES_TABLE,columns,where,args,null,null,null,null);
 	}
 	
 	/**
@@ -459,43 +444,41 @@ public class PonyExpressDbAdaptor {
 	 * @return a cursor of all undownloaded and unlistened episodes.
 	 */
 	public Cursor getAllUndownloadedAndUnlistened(String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.TITLE, EpisodeKeys.URL,
 				EpisodeKeys.SIZE};
-		final String where = EpisodeKeys.DOWNLOADED + "= 0 AND " + EpisodeKeys.LISTENED + "= -1 AND " + 
+		final String where = EpisodeKeys.PODCAST_ID + "= " + podcast_id + " AND " +
+				EpisodeKeys.DOWNLOADED + "= 0 AND " + EpisodeKeys.LISTENED + "= -1 AND " + 
 				EpisodeKeys.URL + " NOT LIKE '%www.youtube.com%'";
-		return mDb.query(true, table_name, columns, where, null, null, null, null, null);
+		return mDb.query(true, EPISODES_TABLE, columns, where, null, null, null, null, null);
 	}
 	
 	/**
 	 * Gets all filenames of all the files that have been downloaded and should be 
 	 * on the SD Card.
 	 */
-	public Map<Long, String> getFilenamesOnDisk(String podcast_name){
-		//Get all episodes from correct table that have been downloaded (and are still on disk)
-		final String table_name = getTableName(podcast_name);
+	public Map<Long, String> getFilenamesOnDisk(){
+		//Get all episodes that have been downloaded (and are still on disk)
 		Map<Long, String> files = new HashMap<Long, String>();
-		if (table_name != "") { // Podcast not in database for some reason
-			final String[] columns = {EpisodeKeys._ID, EpisodeKeys.DOWNLOADED, 
-					EpisodeKeys.FILENAME};
-			final Cursor cursor = mDb.query(true, table_name, columns, 
-					EpisodeKeys.DOWNLOADED + "!= 0", null, null, null, null, null);
+		final String[] columns = {EpisodeKeys._ID, EpisodeKeys.DOWNLOADED, 
+				EpisodeKeys.FILENAME};
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE, columns, 
+				EpisodeKeys.DOWNLOADED + "!= 0", null, null, null, null, null);
 
-			String short_filename = "";
-			if (cursor != null && cursor.getCount() > 0){
-				cursor.moveToFirst();
-				for (int i = 0; i < cursor.getCount(); i++){
-					final String filename = cursor.getString(2);
-					//get everything after last '/' (separator) and remove the '/'
-					short_filename = filename.substring(filename.lastIndexOf('/')).substring(1);
-					files.put(cursor.getLong(0),short_filename);
-					cursor.moveToNext();
-				}
-			} else {
-				Log.e(TAG, "Empty cursor at getFilenamesFromDisk()");
+		String short_filename = "";
+		if (cursor != null && cursor.getCount() > 0){
+			cursor.moveToFirst();
+			for (int i = 0; i < cursor.getCount(); i++){
+				final String filename = cursor.getString(2);
+				//get everything after last '/' (separator) and remove the '/'
+				short_filename = filename.substring(filename.lastIndexOf('/')).substring(1);
+				files.put(cursor.getLong(0),short_filename);
+				cursor.moveToNext();
 			}
-			cursor.close();
+		} else {
+			Log.e(TAG, "Empty cursor at getFilenamesFromDisk()");
 		}
+		cursor.close();
 		return files;
 	}
 	/**
@@ -522,10 +505,9 @@ public class PonyExpressDbAdaptor {
 //		}
 //	}
 	
-	public String getEpisodeUrl(long row_ID, String podcast_name){
-		final String table_name = getTableName(podcast_name);
+	public String getEpisodeUrl(long row_ID){
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.URL};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		String url = "";
 		if (cursor != null && cursor.getCount() > 0){
@@ -547,8 +529,7 @@ public class PonyExpressDbAdaptor {
 	 * @param newRecord
 	 * @return true if update successful.
 	 */
-	public boolean update(String podcast_name, long rowID, String key, String newRecord) {
-		final String table_name = getTableName(podcast_name);
+	public boolean update(long rowID, String key, String newRecord) {
 		ContentValues values = new ContentValues();
 		//Change ContentValues as required
 		if (key == EpisodeKeys.DOWNLOADED){
@@ -558,7 +539,7 @@ public class PonyExpressDbAdaptor {
 				values.put(EpisodeKeys.DOWNLOADED,false);
 			}
 		}
-		return mDb.update(table_name, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
+		return mDb.update(EPISODES_TABLE, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
 	/**
 	 * Updates the database when a podcast has been listened to.
@@ -568,13 +549,12 @@ public class PonyExpressDbAdaptor {
 	 * @param newRecord
 	 * @return true if update successful.
 	 */
-	public boolean update(String podcast_name, long rowID, String key, int newRecord){
-		final String table_name = getTableName(podcast_name);
+	public boolean update(long rowID, String key, int newRecord){
 		ContentValues values = new ContentValues();
 		if (key == EpisodeKeys.LISTENED){
 			values.put(EpisodeKeys.LISTENED, newRecord);
 		}
-		return mDb.update(table_name, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
+		return mDb.update(EPISODES_TABLE, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
 	/**
 	 * Updates the database with a new album art url.
@@ -594,10 +574,9 @@ public class PonyExpressDbAdaptor {
 	 * @param podcast_name
 	 * @return filename in the form "/file.ext"
 	 */
-	public String getEpisodeFilename(long row_ID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+	public String getEpisodeFilename(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.FILENAME};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		String filename = "";
 		String short_filename = "";
@@ -614,10 +593,9 @@ public class PonyExpressDbAdaptor {
 		return short_filename;	
 	}
 	
-	public String getEpisodeTitle(long row_ID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+	public String getEpisodeTitle(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		String title = "";
 		if (cursor != null && cursor.getCount() > 0){
@@ -630,10 +608,9 @@ public class PonyExpressDbAdaptor {
 		return title;
 	}
 
-	public boolean isEpisodeDownloaded(long row_ID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+	public boolean isEpisodeDownloaded(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DOWNLOADED};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		int downloaded = 0;  //false
 		if (cursor != null && cursor.getCount() > 0){
@@ -652,10 +629,9 @@ public class PonyExpressDbAdaptor {
 			
 	}
 
-	public String getDescription(long row_ID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+	public String getDescription(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DESCRIPTION};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		String description = "";
 		if (cursor != null && cursor.getCount() > 0){
@@ -668,10 +644,9 @@ public class PonyExpressDbAdaptor {
 		return description;
 	}
 
-	public int getListened(long row_ID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+	public int getListened(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.LISTENED};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, null, null, null, null, null);
 		int listened = -1;
 		if (cursor != null && cursor.getCount() > 0){
@@ -684,15 +659,16 @@ public class PonyExpressDbAdaptor {
 		return listened;
 	}
 	/**
-	 * Returns the row_ID of the oldest episode in the database.
+	 * Returns the row_ID of the oldest episode of a podcast in the database.
 	 * @param podcast_name
 	 * @return row_ID
 	 */
 	public long getOldestEpisode(String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.DATE};
-		final Cursor cursor = mDb.query(true, table_name, columns, 
-				null, null, null, null, EpisodeKeys.DATE + " ASC", "1");
+		final String where = EpisodeKeys.PODCAST_ID + "=" + podcast_id;
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE, columns, 
+				where, null, null, null, EpisodeKeys.DATE + " ASC", "1");
 		long row_ID = -1;
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
@@ -705,10 +681,11 @@ public class PonyExpressDbAdaptor {
 	}
 
 	public int getNumberOfRows(String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = { EpisodeKeys._ID};
-		final Cursor cursor = mDb.query(table_name, columns, 
-				null, null, null, null, null);
+		final String where = EpisodeKeys.PODCAST_ID + "=" + podcast_id;
+		final Cursor cursor = mDb.query(EPISODES_TABLE, columns, 
+				where, null, null, null, null);
 		int rows = 0;
 		if (cursor != null && cursor.getCount() >= 0){
 			rows = cursor.getCount();
@@ -719,10 +696,9 @@ public class PonyExpressDbAdaptor {
 		return rows;
 	}
 
-	public int getEpisodeSize(long row_ID, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+	public int getEpisodeSize(long row_ID) {
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.SIZE};
-		final Cursor cursor = mDb.query(true, table_name,
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
 				columns, EpisodeKeys._ID + "=" + row_ID, 
 				null, null, null, null, null);
 		int size = 0;
@@ -737,11 +713,12 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	public boolean containsEpisode(String title, String podcast_name) {
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String quotedTitle = Utils.handleQuotes(title);
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
-		final Cursor cursor = mDb.query(true, table_name,
-				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
+				columns, EpisodeKeys.TITLE + "=" + quotedTitle
+				+ " AND " + EpisodeKeys.PODCAST_ID + "= " + podcast_id, 
 				null, null, null, null, null);
 		if (cursor.getCount() > 0){
 			cursor.close();
@@ -753,7 +730,7 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	/** 
-	 * Takes a Podcast instance (with feed url, and identi.ca info) and gets rest of info from
+	 * Takes a Podcast instance (with feed url) and gets rest of info from
 	 * the feed. ie: podcast title and album art url and adds
 	 * it them to the Db.
 	 *  @param podcast
@@ -765,10 +742,6 @@ public class PonyExpressDbAdaptor {
 		if (new_podcast != null){
 			//Insert Podcast into Podcast table
 			insertPodcast(new_podcast);
-			
-			//Create table for this podcast's episodes
-			String tableName = getTableName(new_podcast.getName());
-			mDb.execSQL("CREATE TABLE IF NOT EXISTS " + tableName + EPISODE_TABLE_FIELDS);
 			return new_podcast.getName();
 		}
 		return null;
@@ -795,12 +768,7 @@ public class PonyExpressDbAdaptor {
      
         //Insert the record and then update it with the created Episode table name
 		Long row_ID = mDb.insert(PODCAST_TABLE, null , podcastValues);
-		String tablename = "PodEps";
 		if (row_ID != -1){
-			tablename = tablename + row_ID;
-			podcastValues.put(PodcastKeys.TABLE_NAME,tablename);
-			final String quotedName = Utils.handleQuotes(name);
-			mDb.update(PODCAST_TABLE, podcastValues, PodcastKeys.NAME + "=" + quotedName , null);
 			return true;
 		}else return false;
          
@@ -920,11 +888,11 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	public int countUnlistened(String podcast_name){
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String[] columns = {PodcastKeys._ID};
 		Cursor c = mDb.query(
-				true,table_name,columns,EpisodeKeys.LISTENED + "= -1",
-				null,null,null,null,null);
+				true,EPISODES_TABLE,columns,EpisodeKeys.LISTENED + "= -1 AND " + 
+		EpisodeKeys.PODCAST_ID + "="+ podcast_id,null,null,null,null,null);
 		final int count = c.getCount();
 		c.close();
 		return count;
@@ -946,9 +914,10 @@ public class PonyExpressDbAdaptor {
 			Log.d(TAG, "Deleting " + path + "from SD Card");
 			File podcast_path = new File(rootPath + path);
 			deleted = Utils.deleteDir(podcast_path);
-			//Delete episodes from podcast episode table
-			String table_name = getTableName(podcast_name);
-			mDb.delete(table_name, null, null);
+			//Delete episodes from episode table
+			long podcast_id = getPodcastId(podcast_name);
+			final String where = EpisodeKeys.PODCAST_ID + "=" + podcast_id;
+			mDb.delete(EPISODES_TABLE, where, null);
 			Log.d(TAG, "Removing episodes from database");
 			//Remove entry from Podcasts table
 			mDb.delete(PODCAST_TABLE, PodcastKeys._ID + "=" + rowID, null);
@@ -1405,11 +1374,12 @@ public class PonyExpressDbAdaptor {
 	 */
 	private long getRowIdOfEpisode(String podcast_name, String episode_title) throws EpisodeNotFoundException{
 		long rowId = -1;
-		final String table_name = getTableName(podcast_name);
+		final long podcast_id = getPodcastId(podcast_name);
 		final String quotedTitle = Utils.handleQuotes(episode_title);
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.TITLE};
-		final Cursor cursor = mDb.query(true, table_name,
-				columns, EpisodeKeys.TITLE + "=" + quotedTitle, 
+		final Cursor cursor = mDb.query(true, EPISODES_TABLE,
+				columns, EpisodeKeys.PODCAST_ID + "=" + podcast_id + " AND " +
+		EpisodeKeys.TITLE + "=" + quotedTitle, 
 				null, null, null, null, null);
 		if (cursor.getCount() > 0){
 			cursor.moveToFirst();

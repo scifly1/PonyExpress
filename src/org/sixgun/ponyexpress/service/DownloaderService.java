@@ -234,8 +234,8 @@ public class DownloaderService extends Service {
 								else {
 									Log.d(TAG,"Podcast written to SD card.");
 									episode.setDownloadCompleted(true);
-									mPonyExpressApp.getDbHelper().update(episode.getPodcastName(), 
-											episode.getRowID(), EpisodeKeys.DOWNLOADED,"true");
+									mPonyExpressApp.getDbHelper().update(episode.getRowID(), 
+											EpisodeKeys.DOWNLOADED,"true");
 								}
 								//Decrease mCurrentDownloads which will kill 
 								//the notifications of it getes to <1
@@ -469,7 +469,7 @@ public class DownloaderService extends Service {
 	public double getProgress(final int index) {
 		// look up podcast in array and return percent progress
 		final DownloadingEpisode episode = mEpisodes.get(index);
-		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(episode.getRowID(), episode.getPodcastName());
+		final boolean downloaded = mPonyExpressApp.getDbHelper().isEpisodeDownloaded(episode.getRowID());
 		if (downloaded){
 			return 100.0;
 		}else{
