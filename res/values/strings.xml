@@ -129,6 +129,8 @@
 	<string name="download_time">Scheduled download time</string>
 	<string name="schedule_downloads_summary">Schedule new episodes to download automatically at a preset time</string>
 	<string name="no_episodes">The playlist is empty.</string>
+	<string name="no_downloaded_unlistened">You have no un-listened episodes currently downloaded. Download some before turning Auto-playlist on.</string>
+	<string name="auto_playlist_on">Episodes downloaded by scheduled download will be added to the playlist automatically.</string>
 	<string name="clear_playlist">Clear the playlist</string>
 	<string name="playlist_subtitle_pod">Select podcast&#8230;</string>
 	<string name="playlist_subtitle_eps">Select episodes&#8230;</string>

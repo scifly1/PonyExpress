@@ -28,14 +28,17 @@ import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 
 public class PreferencesActivity extends PreferenceActivity {
@@ -43,6 +46,7 @@ public class PreferencesActivity extends PreferenceActivity {
 	private static final String TAG = "PreferencesActivity";
 	SharedPreferences.OnSharedPreferenceChangeListener mPrefListener;
 	protected PonyExpressApp mPonyExpressApp;
+	private CheckBoxPreference mAutoPlaylistCheckBoxPreference;
 	
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onCreate(android.os.Bundle)
@@ -66,6 +70,9 @@ public class PreferencesActivity extends PreferenceActivity {
 		Preference version = (Preference)findPreference(getString(R.string.version_key));
 		version.setSummary(info.versionName);
 		
+		mAutoPlaylistCheckBoxPreference = (CheckBoxPreference) getPreferenceScreen()
+                .findPreference(getString(R.string.auto_playlist_key));
+		
 		mPrefListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
 			public void onSharedPreferenceChanged(SharedPreferences prefs,String key) {
 				if (key.equals(getString(R.string.schedule_download_key))) 
@@ -86,7 +93,17 @@ public class PreferencesActivity extends PreferenceActivity {
 				} else if (key.equals(getString(R.string.auto_playlist_key))){
 					if (prefs.getBoolean(key, false) == true){
 						//compile playlist
-						mPonyExpressApp.getDbHelper().compileAutoPlaylist();
+						if (!mPonyExpressApp.getDbHelper().compileAutoPlaylist()){
+							//Could not compile list, probably as no unlistened 
+							//undownloaded episodes.
+							Editor editor = prefs.edit();
+							editor.putBoolean(key, false);
+							editor.commit();
+							Toast.makeText(mPonyExpressApp, R.string.no_downloaded_unlistened, Toast.LENGTH_LONG).show();
+							mAutoPlaylistCheckBoxPreference.setChecked(false);
+						} else {
+							Toast.makeText(mPonyExpressApp, R.string.auto_playlist_on, Toast.LENGTH_LONG).show();
+						}
 					} 					
 				}
 			} 

@@ -1432,10 +1432,13 @@ public class PonyExpressDbAdaptor {
 		return rowId;
 	}
 
-	public void compileAutoPlaylist() {
+	/**
+	 * Compilies the auto playlist
+	 * @return true if successful
+	 */
+	public boolean compileAutoPlaylist() {
 		clearPlaylist();
-		compilePlaylistByDate();
-		
+		return compilePlaylistByDate();
 	}
 	
 	public void recompileAutoPlaylist(){
@@ -1455,19 +1458,20 @@ public class PonyExpressDbAdaptor {
 		
 	}
 
-	private void compilePlaylistByDate() {
+	private boolean compilePlaylistByDate() {
 		final Cursor c = getAllUnlistenedDownloadedEpisodesByDate();
-		compilePlaylist(c);
+		return compilePlaylist(c);
 	}
 
-	private void compilePlaylist(Cursor c) {
+	private boolean compilePlaylist(Cursor c) {
 		if (c.getCount() > 0){
 			c.moveToFirst();
 			for (int i = 0; i < c.getCount(); i++){
 				addEpisodeToPlaylist(getPodcastName(c.getLong(0)), c.getLong(1));
 				c.moveToNext();
 			}
-		}
+			return true;
+		} else return false;
 		
 	}
 
