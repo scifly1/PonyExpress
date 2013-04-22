@@ -29,6 +29,7 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.Utils;
+import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -83,38 +84,61 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	private boolean mListingEpisodes = false;
 	private ListView mPodcastsAndEpisodesList;
 	private TextView mPlaylistSubtitle;
+	private boolean mAutoPlaylistsOn = false;
+	private View mPodcastEpisodeLists;
+	private View mDivider;
+	private View mDownloadButton;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.playlist);
 		
 		mPonyExpressApp = (PonyExpressApp) getApplication();
+		
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(mPonyExpressApp);
+		if (prefs.getBoolean(getString(R.string.auto_playlist_key), false)){
+			mAutoPlaylistsOn  = true;
+		}
 		//Get the listviews as we need to manage them.
 		mPlaylist = (ListView) findViewById(R.id.playlist_list);
 		mNoPlaylist = (TextView) findViewById(R.id.no_list);
+		
 		mPodcastsAndEpisodesList = (ListView) findViewById(R.id.podcasts_episodes_list);
 		mPlaylistSubtitle = (TextView) findViewById(R.id.playlist_subtitle);
+		mPodcastEpisodeLists = findViewById(R.id.podcast_episode_lists);
+		mDivider = findViewById(R.id.divider);
+		mDownloadButton = findViewById(R.id.download_overview_button);
 		
-		//Set the background of the episode list when shown
-		mBackground = (ViewGroup) findViewById(R.id.playlist_episodes_body);
-		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+		if (!mAutoPlaylistsOn){
+			//Set the background of the episode list when shown
+			mBackground = (ViewGroup) findViewById(R.id.playlist_episodes_body);
+			mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
 
-			@Override
-			public void onGlobalLayout() {
-				Resources res = getResources();
-				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
-				if (image != null){
-					int new_height = mBackground.getHeight();
-					int new_width = mBackground.getWidth();
-					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-							(res, image, new_height, new_width);
-					mBackground.setBackgroundDrawable(new_background);
+				@Override
+				public void onGlobalLayout() {
+					Resources res = getResources();
+					Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
+					if (image != null){
+						int new_height = mBackground.getHeight();
+						int new_width = mBackground.getWidth();
+						BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+								(res, image, new_height, new_width);
+						mBackground.setBackgroundDrawable(new_background);
+					}
 				}
-			}
-		});
-				
+			});
+			
+			listPodcasts(false);
+		} else {
+			mPodcastEpisodeLists.setVisibility(View.GONE);
+			mDivider.setVisibility(View.GONE);
+			mDownloadButton.setVisibility(View.GONE);
+			mPlaylist.setStackFromBottom(false);
+			mPlaylistSubtitle.setText(R.string.auto_playlist);
+		}
+		
 		listPlaylist();
-		listPodcasts(false);
+		
 	}
 		
 	/* (non-Javadoc)
@@ -427,22 +451,18 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			listPlaylist();
 			return true;
 		case R.id.shownotes_playlist:
+			
 			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist(info.id);
 			final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist(info.id);
-			final Bundle playlist_episode_data = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
-			Intent i = new Intent(this, ShowNotesActivity.class);
-			i.putExtras(playlist_episode_data);
-			startActivity(i);
+			viewShowNotes(podcast_name,episode_id);
+			
 			return true;
 		//Episode context menu items
 		case R.id.add_to_playlist:
 			selectEpisode(info.id);
 			return true;
 		case R.id.shownotes:
-			final Bundle data = Episode.packageEpisode(mPonyExpressApp, mPodcastName, info.id);
-			Intent intent = new Intent(this, ShowNotesActivity.class);
-			intent.putExtras(data);
-			startActivity(intent);
+			viewShowNotes(mPodcastName, info.id);
 			return true;
 		case R.id.mark_listened:
 			mPonyExpressApp.getDbHelper().update(info.id, 
@@ -459,6 +479,13 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		}
 	}
 	
+	private void viewShowNotes(String podcast_name, long row_id){
+		final Bundle playlist_episode_data = Episode.packageEpisode(mPonyExpressApp, podcast_name, row_id);
+		Intent i = new Intent(this, ShowNotesActivity.class);
+		i.putExtras(playlist_episode_data);
+		startActivity(i);
+	}
+	
 	/**
 	 * We subclass CursorAdapter to handle our display the results from our Playlist cursor. 
 	 * Overide newView to create/inflate a view to bind the data to.
@@ -472,15 +499,17 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 
 		@Override
 		public void bindView(View view, Context context, Cursor cursor) {
+			if (cursor == null){
+				return;
+			}
 			String episode_title = "";
 			int listened = -1;
-			if (cursor != null){
-				final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
-				final long row_id = cursor.getLong(row_id_column_index);
-				episode_title = mPonyExpressApp.getDbHelper().
-						getEpisodeTitle(row_id);
-				listened = mPonyExpressApp.getDbHelper().getListened(row_id);
-			}
+			final int row_id_column_index = cursor.getColumnIndex(EpisodeKeys.ROW_ID);
+			final long row_id = cursor.getLong(row_id_column_index);
+			episode_title = mPonyExpressApp.getDbHelper().
+					getEpisodeTitle(row_id);
+			listened = mPonyExpressApp.getDbHelper().getListened(row_id);
+			
 			
 			TextView episodeName = (TextView) view.findViewById(R.id.episode_text);
 			episodeName.setText(episode_title);
@@ -488,12 +517,26 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 				episodeName.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
 			} else episodeName.setTypeface(Typeface.DEFAULT,Typeface.NORMAL);
 
+			final int podcast_name_index = cursor.getColumnIndex(PodcastKeys.NAME);
+			final String podcast_name = cursor.getString(podcast_name_index);
+			
+			if (mAutoPlaylistsOn){
+				String albumArtUrl = mPonyExpressApp.getDbHelper().getAlbumArtUrl(podcast_name);
+				RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
+				
+				if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
+					albumArt.setRemoteURI(albumArtUrl);
+					albumArt.loadImage();
+				} else {
+					albumArt.loadDefault();
+				}
+			}
 			
 			view.setOnClickListener(new OnClickListener() {
-
+				
 				@Override
 				public void onClick(View v) {
-					//TODO handle clicks on the playlist item
+					viewShowNotes(podcast_name, row_id);
 					
 				}
 			});
@@ -513,7 +556,12 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 
 			LayoutInflater vi = (LayoutInflater)getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 			View v = new View(context);
-			v = vi.inflate(R.layout.episode_row_playlist, parent, false);
+			if (mAutoPlaylistsOn){
+				v = vi.inflate(R.layout.episode_row_auto_playlist, parent, false);
+			} else {
+				v = vi.inflate(R.layout.episode_row_playlist, parent, false);
+			}
+			
 			return v;
 		}
 		

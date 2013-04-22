@@ -16,11 +16,13 @@
     </LinearLayout>
 
     <TextView
+        	android:id="@+id/divider"
 			android:background="@drawable/divider"
 			android:layout_height="wrap_content"
 			android:layout_width="fill_parent" />
     
     <LinearLayout
+        android:id="@+id/podcast_episode_lists"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:layout_weight="2" >
