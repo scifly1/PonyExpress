@@ -114,6 +114,7 @@
 	<string name="add_sixgun">Add all Sixgun.org shows</string>
 	<string name="already_in_db">That podcast is already in the your list.</string>
 	<string name="auto_playlist">Auto-Playlist</string>
+	<string name="auto_playlist_subtitle">in Auto-Playlist</string>
 	<string name="auto_playlist_summary">Automatically maintain a playlist of all podcasts in date order. (Requires scheduled downloads to be on)</string>
 	<string name="recap_on_resume">Recap on resume</string>
 	<string name="recap_on_resume_summary">Rewind 10 seconds before resuming play back</string>

@@ -997,17 +997,22 @@ public class PonyExpressDbAdaptor {
 	
 	/**
 	 * Adds an episode to the playlist.
-	 * @return the row_id if successful or -1.
+	 * @return the row_id if successful or already in playlist or -1 if an error.
 	 */
 	public long addEpisodeToPlaylist(String podcast_name, long row_id){
-		ContentValues episodeValues = new ContentValues();
-		episodeValues.put(PodcastKeys.NAME, podcast_name);
-		episodeValues.put(EpisodeKeys.ROW_ID, row_id);
-		//Find number of episodes already in playlist and add 1 to get
-		//next play order.
-		long next_order = DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE);
-		episodeValues.put(PodcastKeys.PLAY_ORDER, next_order +1);
-		return mDb.insert(PLAYLIST_TABLE, null, episodeValues);
+		//check if episode is already in playlist before adding it.
+		final long rowID = episodeInPlaylist(row_id);
+		if (rowID == 0){
+			ContentValues episodeValues = new ContentValues();
+			episodeValues.put(PodcastKeys.NAME, podcast_name);
+			episodeValues.put(EpisodeKeys.ROW_ID, row_id);
+			//Find number of episodes already in playlist and add 1 to get
+			//next play order.
+			long next_order = DatabaseUtils.queryNumEntries(mDb, PLAYLIST_TABLE);
+			episodeValues.put(PodcastKeys.PLAY_ORDER, next_order +1);
+			return mDb.insert(PLAYLIST_TABLE, null, episodeValues);
+		} else return rowID;
+		
 	}
 		
 	/**
@@ -1379,6 +1384,24 @@ public class PonyExpressDbAdaptor {
 		}
 		c.close();
 		return;
+	}
+	/**
+	 * Checks to see if an episode is in the playlist
+	 * @param row_id of episdoe in Episode table
+	 * @return row_id in playlist table or 0
+	 */
+	private long episodeInPlaylist(long row_id){
+		long rowID = 0;
+		final String[] columns = {PodcastKeys._ID};
+		final Cursor c = mDb.query(PLAYLIST_TABLE, columns, 
+				EpisodeKeys.ROW_ID + "="+ row_id,
+						null, null, null, null); 
+		if (c != null && c.getCount() > 0){
+			c.moveToFirst();
+			rowID = c.getLong(0);
+		}
+		c.close();
+		return rowID;
 	}
 	
 	/**
