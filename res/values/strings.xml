@@ -160,18 +160,18 @@
 	<string name="no_youtube">The YouTube app is not installed. Install it to view this video. </string>
 	<string name="about_message">
 		"
-Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>. It features integrated commenting using the <a href="http://identi.ca">identi.ca</a> micro-blogging service.
+Pony Express is a podcatcher and player for Android brought to you by <a href="http://sixgun.org/ponyexpress">Sixgun Productions</a>.
 		\n\n
 		Code:
-		Paul Elms (@scifly)\n\n
+		Paul Elms\n\n
 		Code contributions from:\n\
-		@macno, Daniel Brinkers, Tom Sutch(@tomsutch), Johan Vervloet(@johanv), Andrew Smith, Jamie Daws, Hai Bison.
+		macno, Daniel Brinkers, Tom Sutch, Johan Vervloet, Andrew Smith, Jamie Daws, Hai Bison.
 		\n\n
 		Design:
-		Fabian A. Scherschel (@fabsh)
+		Fabian A. Scherschel
 		\n\n
 		Testing:
-		Tom Sutch (@tomsutch), x1101 (@x1101) and many others.
+		Tom Sutch, x1101 and many others.
 		\n\n
 		This program is
 		<a href="http://www.fsf.org/about/">free software:</a>
