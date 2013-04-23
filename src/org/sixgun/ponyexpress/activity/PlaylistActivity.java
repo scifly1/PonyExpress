@@ -389,21 +389,22 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v,
 			ContextMenuInfo menuInfo) {
-		if (v.getId() == R.id.playlist_list){
+		//Set the title of the menu
+		AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
+		TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
+		menu.setHeaderTitle(episode_name.getText());
+		
+		if (v.getId() == R.id.playlist_list && mAutoPlaylistsOn){
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.auto_playlist_context, menu);
+			
+		}else if (v.getId() == R.id.playlist_list){
 			MenuInflater inflater = getMenuInflater();
 			inflater.inflate(R.menu.playlist_context, menu);
 			
-			//Set the title of the menu
-			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
-			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
-			menu.setHeaderTitle(episode_name.getText());
 		} else if (v.getId() == R.id.podcasts_episodes_list && mListingEpisodes){
 			MenuInflater inflater = getMenuInflater();
 			inflater.inflate(R.menu.episode_playlist_context, menu);
-			//Set the title of the menu
-			AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
-			TextView episode_name = (TextView) item.targetView.findViewById(R.id.episode_text);
-			menu.setHeaderTitle(episode_name.getText());
 			//Find which listened option to show
 			boolean listened = true;
 			if (mPonyExpressApp.getDbHelper().getListened(item.id) == -1){
