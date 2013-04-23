@@ -134,7 +134,6 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			mDivider.setVisibility(View.GONE);
 			mDownloadButton.setVisibility(View.GONE);
 			mPlaylist.setStackFromBottom(false);
-			mPlaylistSubtitle.setText(R.string.auto_playlist);
 		}
 		
 		listPlaylist();
@@ -196,6 +195,9 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		} else {
 			mPlaylist.setVisibility(View.GONE);
 			mNoPlaylist.setVisibility(View.VISIBLE);
+		}
+		if (mAutoPlaylistsOn){
+			mPlaylistSubtitle.setText(c.getCount() + " " +getString(R.string.auto_playlist_subtitle));
 		}
 	}
 	
