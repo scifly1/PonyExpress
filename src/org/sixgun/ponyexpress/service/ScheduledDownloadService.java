@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 Paul Elms
+ * Copyright 2012-13 Paul Elms
  *
  *  This file is part of PonyExpress.
  *
@@ -163,13 +163,6 @@ public class ScheduledDownloadService extends IntentService {
 						}
 						while (mDownloader != null && mDownloader.isDownloading());
 						doUnbindDownloaderService();
-						//If auto-playlist is on recompile the playlist with new downloads
-						SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-						boolean auto_playlist = prefs.getBoolean(
-								getString(R.string.auto_playlist_key), false);
-						if (auto_playlist){
-							mPonyExpressApp.getDbHelper().recompileAutoPlaylist();
-						}
 					}	
 					setNextAlarm(nextUpdate);
 				}

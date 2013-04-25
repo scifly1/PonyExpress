@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Paul Elms
+ * Copyright 2010,2013 Paul Elms
  *
  *  This file is part of PonyExpress.
  *
@@ -43,11 +43,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -394,6 +396,14 @@ public class DownloaderService extends Service {
 					if (mCurrentDownloads + mQueue.size() > 0){
 						updateNotification();
 					} else {
+						//If auto-playlist is on recompile the playlist with new downloads
+						SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+						boolean auto_playlist = prefs.getBoolean(
+								getString(R.string.auto_playlist_key), false);
+						if (auto_playlist){
+							mPonyExpressApp.getDbHelper().recompileAutoPlaylist();
+						}
+						
 						mNM.cancel(NOTIFY_ID);
 						stopSelf();
 					}
