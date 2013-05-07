@@ -62,7 +62,8 @@
 	<string name="refresh_feeds">Refresh feeds interval</string>
 	<string name="refresh_feeds_summary">Hours between feed refreshes\nNote: This takes effect after the next update.</string>
 	<string name="refresh_dialog_title">Interval in hours</string>
-	<string name="Feed_uri" >Feed URL:</string>
+	<string name="Feed_uri" >Or, to add feeds manually enter the Feed URL:</string>
+	<string name="import_export">Alternatively, to import or export an OPML file containing the details of your feeds use these buttons.</string>
 	<string name="http">http://</string>
 	<string name="exclamation">!</string>
 	<string name="hash">#</string>
@@ -142,6 +143,8 @@
 	<string name="restoring">Importing feeds from the OPML file.</string>
 	<string name="backing_up_feeds">Exporting the list of feeds. Please wait.</string>
 	<string name="backup_successful">Export successful! Yippee ki-yay! </string>
+	<string name="browse_miro">Browse Miro Guide</string>
+	<string name="search_miro">Search</string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 	<string name="there_is_no_backup">There is no backup file to restore.</string>

@@ -87,6 +87,15 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 	}
 	
+	public void browseButtonPressed(View v){
+		//TODO Stub
+		
+	}
+	
+	public void searchButtonPressed(View v){
+		//TODO Stub
+	}
+	
 	public void okButtonPressed(View v) {
 		final String feed = mFeedText.getText().toString();
 
