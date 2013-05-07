@@ -137,11 +137,11 @@
 	<string name="playlist_subtitle_eps">Select episodes&#8230;</string>
 	<string name="not_downloaded_dialog">This episode is not downloaded. Do you want to download it now?</string>
 	<string name="always_auto_download">Always auto-download?</string>
-	<string name="backup">Backup</string>
-	<string name="restore">Restore</string>
-	<string name="restoring">Restoring feeds from the backup file.</string>
-	<string name="backing_up_feeds">Backing up the list of feeds. Please wait.</string>
-	<string name="backup_successful">Backup successful! Yippee ki-yay! </string>
+	<string name="backup">Export feeds</string>
+	<string name="restore">Import feeds</string>
+	<string name="restoring">Importing feeds from the OPML file.</string>
+	<string name="backing_up_feeds">Exporting the list of feeds. Please wait.</string>
+	<string name="backup_successful">Export successful! Yippee ki-yay! </string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 	<string name="there_is_no_backup">There is no backup file to restore.</string>
