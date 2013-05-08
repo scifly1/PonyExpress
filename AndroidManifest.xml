@@ -5,7 +5,7 @@
 	android:versionCode="14"
 	android:versionName="1.1_d56e0055">
 	
-    <uses-sdk targetedSdkVersion="14" android:minSdkVersion="8" />
+    <uses-sdk android:targetSdkVersion="14" android:minSdkVersion="8" />
     
     <supports-screens android:resizeable="true"
                   android:smallScreens="true" 
@@ -97,7 +97,7 @@
 		   android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
 		   android:theme="@android:style/Theme.Dialog" />
 		
-		
+		<activity android:name=".activity.MiroCategoriesActivity" />
 		<receiver android:name=".receiver.ScheduledDownloadReceiver" />
 		<receiver android:name=".receiver.RescheduledUpdateReceiver"  
 		    android:enabled="false">

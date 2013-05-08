@@ -88,7 +88,8 @@ public class AddNewPodcastFeedActivity extends Activity {
 	}
 	
 	public void browseButtonPressed(View v){
-		//TODO Stub
+		startActivity(new Intent(
+        		mPonyExpressApp,MiroCategoriesActivity.class));
 		
 	}
 	

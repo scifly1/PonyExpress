@@ -20,6 +20,7 @@
 	<string name="Downloads_title">Downloads</string>
 	<string name="sixgun">Sixgun Productions</string>
 	<string name="Add_feeds">Add other podcasts.</string>
+	<string name="categories">Categories.</string>
 	<string name="footer">Pony Express is free software:\n Tap here for more information.\n
 	\n<b>New media. New rules.</b></string>
 	<string name="no_internet_connection">Cannot connect to the Internet. Check your connectivity.</string>
@@ -28,6 +29,7 @@
 	<string name="checking_sixgun">Checking for new Sixgun.org shows.</string>
 	<string name="checking_all">Checking all the feeds for new episodes.</string>
 	<string name="please_wait">Another updater is running.  Please wait for it to finish.</string>
+	<string name="please_wait_simple">Please wait&#8230;</string>
 	<string name="checking">Checking</string>
 	<string name="interent_lost">Internet connectivity was lost during the update.</string>
 	<string name="url_offline"> appears to be offline. Please try again later.</string>
