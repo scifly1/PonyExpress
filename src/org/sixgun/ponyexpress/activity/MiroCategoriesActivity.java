@@ -18,28 +18,45 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.sixgun.ponyexpress.CategoryAdapter;
+import org.sixgun.ponyexpress.ChannelListAdapter;
+import org.sixgun.ponyexpress.EndlessChannelListAdapter;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
+import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 
 public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 
 	private static final String TAG = "MiroCategoriesActivity";
 	private PonyExpressApp mPonyExpressApp;
-	private ArrayAdapter<String> listAdapter;
+	private ArrayAdapter<String> categoryAdapter;
 	private static String[] sCategories;
 	private ProgressDialog mProgDialog;
+	private ChannelListAdapter mChannelAdapter;
+	private EndlessChannelListAdapter mEndlessChannelAdapter;
+	private TextView mSubTitle;
+	private boolean mListingChannels;
+	private boolean mListingItems;
+	private String mCurrentCategory;
 
 
 	@Override
@@ -53,6 +70,8 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 		//Set up prog dialog for later
 		mProgDialog = new ProgressDialog(this);
 		mProgDialog.setMessage(getString(R.string.please_wait_simple));
+		
+		mSubTitle = (TextView) findViewById(R.id.sixgun_subtitle);
 		
 		listCategories();
 	}
@@ -69,25 +88,65 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 		}
 	}
 
-
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onBackPressed()
+	 */
+	@Override
+	public void onBackPressed() {
+		//Handle pressing back when showing the episodes list. 
+		if (mListingChannels){
+			mListingChannels = false;
+			listCategories();
+		} else if (mListingItems){
+			mListingItems = false;
+			listChannels(mCurrentCategory);
+		} else {
+			finish();
+		}
+	}
 
 	private void listCategories() {
 		if (sCategories == null){
 			new LoadCategories().execute();
 		} else {
-			makeAdapter();
+			makeCategoryAdapter();
 		}
+		mSubTitle.setText(R.string.categories);
 	}
 	
-	private void makeAdapter(){
+	public void listChannels(String category){
+		mCurrentCategory = category;
+		new LoadChannels().execute(mCurrentCategory);
+		mSubTitle.setText(mCurrentCategory);
+		mListingChannels = true;
+		
+	}
+	
+	private void listChannelItems(MiroGuideChannel podcast){
+		mListingItems = true;
+		
+		//TODO
+	}
+	
+	private void makeCategoryAdapter(){
 		if (sCategories != null) {
-			listAdapter = new ArrayAdapter<String>(mPonyExpressApp,
+			categoryAdapter = new PrivateCategoryAdapter(mPonyExpressApp,
 					R.layout.episode_row, sCategories);
-			setListAdapter(listAdapter);
+			setListAdapter(categoryAdapter);
+
 		}
 	}
-
-
+	private void makeChannelAdapter(ArrayList<MiroGuideChannel> channels){
+		mChannelAdapter = new PrivateChannelListAdapter(mPonyExpressApp, 
+				R.layout.episode_row, channels);
+		setListAdapter(mChannelAdapter);
+	}
+	private void makeEndlessChannelAdapter(ArrayList<MiroGuideChannel> channels){
+		mEndlessChannelAdapter = new PrivateEndlessChannelListAdapter(mPonyExpressApp, 
+				mCurrentCategory, channels);
+		setListAdapter(mEndlessChannelAdapter);
+	}
+	
 	/**
 	 * Bring up the Settings (preferences) menu via a button click.
 	 * @param v, a reference to the button that was clicked to call this.
@@ -125,11 +184,144 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 
 		@Override
 		protected void onPostExecute(Void result) {
-			makeAdapter();
+			makeCategoryAdapter();
 			mProgDialog.hide();
 		}
 		
 	}
 	
-	//TODO onListItem selected...
+	private class LoadChannels extends AsyncTask<String,Void,List<MiroGuideChannel>>{
+
+		@Override
+		protected void onPreExecute() {
+			mProgDialog.show();
+			
+		}
+
+		@Override
+		protected List<MiroGuideChannel> doInBackground(String... params) {
+			MiroGuideService miro = new MiroGuideService();
+			
+			try {
+				return miro.getChannelList("category", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
+			} catch (MiroGuideException e) {
+				Log.e(TAG, "Could not get Miro channels", e);
+			} finally {
+				miro.close();
+			}
+			return null;
+		}
+
+		@Override
+		protected void onCancelled(List<MiroGuideChannel> result) {
+			mProgDialog.hide();
+		}
+
+		@Override
+		protected void onPostExecute(List<MiroGuideChannel> result) {
+			ArrayList<MiroGuideChannel> channels = new ArrayList<MiroGuideChannel>();
+			for (MiroGuideChannel channel : result){
+				channels.add(channel);
+			}
+			if (channels.size() < MiroGuideChannel.DEFAULT_LIMIT){
+				makeChannelAdapter(channels);
+			} else {
+				makeEndlessChannelAdapter(channels);
+			}
+			
+			mProgDialog.hide();
+		}
+		
+	}
+	
+	/**
+	 * Enclosed sub-class of CategoryAdapter which allows the calling
+	 * of methods of this activity by OnClickListeners. 
+	 *
+	 */
+	private class PrivateCategoryAdapter extends CategoryAdapter{
+
+		public PrivateCategoryAdapter(Context context, int textViewResourceId,
+				String[] categories) {
+			super(context, textViewResourceId, categories);
+			
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			convertView = super.getView(position, convertView, parent);
+			final String category = getItem(position);
+			
+			convertView.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					listChannels(category);
+					
+				}
+			});
+			return convertView;
+			
+		}
+		
+	}
+	
+	/**
+	 * Enclosed sub-class of ChannelListAdapter which allows the calling
+	 * of methods of this activity by OnClickListeners. 
+	 *
+	 */
+	private class PrivateChannelListAdapter extends ChannelListAdapter{
+
+		
+		
+		public PrivateChannelListAdapter(Context context,
+				int textViewResourceId, List<MiroGuideChannel> channels) {
+			super(context, textViewResourceId, channels);
+		}
+
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			convertView = super.getView(position, convertView, parent);
+			final MiroGuideChannel channel = getItem(position);
+			
+			convertView.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					listChannelItems(channel);
+					
+				}
+			});
+			return convertView;
+			
+		}
+		
+	}
+	
+	private class PrivateEndlessChannelListAdapter extends EndlessChannelListAdapter{
+
+		public PrivateEndlessChannelListAdapter(Context context,
+				String category_name, ArrayList<MiroGuideChannel> channels) {
+			super(context, category_name, channels);
+		}
+		
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			convertView = super.getView(position, convertView, parent);
+			final MiroGuideChannel channel = (MiroGuideChannel) getItem(position);
+			
+			convertView.setOnClickListener(new OnClickListener() {
+				
+				@Override
+				public void onClick(View v) {
+					listChannelItems(channel);
+					
+				}
+			});
+			return convertView;
+			
+		}
+	}
+	
 }

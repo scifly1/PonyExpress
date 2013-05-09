@@ -35,6 +35,7 @@ import java.util.ArrayList;
 
 
 public class MiroGuideChannel {
+	public static final int DEFAULT_LIMIT = 20; //Number of results per query
 	private long id;
 	private String name;
 	private String thumbnailUrl;
