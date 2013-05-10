@@ -51,6 +51,7 @@
 			android:layout_height="wrap_content"
 			android:layout_width="fill_parent"
 			android:layout_below="@id/pony_header"
+			android:textIsSelectable="false"
 			 />
 	<LinearLayout android:id="@+id/miro_buttons"
 	    android:layout_width="wrap_content"
@@ -76,13 +77,48 @@
         android:text="@string/search_miro" 
         android:layout_marginLeft="5dp"/>
 	</LinearLayout>
+    
+
+    <TextView
+        android:id="@+id/import_export_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/miro_buttons"
+        android:text="@string/import_export" 
+        android:layout_marginTop="20dp"
+        android:paddingLeft="10dp"/>
+    
+    <LinearLayout android:id="@+id/opml_buttons"
+	    android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:orientation="horizontal"
+    	android:layout_below="@+id/import_export_label"
+    	android:layout_centerHorizontal="true"
+    	android:layout_marginTop="5dp">
+    
+    <Button
+        android:id="@+id/backup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/backup" 
+        android:onClick="backupButtonPressed"
+        android:layout_marginRight="5dp"/>
+
+    <Button
+        android:id="@+id/restore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/restore" 
+        android:onClick="restoreButtonPressed"
+        android:layout_marginLeft="5dp"/>
+    </LinearLayout>
     <TextView
         android:id="@+id/feed_label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/miro_buttons"
+        android:layout_below="@id/opml_buttons"
         android:text="@string/Feed_uri" 
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="20dp"
         android:paddingLeft="10dp"
         android:layout_marginBottom="5dp"/>
 
@@ -116,39 +152,5 @@
         android:layout_toLeftOf="@id/ok"
         android:text="@string/cancel" 
         android:onClick="cancelButtonPressed"/>
-
-    <TextView
-        android:id="@+id/import_export_label"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/cancel"
-        android:text="@string/import_export" 
-        android:layout_marginTop="20dp"
-        android:paddingLeft="10dp"/>
-    
-    <LinearLayout android:id="@+id/opml_buttons"
-	    android:layout_width="wrap_content"
-    	android:layout_height="wrap_content"
-    	android:orientation="horizontal"
-    	android:layout_below="@+id/import_export_label"
-    	android:layout_centerHorizontal="true"
-    	android:layout_marginTop="5dp">
-    
-    <Button
-        android:id="@+id/backup"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/backup" 
-        android:onClick="backupButtonPressed"
-        android:layout_marginRight="5dp"/>
-
-    <Button
-        android:id="@+id/restore"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/restore" 
-        android:onClick="restoreButtonPressed"
-        android:layout_marginLeft="5dp"/>
-    </LinearLayout>
 
 </RelativeLayout>
