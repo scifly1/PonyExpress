@@ -26,16 +26,19 @@ import org.sixgun.ponyexpress.ChannelListAdapter;
 import org.sixgun.ponyexpress.EndlessChannelListAdapter;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -44,9 +47,9 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 
-public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
+public class MiroActivity<mPonyExpressApp> extends ListActivity {
 
-	private static final String TAG = "MiroCategoriesActivity";
+	private static final String TAG = "MiroActivity";
 	private PonyExpressApp mPonyExpressApp;
 	private ArrayAdapter<String> categoryAdapter;
 	private static String[] sCategories;
@@ -57,6 +60,7 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 	private boolean mListingChannels;
 	private boolean mListingItems;
 	private String mCurrentCategory;
+	private boolean mListingSearch;
 
 
 	@Override
@@ -73,7 +77,17 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 		
 		mSubTitle = (TextView) findViewById(R.id.sixgun_subtitle);
 		
-		listCategories();
+		// Get the intent, if a search action get the query
+	    Intent intent = getIntent();
+	    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+	      String query = intent.getStringExtra(SearchManager.QUERY);
+	      SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+	                SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
+	        suggestions.saveRecentQuery(query, null);
+	      searchForPodcast(query);
+	    } else {
+	    	listCategories();
+	    }
 	}
 	
 	/**
@@ -99,10 +113,21 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 			listCategories();
 		} else if (mListingItems){
 			mListingItems = false;
-			listChannels(mCurrentCategory);
+			if (mListingSearch){
+				searchForPodcast(mCurrentCategory);
+			} else
+				listChannels(mCurrentCategory);
 		} else {
 			finish();
 		}
+	}
+	
+	private void searchForPodcast(String query){
+		mCurrentCategory = query;
+		new SearchChannels().execute(mCurrentCategory);
+		mSubTitle.setText(mCurrentCategory);
+		mListingSearch = true;
+		
 	}
 
 	private void listCategories() {
@@ -230,6 +255,28 @@ public class MiroCategoriesActivity<mPonyExpressApp> extends ListActivity {
 			}
 			
 			mProgDialog.hide();
+		}
+		
+	}
+	/**
+	 * A sub-class of LoadChannels as it does the same search but using a name
+	 * as a search query rather than a category.
+	 *
+	 */
+	private class SearchChannels extends LoadChannels{
+
+		@Override
+		protected List<MiroGuideChannel> doInBackground(String... params) {
+			MiroGuideService miro = new MiroGuideService();
+			
+			try {
+				return miro.getChannelList("name", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
+			} catch (MiroGuideException e) {
+				Log.e(TAG, "Could not get Miro channels", e);
+			} finally {
+				miro.close();
+			}
+			return null;
 		}
 		
 	}
