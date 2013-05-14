@@ -38,28 +38,29 @@
             android:paddingLeft="10dp"
             android:text="@string/sixgun"
             android:textSize="16sp" />
-
-        <ImageButton
-            android:id="@+id/settings_button"
-            android:contentDescription="@string/settings_button_desc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="#ff000000"
-            android:onClick="showSettings"
-            android:paddingTop="10dp"
-            android:src="@drawable/settings_button" />
-
+        
         <ImageButton
             android:id="@+id/playlist_button"
             android:contentDescription="@string/playlist_button_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/settings_button"
+            android:layout_alignParentRight="true"
             android:background="#ff000000"
             android:onClick="showPlaylist"
             android:paddingTop="10dp"
+            android:paddingRight="10dp"
             android:src="@drawable/playlist_button" />
+       
+        <ImageButton
+            android:id="@+id/add_feeds_button"
+            android:contentDescription="@string/add_feeds_button_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toLeftOf="@+id/playlist_button"
+            android:background="#ff000000"
+            android:onClick="addPodcast"
+            android:paddingTop="10dp"
+            android:src="@drawable/add_button" />
     </RelativeLayout>
 		
 	<LinearLayout

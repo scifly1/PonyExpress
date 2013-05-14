@@ -172,15 +172,6 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		setListAdapter(mEndlessChannelAdapter);
 	}
 	
-	/**
-	 * Bring up the Settings (preferences) menu via a button click.
-	 * @param v, a reference to the button that was clicked to call this.
-	 */
-	public void showSettings(View v){
-		startActivity(new Intent(
-				mPonyExpressApp,PreferencesActivity.class));
-	}
-	
 	private class LoadCategories extends AsyncTask<Void,Void,Void>{
 
 		@Override

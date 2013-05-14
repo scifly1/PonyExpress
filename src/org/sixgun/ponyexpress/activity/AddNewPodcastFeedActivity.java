@@ -242,16 +242,6 @@ public class AddNewPodcastFeedActivity extends Activity {
 		}
 	}
 
-
-	/**
-	 * Bring up the Settings (preferences) menu via a button click.
-	 * @param v, a reference to the button that was clicked to call this.
-	 */
-	public void showSettings(View v){
-		startActivity(new Intent(
-				mPonyExpressApp,PreferencesActivity.class));
-	}
-
 	/**
 	 *  Cancel progress dialog when activity destroyed.
 	 */

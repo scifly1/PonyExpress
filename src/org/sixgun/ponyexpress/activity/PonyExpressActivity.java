@@ -318,6 +318,10 @@ public class PonyExpressActivity extends ListActivity {
 		startActivityForResult(intent, ADD_FEED);
 	}
 	
+	public void addPodcast(View v){
+		addPodcast(v, "");
+	}
+	
 	/**
 	 * Show the playlist
 	 */

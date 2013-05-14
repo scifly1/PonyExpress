@@ -32,16 +32,7 @@
             android:text="@string/categories"
             android:textSize="18sp" />
 
-        <ImageButton
-            android:id="@+id/settings_button"
-            android:contentDescription="@string/settings_button_desc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="#ff000000"
-            android:onClick="showSettings"
-            android:paddingTop="10dp"
-            android:src="@drawable/settings_button" />
+       
     </RelativeLayout>
     
     <LinearLayout
