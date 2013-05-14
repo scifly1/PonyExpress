@@ -43,6 +43,7 @@
 	<string name="re_download">Re-download</string>
 	<string name="listen">Listen</string>
 	<string name="show_notes">Show notes</string>
+	<string name="clear_search_history">Clear search history</string>
 	<string name="downloading_episode">1 Podcast downloading.</string>
 	<string name="downloading_episodes">Podcasts downloading.</string>
 	<string name="error_generic">Sorry, something has gone wrong&#8230;</string>
@@ -65,6 +66,8 @@
 	<string name="refresh_feeds">Refresh feeds interval</string>
 	<string name="refresh_feeds_summary">Hours between feed refreshes\nNote: This takes effect after the next update.</string>
 	<string name="refresh_dialog_title">Interval in hours</string>
+	<string name="clear_history_dialog_title">Clear search history? </string>
+	<string name="clear_history_dialog_message">Are you sure you wish to clear your search history?</string>
 	<string name="Feed_uri" >Or, to add feeds manually enter the Feed URL:</string>
 	<string name="import_export">Alternatively, to import or export an OPML file containing the details of your feeds use these buttons.</string>
 	<string name="http">http://</string>

@@ -32,16 +32,25 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.ReturnCodes;
+import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.util.BackupFileWriter;
 import org.sixgun.ponyexpress.util.BackupParser;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.app.AlertDialog.Builder;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -53,6 +62,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	public static final String PONY_EXPRESS_PODCASTS_OPML = "PonyExpress_Podcasts.opml";
 	private static final String TAG = "PonyExpress AddNewPopdcastFeedActivity";
 	private static final int FILE_CHOOSER = 0;
+	private static final int CLEAR_HISTORY = 0;
 
 	private TextView mFeedText;
 	private PonyExpressApp mPonyExpressApp;
@@ -86,7 +96,53 @@ public class AddNewPodcastFeedActivity extends Activity {
 			
 		}
 	}
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.add_feeds_options_menu, menu);
+	    return true;
+	}
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()){
+		case R.id.settings_menu:
+			startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
+			return true;
+		case R.id.clear_search:
+			showDialog(CLEAR_HISTORY);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
 	
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		//No need for a switch/case on id as only one dialog. 
+		AlertDialog.Builder builder = new Builder(this);
+		builder.setMessage(R.string.clear_history_dialog_message)
+	       .setTitle(R.string.clear_history_dialog_title);
+		// Add the buttons
+		builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		               // User clicked OK button
+		        	   SearchRecentSuggestions suggestions = new SearchRecentSuggestions(mPonyExpressApp,
+		        		        SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
+		        		suggestions.clearHistory();
+		           }
+		       });
+		builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+		           public void onClick(DialogInterface dialog, int id) {
+		               // User cancelled the dialog
+		        	   dialog.cancel();
+		           }
+		       });
+		AlertDialog dialog = builder.create();
+		return dialog;
+		
+	}
 	public void browseButtonPressed(View v){
 		startActivity(new Intent(
         		mPonyExpressApp,MiroActivity.class));

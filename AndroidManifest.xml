@@ -81,7 +81,7 @@
 		<activity android:name=".activity.EpisodesActivity" />
 		<activity android:name=".activity.PlayerActivity" />
 		<activity android:name=".activity.EpisodeTabs"
-			android:windowSoftInputMode="adjustPan" android:launchMode="singleTop" />
+			 android:launchMode="singleTop" />
 		<activity android:name=".activity.EpisodeNotesActivity" />
 		<activity android:name=".activity.PreferencesActivity" android:exported="false">
 		   <intent-filter>
@@ -90,6 +90,7 @@
     		</intent-filter>
     	</activity>
 		<activity android:name=".activity.AddNewPodcastFeedActivity" >
+		    
 		     <!-- enable the search dialog to send searches to MiroActivity -->
         	<meta-data android:name="android.app.default_searchable"
                    android:value=".activity.MiroActivity" />

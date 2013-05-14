@@ -20,7 +20,10 @@ package org.sixgun.ponyexpress;
 
 import android.content.SearchRecentSuggestionsProvider;
 
-
+/**
+ * Provides recent search suggetions for podcasts searched for in Miro guide.
+ *
+ */
 public class SearchSuggestionsProvider extends SearchRecentSuggestionsProvider {
 	    public final static String AUTHORITY = "org.sixgun.ponyexpress.SearchSuggestionsProvider";
 	    public final static int MODE = DATABASE_MODE_QUERIES;
