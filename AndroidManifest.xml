@@ -89,11 +89,20 @@
        			<category android:name="android.intent.category.DEFAULT" />
     		</intent-filter>
     	</activity>
-		<activity android:name=".activity.AddNewPodcastFeedActivity" >
-		    
-		     <!-- enable the search dialog to send searches to MiroActivity -->
+		<activity android:name=".activity.AddNewPodcastFeedActivity" 
+		    android:launchMode="singleTop">
+		   <!--Allow the search activity to be started fom here  -->
+		    <intent-filter>
+		        <action android:name="android.intent.action.SEARCH" />
+		    </intent-filter>
+		    <meta-data
+		        android:name="android.app.searchable"
+		        android:resource="@xml/searchable" />
+		     <!-- enable the search dialog to send searches to this activity
+		     which will then be forwarded on to MiroActivity via 
+		     startActivtyForResult -->
         	<meta-data android:name="android.app.default_searchable"
-                   android:value=".activity.MiroActivity" />
+                   android:value=".activity.AddNewPodcastFeedActivity" />
 		    </activity>
 		<activity android:name=".activity.PlaylistActivity" />	
 		<activity android:name=".activity.DownloadOverviewActivity" />
@@ -101,15 +110,8 @@
 		<activity android:name="group.pals.android.lib.ui.filechooser.FileChooserActivity" 
 		   android:configChanges="orientation|screenSize|keyboard|keyboardHidden"
 		   android:theme="@android:style/Theme.Dialog" />
-		<activity android:name=".activity.MiroActivity" >
-		    <intent-filter>
-		        <action android:name="android.intent.action.SEARCH" />
-		    </intent-filter>
-		    <meta-data
-		        android:name="android.app.searchable"
-		        android:resource="@xml/searchable" />
-		</activity>
-		
+		<activity android:name=".activity.MiroActivity" />
+		    		
 		<receiver android:name=".receiver.ScheduledDownloadReceiver" />
 		<receiver android:name=".receiver.RescheduledUpdateReceiver"  
 		    android:enabled="false">

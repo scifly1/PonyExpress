@@ -39,9 +39,10 @@ import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.app.AlertDialog.Builder;
+import android.app.SearchManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -61,7 +62,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 
 	public static final String PONY_EXPRESS_PODCASTS_OPML = "PonyExpress_Podcasts.opml";
 	private static final String TAG = "PonyExpress AddNewPopdcastFeedActivity";
-	private static final int FILE_CHOOSER = 0;
+	private static final int FILE_CHOOSER = 1;
 	private static final int CLEAR_HISTORY = 0;
 
 	private TextView mFeedText;
@@ -82,20 +83,42 @@ public class AddNewPodcastFeedActivity extends Activity {
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mFeedText = (EditText) findViewById(R.id.feed_entry);
 
+		
+	}
+	@Override
+	protected void onNewIntent(Intent intent) {
+	    setIntent(intent);
+	    handleIntent(intent);
+	}
+	
+	private void handleIntent(Intent intent){
 		//If the feedURl has been sent in the intent populate the text box
-		if (!getIntent().getExtras().getString(PodcastKeys.FEED_URL).equals("")){
-			String url = getIntent().getExtras().getString(PodcastKeys.FEED_URL);
-			//Chop off the scheme (http:// or podcast://)
-			int index = url.indexOf("//");
-			if (index != -1){
-				url = url.substring(index +2);
-				mFeedText.append(url);
-			} else {
-				Toast.makeText(this, R.string.url_error, Toast.LENGTH_SHORT).show();
+		if (intent.getExtras().getString(PodcastKeys.FEED_URL) != null){
+			if (!intent.getExtras().getString(PodcastKeys.FEED_URL).equals("")){
+				String url = getIntent().getExtras().getString(PodcastKeys.FEED_URL);
+				//Chop off the scheme (http:// or podcast://)
+				int index = url.indexOf("//");
+				if (index != -1){
+					url = url.substring(index +2);
+					mFeedText.append(url);
+				} else {
+					Toast.makeText(this, R.string.url_error, Toast.LENGTH_SHORT).show();
+				}
 			}
-			
+		}
+		// Get the intent, if a search action, get the query and send on to MiroActivity
+		else if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+	      String query = intent.getStringExtra(SearchManager.QUERY);
+	      SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
+	                SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
+	        suggestions.saveRecentQuery(query, null);
+	      final Intent searchIntent = new Intent(mPonyExpressApp, MiroActivity.class);
+	      searchIntent.setAction(Intent.ACTION_SEARCH);
+	      searchIntent.putExtra(SearchManager.QUERY, query);
+	      startActivityForResult(searchIntent, PonyExpressActivity.ADD_FEED);
 		}
 	}
+		
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -144,8 +167,8 @@ public class AddNewPodcastFeedActivity extends Activity {
 		
 	}
 	public void browseButtonPressed(View v){
-		startActivity(new Intent(
-        		mPonyExpressApp,MiroActivity.class));
+		final Intent intent = new Intent(mPonyExpressApp, MiroActivity.class);
+		startActivityForResult(intent, PonyExpressActivity.ADD_FEED);
 		
 	}
 	
@@ -155,30 +178,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	
 	public void okButtonPressed(View v) {
 		final String feed = mFeedText.getText().toString();
-
-		Podcast podcast = new Podcast();
-
-		URL  feedUrl = Utils.getURL(feed);
-		HttpURLConnection conn = null;
-		try {
-			conn = Utils.checkURL(feedUrl);
-		} catch (SocketTimeoutException e) {
-			Log.e(TAG, "Feed url timed out", e);
-		}
-		if (conn != null){
-			conn.disconnect();
-			podcast.setFeedUrl(feedUrl);
-			//Check if the new url is already in the database
-			boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-			if (checkDatabase) {
-				Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
-			}else{
-				final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-				Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
-				//Send podcast name back to PonyExpressActivity so it can update the new feed.
-				sendToMainActivity(name);
-			}
-		} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
+		addPodcast(feed);		
 	}
 	
 	public void cancelButtonPressed(View v){
@@ -209,6 +209,10 @@ public class AddNewPodcastFeedActivity extends Activity {
 	
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (resultCode == RESULT_CANCELED){
+			//User may back out of MiroAcivity
+			return;
+		}
 		switch (requestCode) {
 		case FILE_CHOOSER:
 			if (resultCode == RESULT_OK) {
@@ -237,8 +241,13 @@ public class AddNewPodcastFeedActivity extends Activity {
 						}
 					}
 				}
-				break;
-			}
+			} break;
+		case PonyExpressActivity.ADD_FEED:
+			final String feed_url = data.getExtras().getString(PodcastKeys.FEED_URL);
+			addPodcast(feed_url);
+			break;
+		default:
+			Log.e(TAG, "Unknown request code in result recieved by AddNEwPodcastFeedsActivity");
 		}
 	}
 
@@ -252,6 +261,31 @@ public class AddNewPodcastFeedActivity extends Activity {
 		if (mProgDialog.isShowing()){
 			mProgDialog.dismiss();
 		}
+	}
+	private void addPodcast(String feed_url){
+		Podcast podcast = new Podcast();
+
+		URL  feedUrl = Utils.getURL(feed_url);
+		HttpURLConnection conn = null;
+		try {
+			conn = Utils.checkURL(feedUrl);
+		} catch (SocketTimeoutException e) {
+			Log.e(TAG, "Feed url timed out", e);
+		}
+		if (conn != null){
+			conn.disconnect();
+			podcast.setFeedUrl(feedUrl);
+			//Check if the new url is already in the database
+			boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+			if (checkDatabase) {
+				Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
+			}else{
+				final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+				Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
+				//Send podcast name back to PonyExpressActivity so it can update the new feed.
+				sendToMainActivity(name);
+			}
+		} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 	}
 
 	private class Backup extends AsyncTask<File,Integer,Integer>{

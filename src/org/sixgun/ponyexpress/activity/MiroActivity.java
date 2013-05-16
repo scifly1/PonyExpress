@@ -25,9 +25,9 @@ import org.sixgun.ponyexpress.CategoryAdapter;
 import org.sixgun.ponyexpress.ChannelListAdapter;
 import org.sixgun.ponyexpress.EndlessChannelListAdapter;
 import org.sixgun.ponyexpress.ItemListAdapter;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
@@ -40,7 +40,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -130,9 +129,6 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	    Intent intent = getIntent();
 	    if (Intent.ACTION_SEARCH.equals(intent.getAction()) && !mListingSearch) {
 	      String query = intent.getStringExtra(SearchManager.QUERY);
-	      SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
-	                SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
-	        suggestions.saveRecentQuery(query, null);
 	      searchForPodcast(query);
 	    } else  if (mListingItems){ //The order is important here, if items is true so is channels
 	    	listChannelItems(mCurrentPodcast);
@@ -193,7 +189,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	}
 	
 	public void addPodcast(View v){
-		//TODO
+		Intent intent = new Intent();
+		intent.putExtra(PodcastKeys.FEED_URL, mCurrentPodcast.getDownloadUrl());
+		setResult(RESULT_OK, intent);
+		finish();
 	}
 	
 	private void searchForPodcast(String query){
@@ -251,7 +250,8 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		getListView().removeHeaderView(mDescriptionView);
 		setListAdapter(mEndlessChannelAdapter);
 	}
-	
+
+
 	private void makePodcastAdapter(MiroGuideChannel podcast){
 		mItemListAdapter = new PrivateItemListAdapter(mPonyExpressApp,
 				R.layout.episode_row, podcast.getItems());
