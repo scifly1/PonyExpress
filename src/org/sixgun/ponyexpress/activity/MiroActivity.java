@@ -24,12 +24,14 @@ import java.util.List;
 import org.sixgun.ponyexpress.CategoryAdapter;
 import org.sixgun.ponyexpress.ChannelListAdapter;
 import org.sixgun.ponyexpress.EndlessChannelListAdapter;
+import org.sixgun.ponyexpress.ItemListAdapter;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
+import org.sixgun.ponyexpress.miroguide.model.MiroGuideItem;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -44,14 +46,21 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 
 public class MiroActivity<mPonyExpressApp> extends ListActivity {
 
 	private static final String TAG = "MiroActivity";
+	private static final String LISTING_ITEMS = "items";
+	private static final String LISTING_CHANNELS = "channels";
+	private static final String LISTING_SEARCH = "search";
+	private static final String CURRENT_CATEGORY = "category_name";
+	private static final String CURRENT_PODCAST = "current_podcast";
 	private PonyExpressApp mPonyExpressApp;
-	private ArrayAdapter<String> categoryAdapter;
+	private MiroGuideService mMiroService;
+	private ArrayAdapter<String> mCategoryAdapter;
 	private static String[] sCategories;
 	private ProgressDialog mProgDialog;
 	private ChannelListAdapter mChannelAdapter;
@@ -61,7 +70,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	private boolean mListingItems;
 	private String mCurrentCategory;
 	private boolean mListingSearch;
-
+	private ImageButton mAddButton;
+	private MiroGuideChannel mCurrentPodcast;
+	private PrivateItemListAdapter mItemListAdapter;
+	private TextView mDescriptionView;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -70,26 +82,83 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		setContentView(R.layout.miro_categories);
 		
 		mPonyExpressApp = (PonyExpressApp) getApplication();
+		mMiroService = new MiroGuideService();
+		
+		if (savedInstanceState != null){
+			// Restore value of members from saved state
+			Log.d(TAG, "Restoring state of members");
+			
+			mListingChannels = savedInstanceState.getBoolean(LISTING_CHANNELS);
+			mListingItems = savedInstanceState.getBoolean(LISTING_ITEMS);
+			mListingSearch = savedInstanceState.getBoolean(LISTING_SEARCH);
+			mCurrentCategory = savedInstanceState.getString(CURRENT_CATEGORY);
+			mCurrentPodcast = savedInstanceState.getParcelable(CURRENT_PODCAST);
+		}
 		
 		//Set up prog dialog for later
 		mProgDialog = new ProgressDialog(this);
 		mProgDialog.setMessage(getString(R.string.please_wait_simple));
 		
 		mSubTitle = (TextView) findViewById(R.id.sixgun_subtitle);
+		mAddButton = (ImageButton) findViewById(R.id.add_feeds_button);
+		mDescriptionView = (TextView) getLayoutInflater().inflate(R.layout.podcast_description_header, null);
+		
+		//FIXME improve bitmap handling everywhere first.
+		//Set the background
+//		mBackground = (ViewGroup) findViewById(R.id.miro_list);
+//		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+//
+//			@Override
+//			public void onGlobalLayout() {
+//				if (mListingItems){
+//					Log.d(TAG,"listing items global layout");
+//					
+//					Resources res = getResources();
+//					Bitmap image = PonyExpressApp.sImageManager.get(mCurrentPodcast.getThumbnailUrl());
+//					if (image != null){
+//						int new_height = mBackground.getHeight();
+//						int new_width = mBackground.getWidth();
+//						BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
+//								(res, image, new_height, new_width);
+//						mBackground.setBackgroundDrawable(new_background);
+//					}
+//				} else mBackground.setBackgroundResource(R.drawable.background);
+//			}
+//		});
 		
 		// Get the intent, if a search action get the query
 	    Intent intent = getIntent();
-	    if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+	    if (Intent.ACTION_SEARCH.equals(intent.getAction()) && !mListingSearch) {
 	      String query = intent.getStringExtra(SearchManager.QUERY);
 	      SearchRecentSuggestions suggestions = new SearchRecentSuggestions(this,
 	                SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
 	        suggestions.saveRecentQuery(query, null);
 	      searchForPodcast(query);
-	    } else {
+	    } else  if (mListingItems){ //The order is important here, if items is true so is channels
+	    	listChannelItems(mCurrentPodcast);
+	    } else if (mListingChannels){
+	    	listChannels(mCurrentCategory);
+	    }else if (mListingSearch){
+	    	searchForPodcast(mCurrentCategory);
+	    } else
 	    	listCategories();
-	    }
 	}
-	
+
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onSaveInstanceState(android.os.Bundle)
+	 */
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putBoolean(LISTING_ITEMS, mListingItems);
+		outState.putBoolean(LISTING_CHANNELS, mListingChannels);
+		outState.putBoolean(LISTING_SEARCH, mListingSearch);
+		outState.putString(CURRENT_CATEGORY, mCurrentCategory);
+		outState.putParcelable(CURRENT_PODCAST, mCurrentPodcast);
+		super.onSaveInstanceState(outState);
+	}
+
+
 	/**
 	 *  Cancel progress dialog and close any running updates when activity destroyed.
 	 */
@@ -100,6 +169,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		if (mProgDialog.isShowing()){
 			mProgDialog.dismiss();
 		}
+		mMiroService.close();
 	}
 
 	/* (non-Javadoc)
@@ -108,24 +178,29 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	@Override
 	public void onBackPressed() {
 		//Handle pressing back when showing the episodes list. 
-		if (mListingChannels){
-			mListingChannels = false;
-			listCategories();
-		} else if (mListingItems){
+		if (mListingItems){
 			mListingItems = false;
 			if (mListingSearch){
 				searchForPodcast(mCurrentCategory);
 			} else
 				listChannels(mCurrentCategory);
+		} else if (mListingChannels){
+			mListingChannels = false;
+			listCategories();
 		} else {
 			finish();
 		}
+	}
+	
+	public void addPodcast(View v){
+		//TODO
 	}
 	
 	private void searchForPodcast(String query){
 		mCurrentCategory = query;
 		new SearchChannels().execute(mCurrentCategory);
 		mSubTitle.setText(mCurrentCategory);
+		mAddButton.setVisibility(View.GONE);
 		mListingSearch = true;
 		
 	}
@@ -137,6 +212,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			makeCategoryAdapter();
 		}
 		mSubTitle.setText(R.string.categories);
+		mAddButton.setVisibility(View.GONE);
 	}
 	
 	public void listChannels(String category){
@@ -149,27 +225,41 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	
 	private void listChannelItems(MiroGuideChannel podcast){
 		mListingItems = true;
-		
-		//TODO
+		mCurrentPodcast = podcast;
+		mSubTitle.setText(mCurrentPodcast.getName());
+		mAddButton.setVisibility(View.VISIBLE);
+		new LoadItems().execute(mCurrentPodcast);
 	}
 	
 	private void makeCategoryAdapter(){
 		if (sCategories != null) {
-			categoryAdapter = new PrivateCategoryAdapter(mPonyExpressApp,
+			mCategoryAdapter = new PrivateCategoryAdapter(mPonyExpressApp,
 					R.layout.episode_row, sCategories);
-			setListAdapter(categoryAdapter);
+			setListAdapter(mCategoryAdapter);
 
 		}
 	}
 	private void makeChannelAdapter(ArrayList<MiroGuideChannel> channels){
 		mChannelAdapter = new PrivateChannelListAdapter(mPonyExpressApp, 
 				R.layout.episode_row, channels);
+		getListView().removeHeaderView(mDescriptionView);
 		setListAdapter(mChannelAdapter);
 	}
 	private void makeEndlessChannelAdapter(ArrayList<MiroGuideChannel> channels){
 		mEndlessChannelAdapter = new PrivateEndlessChannelListAdapter(mPonyExpressApp, 
 				mCurrentCategory, channels);
+		getListView().removeHeaderView(mDescriptionView);
 		setListAdapter(mEndlessChannelAdapter);
+	}
+	
+	private void makePodcastAdapter(MiroGuideChannel podcast){
+		mItemListAdapter = new PrivateItemListAdapter(mPonyExpressApp,
+				R.layout.episode_row, podcast.getItems());
+		mDescriptionView.setText(podcast.getDescription());
+		setListAdapter(null);
+		getListView().addHeaderView(mDescriptionView);
+		setListAdapter(mItemListAdapter);
+		
 	}
 	
 	private class LoadCategories extends AsyncTask<Void,Void,Void>{
@@ -182,13 +272,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 
 		@Override
 		protected Void doInBackground(Void... params) {
-			MiroGuideService miro = new MiroGuideService();
 			try {
-				sCategories = miro.getCategories();
+				sCategories = mMiroService.getCategories();
 			} catch (MiroGuideException e) {
 				Log.e(TAG, "Could not get Miro categories", e);
-			} finally {
-				miro.close();
 			}
 			return null;
 		}
@@ -216,14 +303,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 
 		@Override
 		protected List<MiroGuideChannel> doInBackground(String... params) {
-			MiroGuideService miro = new MiroGuideService();
-			
 			try {
-				return miro.getChannelList("category", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
+				return mMiroService.getChannelList("category", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
 			} catch (MiroGuideException e) {
 				Log.e(TAG, "Could not get Miro channels", e);
-			} finally {
-				miro.close();
 			}
 			return null;
 		}
@@ -257,19 +340,45 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	private class SearchChannels extends LoadChannels{
 
 		@Override
-		protected List<MiroGuideChannel> doInBackground(String... params) {
-			MiroGuideService miro = new MiroGuideService();
-			
+		protected List<MiroGuideChannel> doInBackground(String... params) {			
 			try {
-				return miro.getChannelList("name", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
+				return mMiroService.getChannelList("name", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
 			} catch (MiroGuideException e) {
 				Log.e(TAG, "Could not get Miro channels", e);
-			} finally {
-				miro.close();
 			}
 			return null;
 		}
-		
+	}
+	
+	private class LoadItems extends AsyncTask<MiroGuideChannel, Void, MiroGuideChannel>{
+
+		@Override
+		protected void onPreExecute() {
+			mProgDialog.show();
+			
+		}		
+		@Override
+		protected MiroGuideChannel doInBackground(
+				MiroGuideChannel... params) {
+			try {
+				return mMiroService.getChannel(params[0].getId());
+			} catch (MiroGuideException e) {
+				Log.e(TAG, "Could not get Miro channels", e);
+			}
+			return null;
+		}
+		@Override
+		protected void onCancelled(MiroGuideChannel result) {
+			mProgDialog.hide();
+		}
+		@Override
+		protected void onPostExecute(MiroGuideChannel result) {
+			
+			makePodcastAdapter(result);
+			
+			mProgDialog.hide();
+		}
+
 	}
 	
 	/**
@@ -360,6 +469,16 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			return convertView;
 			
 		}
+	}
+	
+	private class PrivateItemListAdapter extends ItemListAdapter {
+
+		public PrivateItemListAdapter(Context context, int textViewResourceId,
+				List<MiroGuideItem> items) {
+			super(context, textViewResourceId, items);
+			
+		}
+		
 	}
 	
 }

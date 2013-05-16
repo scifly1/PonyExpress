@@ -18,9 +18,10 @@
 */
 package org.sixgun.ponyexpress;
 
+import java.text.DateFormat;
 import java.util.List;
 
-import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
+import org.sixgun.ponyexpress.miroguide.model.MiroGuideItem;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -29,43 +30,38 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-/**
- * Subclass of ArrayAdapter that holds MiroGuideChannel objects for a 
- * list adapter. Requires sub-classing as an enclosed class within the Activity 
- * it is used so that methods within the activity can be called by the 
- * onClickListener defined in the sub-class.
- * 
- */
-public class ChannelListAdapter extends ArrayAdapter<MiroGuideChannel> {
 
-	public ChannelListAdapter(Context context, int textViewResourceId,
-			List<MiroGuideChannel> channels) {
-		super(context, textViewResourceId, channels);
-	}
+public class ItemListAdapter extends ArrayAdapter<MiroGuideItem> {
 	
-
+	public ItemListAdapter(Context context, int textViewResourceId,
+			List<MiroGuideItem> items) {
+		super(context, textViewResourceId, items);
+	}
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
 		Holder holder;
-		MiroGuideChannel channel = getItem(position);
+		MiroGuideItem item = getItem(position);
 		
 		if (convertView == null){
 			holder = new Holder();
 			LayoutInflater li = (LayoutInflater) getContext().
 					getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-			convertView = li.inflate(R.layout.episode_row, null);
-			holder.name = (TextView) convertView.findViewById(R.id.episode_text);
+			convertView = li.inflate(R.layout.miro_item_row, null);
+			holder.name = (TextView) convertView.findViewById(R.id.episode_name);
+			holder.date = (TextView) convertView.findViewById(R.id.episode_date);
 			convertView.setTag(holder);
 		} else {
 			holder = (Holder) convertView.getTag();
 		}
-		holder.name.setText(channel.getName());
+		holder.name.setText(item.getName());
+		DateFormat localFormat = android.text.format.DateFormat.getDateFormat(getContext());
+		holder.date.setText(localFormat.format(item.getDate()));
 		
 		return convertView;
 	}
 
 	static class Holder{
 		TextView name;
+		TextView date;
 	}
-
 }

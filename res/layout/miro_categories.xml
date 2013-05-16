@@ -31,12 +31,25 @@
             android:paddingLeft="10dp"
             android:text="@string/categories"
             android:textSize="18sp" />
+        
+        <ImageButton 
+            android:id="@+id/add_feeds_button"
+            android:contentDescription="@string/add_feeds_button_desc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:background="#ff000000"
+            android:onClick="addPodcast"
+            android:paddingTop="10dp"
+            android:src="@drawable/add_button"
+            android:visibility="gone"
+            />
 
        
     </RelativeLayout>
     
     <LinearLayout
-		android:id="@+id/categories_list"
+		android:id="@+id/miro_list"
 		android:layout_width="fill_parent"
 		android:layout_height="fill_parent"
 		android:layout_below="@+id/pony_header"

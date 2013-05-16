@@ -33,8 +33,11 @@ package org.sixgun.ponyexpress.miroguide.model;
 
 import java.util.ArrayList;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 
-public class MiroGuideChannel {
+
+public class MiroGuideChannel implements Parcelable {
 	public static final int DEFAULT_LIMIT = 20; //Number of results per query
 	private long id;
 	private String name;
@@ -66,6 +69,15 @@ public class MiroGuideChannel {
 		this.websiteUrl = websiteUrl;
 		this.description = description;
 		this.items = items;
+	}
+
+	public MiroGuideChannel(Parcel in) {
+		this.id = in.readLong();
+		this.name = in.readString();
+		this.thumbnailUrl = in.readString();
+		this.downloadUrl = in.readString();
+		this.websiteUrl = in.readString();
+		this.description = in.readString();
 	}
 
 	@Override
@@ -104,5 +116,32 @@ public class MiroGuideChannel {
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
 	}
+
+	@Override
+	public int describeContents() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void writeToParcel(Parcel dest, int flags) {
+		dest.writeLong(id);
+		dest.writeString(name);
+		dest.writeString(thumbnailUrl);
+		dest.writeString(downloadUrl);
+		dest.writeString(description);		
+	}
+	
+	public static final Parcelable.Creator<MiroGuideChannel> CREATOR
+	= new Parcelable.Creator<MiroGuideChannel>() {
+		public MiroGuideChannel createFromParcel(Parcel in) {
+			return new MiroGuideChannel(in);
+		}
+
+		@Override
+		public MiroGuideChannel[] newArray(int size) {
+			return new MiroGuideChannel[size];
+		}
+	};
 
 }
