@@ -105,7 +105,8 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		mAddButton = (ImageButton) findViewById(R.id.add_feeds_button);
 		mDescriptionView = (TextView) getLayoutInflater().inflate(R.layout.podcast_description_header, null);
 		
-		//FIXME improve bitmap handling everywhere first.
+		//TODO Add album art to the Channel(podcast) lists.
+		//Probably want to fix bitmap handling first.
 		//Set the background
 //		mBackground = (ViewGroup) findViewById(R.id.miro_list);
 //		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
@@ -511,6 +512,19 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			super(context, textViewResourceId, items);
 			
 		}
+
+		/* (non-Javadoc)
+		 * @see org.sixgun.ponyexpress.ItemListAdapter#getView(int, android.view.View, android.view.ViewGroup)
+		 */
+		@Override
+		public View getView(int position, View convertView, ViewGroup parent) {
+			convertView = super.getView(position, convertView, parent);
+			//Make the episodes un-selectable
+			convertView.setEnabled(false);
+			
+			return convertView;
+		}
+		
 		
 	}
 	
