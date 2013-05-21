@@ -82,6 +82,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mFeedText = (EditText) findViewById(R.id.feed_entry);
+		handleIntent(getIntent());
 
 		
 	}
@@ -135,6 +136,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 			return true;
 		case R.id.clear_search:
 			showDialog(CLEAR_HISTORY);
+			return true;
+		case R.id.search:
+			onSearchRequested();
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -284,6 +288,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 				Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
 				//Send podcast name back to PonyExpressActivity so it can update the new feed.
 				sendToMainActivity(name);
+				
 			}
 		} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
 	}
@@ -399,13 +404,13 @@ public class AddNewPodcastFeedActivity extends Activity {
 
 	/**
 	 * This method closes this activity and sends a string back to the main activity.
-	 * @param name
+	 * @param update_code the name of a podcast to update or UPDATE_ALL
 	 */
 	private void sendToMainActivity(String update_code){
-		Intent intent = new Intent();
+		Intent intent = new Intent(mPonyExpressApp, PonyExpressActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		intent.putExtra(PodcastKeys.NAME, update_code);
-		setResult(RESULT_OK, intent);
-		finish();
+		startActivity(intent);
 	}
 
 }

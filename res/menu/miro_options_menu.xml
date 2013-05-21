@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item
+    <item
 		android:title="@string/settings"
 		android:id="@+id/settings_menu" 
 		android:icon="@drawable/ic_menu_preferences"/>
@@ -8,9 +8,6 @@
 	   	android:title="@string/search_miro"
 	    android:id="@+id/search"
 	    android:icon="@drawable/ic_menu_search" />
-	<item 
-	    android:title="@string/clear_search_history"
-	    android:id="@+id/clear_search"
-	    android:icon="@drawable/ic_menu_clear_playlist" />
-	
+    
+
 </menu>

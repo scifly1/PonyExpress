@@ -1,5 +1,5 @@
 /*
- * Copyright 2010 Paul Elms
+ * Copyright 2010-2013 Paul Elms
  *
  *  This file is part of PonyExpress.
  *
@@ -175,6 +175,20 @@ public class PonyExpressActivity extends ListActivity {
 			addPodcast(null, url);
 		}
 	}
+	
+	//Update the feeds when new podcast(s) have been added.
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onNewIntent(android.content.Intent)
+	 */
+	@Override
+	protected void onNewIntent(Intent intent) {
+		Log.d(TAG, "New Intent recieved");
+		mProgDialog.show();
+		final String podcast_name = intent.getExtras().
+				getString(PodcastKeys.NAME);
+		updateFeed(podcast_name);
+	}
+
 	/**
 	 * Clears the image cache every 30 days so that it does not waste resources.
 	 * @param prefs
@@ -327,22 +341,6 @@ public class PonyExpressActivity extends ListActivity {
 	 */
 	public void showPlaylist(View v) {
 		startActivity(new Intent(mPonyExpressApp, PlaylistActivity.class));
-	}
-
-	
-	/* (non-Javadoc)
-	 * @see android.app.Activity#onActivityResult(int, int, android.content.Intent)
-	 */
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
-		//No need for Switch/case on requestCode as only one result expected
-		if (resultCode == RESULT_OK){
-			mProgDialog.show();
-			final String podcast_name = data.getExtras().
-					getString(PodcastKeys.NAME);
-			updateFeed(podcast_name);
-		}
 	}
 
 	/* (non-Javadoc)

@@ -41,6 +41,9 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -167,6 +170,36 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		}
 		mMiroService.close();
 	}
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateOptionsMenu(android.view.Menu)
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+	    inflater.inflate(R.menu.miro_options_menu, menu);
+	    return true;
+	}
+
+
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onOptionsItemSelected(android.view.MenuItem)
+	 */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()){
+		case R.id.settings_menu:
+			startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
+			return true;
+		case R.id.search:
+			onSearchRequested();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onBackPressed()
