@@ -221,6 +221,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			finish();
 		}
 	}
+	public void goHome(View v){
+		Intent intent = new Intent(mPonyExpressApp, PonyExpressActivity.class);
+		startActivity(intent);
+	}
 	
 	public void addPodcast(View v){
 		Intent intent = new Intent();

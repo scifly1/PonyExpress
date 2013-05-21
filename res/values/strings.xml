@@ -157,6 +157,7 @@
 	<string name="error_parsing_backup_file">There was an error parsing the backup file. Required data may be missing or corrupt.</string>
 	<string name="counter">0:00:00</string>
 	<string name="add_feeds_button_desc">Add new podcast feeds button </string>
+	<string name="home_button_desc">Home button</string>
 	<string name="playlist_button_desc">Show playlist button </string>
 	<string name="play_button_desc">Play button </string>
 	<string name="rewind_button_desc">Rewind button </string>
