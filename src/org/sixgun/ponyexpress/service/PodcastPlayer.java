@@ -160,7 +160,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
 					getApplicationContext().sendBroadcast(intent);
 				} else { //Just stop
-					hideNotification();
+					stopForeground(true);
 					unRegisterHeadPhoneReceiver();
 					//Go back to episodes activity if episode was deleted and not 
 					//playing playlist
@@ -244,7 +244,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mPlayer.release();
 			mPlayer = null;
 		}
-		mNM.cancel(NOTIFY_ID);
 		Log.d(TAG, "PodcastPlayer stopped");
 	}
 
@@ -375,7 +374,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		abandonAudioFocus();
 		unRegisterHeadPhoneReceiver();
 		mPlayer.pause();
-		hideNotification();
+		stopForeground(true);
 		if (mPodcastName != null){ //null if playback hasn't started yet, and we are quitting
 			//Record last listened position in database
 			final int playbackPosition = mPlayer.getCurrentPosition();
@@ -560,12 +559,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		notification.setLatestEventInfo(mPonyExpressApp, 
 				getText(R.string.app_name), text, intent);
 		
-		mNM.notify(NOTIFY_ID, notification);
+		startForeground(NOTIFY_ID, notification);
 	}
 
-	private void hideNotification() {
-		mNM.cancel(NOTIFY_ID);
-	}
 
 	private void showErrorNotification(){
 		//Shows a notification that there is an error with an episode file 
