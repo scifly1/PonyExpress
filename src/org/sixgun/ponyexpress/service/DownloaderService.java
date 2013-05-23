@@ -403,11 +403,12 @@ public class DownloaderService extends Service {
 						if (auto_playlist){
 							mPonyExpressApp.getDbHelper().recompileAutoPlaylist();
 						}
-						
+
 						mNM.cancel(NOTIFY_ID);
+						mDownloaderAwake = false;
 						stopSelf();
 					}
-					
+
 				}
 			}
 		}).start();
