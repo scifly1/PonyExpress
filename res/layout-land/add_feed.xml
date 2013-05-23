@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--Make sure that any views added here are also added to the landscape version 
-	if needed. -->
-
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:background="@drawable/background"
     android:orientation="vertical" >
-        
+
+<RelativeLayout 
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
 
     <RelativeLayout
         android:id="@+id/pony_header"
@@ -148,3 +148,4 @@
         android:onClick="cancelButtonPressed"/>
 
 </RelativeLayout>
+</ScrollView>
