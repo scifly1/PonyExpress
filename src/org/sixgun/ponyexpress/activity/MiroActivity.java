@@ -357,8 +357,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		@Override
 		protected void onPostExecute(List<MiroGuideChannel> result) {
 			ArrayList<MiroGuideChannel> channels = new ArrayList<MiroGuideChannel>();
-			for (MiroGuideChannel channel : result){
-				channels.add(channel);
+			if (result != null){
+				for (MiroGuideChannel channel : result){
+					channels.add(channel);
+				}
 			}
 			if (channels.size() < MiroGuideChannel.DEFAULT_LIMIT){
 				makeChannelAdapter(channels);

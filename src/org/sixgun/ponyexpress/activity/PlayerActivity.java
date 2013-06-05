@@ -27,7 +27,6 @@ import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.Utils;
-import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
 import android.app.Notification;
@@ -50,6 +49,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
@@ -433,14 +433,11 @@ public class PlayerActivity extends Activity {
 		//Skip if orientation is landscape
 		if (orientation != 2) {
 			//Set the image
-			RemoteImageView album_art = (RemoteImageView)findViewById(R.id.album_art);
+			ImageView album_art = (ImageView)findViewById(R.id.album_art);
 			mAlbumArtUrl = getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
 			if (mAlbumArtUrl != null && !"".equals(mAlbumArtUrl) 
 					&& !"null".equalsIgnoreCase(mAlbumArtUrl) && album_art !=null){
-				album_art.setRemoteURI(mAlbumArtUrl);
-				album_art.loadImage();
-			} else {
-				album_art.loadDefault();
+				PonyExpressApp.sBitmapManager.loadImage(mAlbumArtUrl, album_art);
 			}
 		}
 		//Create an Intent to use to start playback.

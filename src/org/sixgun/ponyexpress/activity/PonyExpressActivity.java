@@ -152,7 +152,7 @@ public class PonyExpressActivity extends ListActivity {
 				mPonyExpressApp.startService(intent);
 			}
 		}
-		//Clear the ImageCache if it has not been done for a month
+		//Clear the Images on disk if it has not been done for a month
 		maintainImageCache(prefs);
 				
 		//Check SDCard contents and database match.
@@ -190,7 +190,7 @@ public class PonyExpressActivity extends ListActivity {
 	}
 
 	/**
-	 * Clears the image cache every 30 days so that it does not waste resources.
+	 * Clears the images on disk every 30 days so that it does not waste resources.
 	 * @param prefs
 	 */
 	private void maintainImageCache(SharedPreferences prefs) {
@@ -204,7 +204,7 @@ public class PonyExpressActivity extends ListActivity {
 		final long next = last_cache_clear + delta;
 		if (next < now && 
 				mPonyExpressApp.getInternetHelper().isDownloadAllowed() ){
-			PonyExpressApp.sImageManager.clear();
+			PonyExpressApp.sBitmapManager.clear();
 			prefs.edit().putLong(LAST_CACHE_CLEAR, now).commit();
 			Log.d(TAG, "Clearing image cache");
 		} else {

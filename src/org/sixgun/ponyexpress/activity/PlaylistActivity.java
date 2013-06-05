@@ -28,8 +28,6 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.InternetHelper;
-import org.sixgun.ponyexpress.util.Utils;
-import org.sixgun.ponyexpress.view.RemoteImageView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -41,7 +39,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
@@ -62,6 +59,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -116,13 +114,12 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 
 				@Override
 				public void onGlobalLayout() {
-					Resources res = getResources();
-					Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
-					if (image != null){
+					if (mListingEpisodes && !mAlbumArtUrl.equals(null)){
+						Resources res = getResources();
 						int new_height = mBackground.getHeight();
 						int new_width = mBackground.getWidth();
-						BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-								(res, image, new_height, new_width);
+						BitmapDrawable new_background = PonyExpressApp.
+								sBitmapManager.createBackgroundFromAlbumArt(res, mAlbumArtUrl, new_height, new_width);
 						mBackground.setBackgroundDrawable(new_background);
 					}
 				}
@@ -525,13 +522,10 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			
 			if (mAutoPlaylistsOn){
 				String albumArtUrl = mPonyExpressApp.getDbHelper().getAlbumArtUrl(podcast_name);
-				RemoteImageView albumArt = (RemoteImageView)view.findViewById(R.id.album_art);
+				ImageView albumArt = (ImageView)view.findViewById(R.id.album_art);
 				
 				if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
-					albumArt.setRemoteURI(albumArtUrl);
-					albumArt.loadImage();
-				} else {
-					albumArt.loadDefault();
+					PonyExpressApp.sBitmapManager.loadImage(albumArtUrl, albumArt);
 				}
 			}
 			

@@ -5,7 +5,7 @@
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/episode_auto_playlist_row">
 
-<org.sixgun.ponyexpress.view.RemoteImageView
+<ImageView
 		android:id="@+id/album_art"
 		android:layout_width="70dp"
 		android:layout_height="70dp"

@@ -20,13 +20,13 @@ package org.sixgun.ponyexpress;
 
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.service.UpdaterService;
-import org.sixgun.ponyexpress.util.ImageManager;
+import org.sixgun.ponyexpress.util.BitmapManager;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
 
 import android.app.ActivityManager;
-import android.app.Application;
 import android.app.ActivityManager.RunningServiceInfo;
+import android.app.Application;
 
 /**
  * Application class to provide an application context for the DbAdaptor
@@ -37,7 +37,7 @@ public class PonyExpressApp extends Application {
 	public static final String APPLICATION_NAME = "Pony Express";
 	
 	public static final String PODCAST_PATH = "/Android/data/org.sixgun.PonyExpress/files/";
-	public static ImageManager sImageManager;
+	public static BitmapManager sBitmapManager;
 	
 	private PonyExpressDbAdaptor DbHelper;
 	private InternetHelper mInternetHelper;
@@ -56,8 +56,7 @@ public class PonyExpressApp extends Application {
 		DbHelper.open();
 		//Set up InternetHelper
 		mInternetHelper = new InternetHelper(this);
-		//Start ImageManager
-		sImageManager = new ImageManager(this);
+		sBitmapManager = new BitmapManager(this);
 	}
 
 	/* (non-Javadoc)

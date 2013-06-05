@@ -18,8 +18,6 @@
 */
 package org.sixgun.ponyexpress;
 
-import org.sixgun.ponyexpress.view.RemoteImageView;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
@@ -27,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -60,7 +59,7 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 
 		if (getItemViewType(cursor) == 1){
 			//Youtube episode
-			RemoteImageView thumbnail = (RemoteImageView) view.findViewById(R.id.thumbnail);
+			ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
 			if (thumbnail != null){
 				//Get thumbnail url from description text
 				String description = cursor.getString(
@@ -69,8 +68,7 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 				final int start = description.indexOf(YOUTUBE_THUMBNAIL_LINK_START)+5;
 				String url = description.substring(start, end);
             	if (url!= null && !"".equals(url) && !"null".equalsIgnoreCase(url)){
-            		thumbnail.setRemoteURI(url);
-            		thumbnail.loadImage();
+            		PonyExpressApp.sBitmapManager.loadImage(url, thumbnail);
             	}
 			}
 		}

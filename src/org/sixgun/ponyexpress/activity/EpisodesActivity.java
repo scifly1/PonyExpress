@@ -36,7 +36,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.ConnectivityManager;
 import android.net.Uri;
@@ -99,13 +98,13 @@ public class EpisodesActivity extends ListActivity {
 			
 			@Override
 			public void onGlobalLayout() {
-				Resources res = getResources();
-				Bitmap image = PonyExpressApp.sImageManager.get(mAlbumArtUrl);
-				if (image != null){
+				if (!mAlbumArtUrl.equals(null)){
+					Resources res = getResources();
 					int new_height = mBackground.getHeight();
 					int new_width = mBackground.getWidth();
-					BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-					(res, image, new_height, new_width);
+					BitmapDrawable new_background = PonyExpressApp.
+							sBitmapManager.createBackgroundFromAlbumArt
+							(res, mAlbumArtUrl, new_height, new_width);
 					mBackground.setBackgroundDrawable(new_background);
 				}
 			}

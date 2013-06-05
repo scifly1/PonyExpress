@@ -22,25 +22,20 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.util.Locale;
 
 import org.apache.http.HttpStatus;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Environment;
 import android.os.StatFs;
 import android.util.Log;
-import android.view.Gravity;
 
 /**
  * Utility class with general utility methods.
@@ -50,7 +45,6 @@ public class Utils {
 	
 	private static final String TAG = "PonyExpressUtils";
 	private static final int TIMEOUT = 20000;
-	private static Constructor<?> mBitmapDrawableCtor;
 
 	/**
 	 * Formats a time in millisecods into a h:mm:ss string
@@ -67,7 +61,7 @@ public class Utils {
 		minutes = minutes % 60;
 		hours = hours % 60;
 		
-		return String.format("%d:%02d:%02d", hours,minutes,seconds);
+		return String.format(Locale.US,"%d:%02d:%02d", hours,minutes,seconds);
 	}
 
 	/**
@@ -179,80 +173,6 @@ public class Utils {
 		}
 		
 		return unlistenedString;
-	}
-	/**
-	 * Creates a BitmapDrawable of a specific size from the given album art.
-	 * Uses the deprecated BitmapDrawable constructor on android 1.5.
-	 * @param res
-	 * @param art
-	 * @param height
-	 * @param width
-	 * @return BitmapDrawable
-	 */
-	static public BitmapDrawable createBackgroundFromAlbumArt(Resources res, Bitmap art, int height, int width){
-		Bitmap new_image;
-		if (height >  width){
-			new_image = Bitmap.createScaledBitmap(art, height, height, true);
-		} else {
-			new_image = Bitmap.createScaledBitmap(art, width, width, true);	
-		}
-		//First use deprecated Ctor that will work on android 1.5
-		BitmapDrawable new_background = new BitmapDrawable(new_image);
-		//If on android > 1.5 use the better Ctor.
-		if (mBitmapDrawableCtor != null){
-			try {
-				new_background = BitmapDrawable(res, new_image);
-			} catch (IllegalArgumentException e) {
-				Log.e(TAG, "Illegal Args passed to BitmapDrawable", e);
-			} catch (IOException e) {
-				Log.e(TAG, "IO exception with BitmapDrawable", e);
-			}
-		}
-		new_background.setGravity(Gravity.TOP| Gravity.LEFT);
-		new_background.setAlpha(80);
-		return new_background;
-	}
-	/**
-	 * Method to determine if we need to use the deprecated BitmapDrawable constructor.
-	 */
-	static private void initCompatibility(){
-		Class<?> cls;
-		Class<?> partypes[] = new Class[2];
-		try {
-			cls = BitmapDrawable.class;
-			partypes[0] = Resources.class;
-			partypes[1] = Bitmap.class;
-			mBitmapDrawableCtor	= cls.getConstructor(partypes);	
-		} catch (SecurityException e) {
-			Log.e(TAG, "BitmapDrawable security exception" , e);
-		} catch (NoSuchMethodException e) {
-			//Android 1.5
-			Log.e(TAG,"BitmapDrawable has no such method", e);
-		}  
-
-	}
-	
-	static {
-		initCompatibility();
-	}
-	
-	private static BitmapDrawable BitmapDrawable(Resources res, Bitmap image) throws IllegalArgumentException, IOException{
-		BitmapDrawable bd = null;
-		Object[] arglist = new Object[2];
-		arglist[0] = res;
-		arglist[1] = image;
-		try {
-			bd = (android.graphics.drawable.BitmapDrawable) 
-						mBitmapDrawableCtor.newInstance(arglist);
-		} catch (InstantiationException e) {
-			Log.e(TAG, "Could not instantiate BitmapDrawable", e);
-		} catch (IllegalAccessException e) {
-			Log.e(TAG, "Could not access BitmapDrawable", e);
-		} catch (InvocationTargetException e) {
-			Log.e(TAG, "Could not invoke BitmapDrawable", e);
-		}
-		
-		return bd;
 	}
 	
 	/**
