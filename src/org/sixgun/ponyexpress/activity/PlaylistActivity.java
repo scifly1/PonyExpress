@@ -28,6 +28,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.InternetHelper;
+import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -59,7 +60,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.CheckBox;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -522,7 +522,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			
 			if (mAutoPlaylistsOn){
 				String albumArtUrl = mPonyExpressApp.getDbHelper().getAlbumArtUrl(podcast_name);
-				ImageView albumArt = (ImageView)view.findViewById(R.id.album_art);
+				RecyclingImageView albumArt = (RecyclingImageView)view.findViewById(R.id.album_art);
 				
 				if (albumArtUrl!= null && !"".equals(albumArtUrl) && !"null".equalsIgnoreCase(albumArtUrl)){
 					PonyExpressApp.sBitmapManager.loadImage(albumArtUrl, albumArt);

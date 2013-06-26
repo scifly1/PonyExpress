@@ -18,6 +18,8 @@
 */
 package org.sixgun.ponyexpress;
 
+import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.Typeface;
@@ -25,7 +27,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -59,7 +60,7 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 
 		if (getItemViewType(cursor) == 1){
 			//Youtube episode
-			ImageView thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+			RecyclingImageView thumbnail = (RecyclingImageView) view.findViewById(R.id.thumbnail);
 			if (thumbnail != null){
 				//Get thumbnail url from description text
 				String description = cursor.getString(

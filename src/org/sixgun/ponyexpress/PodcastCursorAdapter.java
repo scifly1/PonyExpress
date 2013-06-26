@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress;
 
 import org.sixgun.ponyexpress.util.Utils;
+import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -26,7 +27,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 public class PodcastCursorAdapter extends CursorAdapter {
@@ -60,7 +60,7 @@ public class PodcastCursorAdapter extends CursorAdapter {
 		name = Utils.stripper(name, "Ogg Feed");
 
 		TextView podcastName = (TextView) view.findViewById(R.id.podcast_text);
-		final ImageView albumArt = (ImageView)view.findViewById(R.id.album_art);
+		final RecyclingImageView albumArt = (RecyclingImageView)view.findViewById(R.id.album_art);
 		TextView unlistenedText = (TextView) view.findViewById(R.id.unlistened_eps);
 
 		podcastName.setText(name);

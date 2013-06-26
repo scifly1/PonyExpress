@@ -20,9 +20,9 @@ package org.sixgun.ponyexpress;
 
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.service.UpdaterService;
-import org.sixgun.ponyexpress.util.BitmapManager;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
+import org.sixgun.ponyexpress.util.Bitmap.BitmapManager;
 
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
