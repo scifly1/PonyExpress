@@ -79,8 +79,6 @@ public class BitmapManager {
 		Display display = wm.getDefaultDisplay();
 		mMaxBitmapWidth = display.getWidth();
 		mMaxBitmapHeight = display.getHeight();
-		Log.d(TAG, "Max Width = " + mMaxBitmapWidth);
-		Log.d(TAG, "Max Height = " + mMaxBitmapHeight);
 		
 		//Get the maximum memory available and set the cache to use an 8th of it.
 		ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
@@ -121,7 +119,6 @@ public class BitmapManager {
 		if (getBitmapFromCache(url) == null){
 			Log.d(TAG, "Image added to cache");
 			//Mark as in the cache so it is not gc'ed
-			Log.d(TAG, "Image is " + image.getClass());
 			if (AsyncDrawable.class.isInstance(image)){
 				((AsyncDrawable) image).setIsCached(true);
 			}
@@ -146,9 +143,7 @@ public class BitmapManager {
 	    BitmapFactory.Options opts = getBitmapOptions(is);
 	    if (opts.outWidth > mMaxBitmapWidth || opts.outHeight > mMaxBitmapHeight){
 	    	//downsample the bitmap as it is too large
-	    	Log.d(TAG, "Downsampling the bitmap!");
 	    	opts.inSampleSize = calculateInSampleSize(opts, mMaxBitmapWidth, mMaxBitmapHeight);
-	    	Log.d(TAG,"inSampleSize = " + opts.inSampleSize);
 	    }
 	    is.close();
 	    //Now get the bitmap
