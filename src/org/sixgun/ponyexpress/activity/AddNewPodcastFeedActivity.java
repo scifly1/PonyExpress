@@ -102,6 +102,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 				if (index != -1){
 					url = url.substring(index +2);
 					mFeedText.append(url);
+					okButtonPressed(null);
 				} else {
 					Toast.makeText(this, R.string.url_error, Toast.LENGTH_SHORT).show();
 				}
