@@ -27,6 +27,6 @@
             android:text="@string/no_episodes"
             android:textStyle="bold" 
             android:paddingLeft="10dp"
-            android:textSize="16dp"/>
+            android:textSize="16sp"/>
         
 </LinearLayout>

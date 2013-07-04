@@ -151,6 +151,7 @@
 	<string name="backup_successful">Export successful! Yippee ki-yay! </string>
 	<string name="browse_miro">Browse Miro Guide</string>
 	<string name="search_miro">Search</string>
+	<string name="empty_search">No podcasts found!</string>
 	<string name="yes">Yes</string>
 	<string name="no">No</string>
 	<string name="there_is_no_backup">There is no backup file to restore.</string>

@@ -73,13 +73,23 @@
 			android:background="@drawable/gradient"
 			android:layout_height="wrap_content"
 			android:layout_width="fill_parent" />
+
 		<ListView
-			android:id="@android:id/list"
-			android:layout_width="fill_parent"
-			android:layout_height="fill_parent"
-			android:paddingTop="5dp"
-			android:cacheColorHint="#00000000"
-			android:divider="#00000001"
-			android:dividerHeight="2dp" />
-	</LinearLayout>
+		    android:id="@android:id/list"
+		    android:layout_width="fill_parent"
+		    android:layout_height="fill_parent"
+		    android:cacheColorHint="#00000000"
+		    android:divider="#00000001"
+		    android:dividerHeight="2dp"
+		    android:paddingTop="5dp" />
+
+		<TextView
+		    android:id="@android:id/empty"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		   	android:textSize="16sp"
+		   	android:paddingLeft="10dp"
+		    android:text="@string/empty_search" />
+    </LinearLayout>
+
 </RelativeLayout>
