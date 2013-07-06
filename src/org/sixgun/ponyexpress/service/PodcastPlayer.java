@@ -45,6 +45,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -365,8 +366,20 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			}
 		}
 
-		mPlayer.start();
+		//Use OnSeekCompleteListener to start playback.  This will prevent
+		//stuttering when playback is started.
+		OnSeekCompleteListener onSeekCompleteListener = new OnSeekCompleteListener(){
+			@Override
+			public void onSeekComplete(MediaPlayer mp) {
+				showNotification();
+				mEpisodePlaying = mEpisodeQueued;
+				Log.d(TAG,"Playing " + mEpisodePlaying);
+				mp.start();
+				mp.setOnSeekCompleteListener(null);
+			}
+		};
 
+		mPlayer.setOnSeekCompleteListener(onSeekCompleteListener);
 		int playbackPosition = getPlaybackPosition();
 		//Fix for android 2.2 HTC phones that 
 		//don't seek to the current position with mp3 and instead go to 0
@@ -376,11 +389,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mPlayer.seekTo(playbackPosition + 10);
 		}
 		mPlayer.seekTo(playbackPosition);
-
-		showNotification();
-		mEpisodePlaying = mEpisodeQueued;
-		Log.d(TAG,"Playing " + mEpisodePlaying);
-
+		//OnSeekComplete will be called here if all goes well.
 	}
 
 	public void pause() {
