@@ -44,6 +44,7 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.media.MediaPlayer.OnErrorListener;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -127,6 +128,17 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 
+		OnErrorListener onErrorListener = new OnErrorListener(){
+			//Using an OnErrorListener to will stop the playlist from
+			//completing an episode when an error is thrown.
+			@Override
+			public boolean onError(MediaPlayer mp, int arg1, int arg2) {
+				Log.e(TAG,"On error listener called");
+				//TODO Implement handling if necessary.
+				return true;
+			}
+		};
+		
 		OnCompletionListener onCompletionListener = new OnCompletionListener(){
 			@Override
 			public void onCompletion(MediaPlayer mp) {
@@ -172,6 +184,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			}
 			
 		};
+		mPlayer.setOnErrorListener(onErrorListener);
+		mFreePlayer.setOnErrorListener(onErrorListener);		
 		mPlayer.setOnCompletionListener(onCompletionListener);
 		mFreePlayer.setOnCompletionListener(onCompletionListener);
 		mAudioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
