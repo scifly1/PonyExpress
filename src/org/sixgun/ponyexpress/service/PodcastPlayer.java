@@ -45,6 +45,7 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.media.MediaPlayer.OnErrorListener;
+import android.media.MediaPlayer.OnPreparedListener;
 import android.media.MediaPlayer.OnSeekCompleteListener;
 import android.os.Binder;
 import android.os.Bundle;
@@ -136,6 +137,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			public boolean onError(MediaPlayer mp, int arg1, int arg2) {
 				Log.e(TAG,"On error listener called");
 				//TODO Implement handling if necessary.
+				mIsInitialised = false;
+				mp.reset();
 				return true;
 			}
 		};
@@ -183,7 +186,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					}
 				}
 			}
-			
 		};
 		mPlayer.setOnErrorListener(onErrorListener);
 		mFreePlayer.setOnErrorListener(onErrorListener);		
@@ -271,6 +273,16 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	 * @param rowID
 	 */
 	public void initPlayer(Bundle data){
+		OnPreparedListener onPreparedListener = new OnPreparedListener(){
+			//Use an onPreparedListener to set mIsInitialised to true.
+			//This should prevent it from being mark true when it should
+			//be false.
+			@Override
+			public void onPrepared(MediaPlayer mp) {
+				mIsInitialised = true;
+			}
+		};
+		mFreePlayer.setOnPreparedListener(onPreparedListener);
 		registerRemoteControl();
 		mData = data;
 		mPlayingPlaylist = mData.getBoolean(PodcastKeys.PLAYLIST);
@@ -325,8 +337,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mEpisodeQueued = ""; //this ensures that if the user re-enters 
 			//the player that the init is carried out.
 			showErrorNotification();
-		} else {
-			mIsInitialised = true;
 		}
 	}
 
@@ -335,6 +345,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	 * to the mPlayer and begins playback.  
 	 */
 	public void play() {
+
+		if (!mIsInitialised){
+			initPlayer(mData);
+		}
 
 		int result = mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
 				AudioManager.AUDIOFOCUS_GAIN);
