@@ -138,6 +138,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				Log.e(TAG,"On error listener called");
 				//TODO Implement handling if necessary.
 				mIsInitialised = false;
+				mEpisodeQueued = "";
 				mp.reset();
 				return true;
 			}
@@ -160,21 +161,20 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					}
 				}
 				//Get next episode in playlist.
-				if (mPlayingPlaylist && !mPonyExpressApp.getDbHelper().playlistEnding())
-				{
+				if (mPlayingPlaylist && !mPonyExpressApp.getDbHelper().playlistEnding()){
 					mPonyExpressApp.getDbHelper().popPlaylist();
-					final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
-					final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
-					//TODO Check an episode has been returned, if db corrupted it will not be.
-					//What do we do if it is corrupted??
-					Bundle bundle = new Bundle();
-					bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
-					initPlayer(bundle);
-					play();
-					//Send a broadcast intent to EpisodeTabs
-					//telling it to refresh with the new episode
-					Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
-					getApplicationContext().sendBroadcast(intent);
+					Bundle bundle = getBundleFromTheTopOfThePlaylist();
+					if (bundle != null){
+						initPlayer(bundle);
+						play();
+						//Send a broadcast intent to EpisodeTabs
+						//telling it to refresh with the new episode
+						Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+						getApplicationContext().sendBroadcast(intent);
+					}else{
+						//There is a problem with the playlist db if we are here, so clear it.
+						mPonyExpressApp.getDbHelper().clearPlaylist();
+					}
 				} else { //Just stop
 					stopForeground(true);
 					unRegisterHeadPhoneReceiver();
@@ -213,11 +213,19 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		case PLAY_PAUSE:
 			if (isPlaying()){
 				pause();
-			}else if (mIsInitialised){
+			}else if (mData != null){
+				//Resume the last played.
 				play();	
-			}else if (!mIsInitialised){
-				//TODO Add functionality to resume if a remote play is press
-				//when the service is not running.
+			}else if (mData == null){
+				//The app is not open if we are here, so start at the top of the playlist.
+				Bundle bundle = getBundleFromTheTopOfThePlaylist();
+				if (bundle != null){
+					initPlayer(bundle);
+					play();
+				}else{
+					//There is a problem with the playlist db if we are here, so clear it.
+					mPonyExpressApp.getDbHelper().clearPlaylist();
+				}
 			}
 
 			break;
@@ -234,12 +242,6 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			Log.e(TAG, "unknown action received from RemoteControlReceiver: " + action);
 			break;
 		}
-		//The receiver may restart the service if media buttons are pressed after
-		//the service has been stopped.  It will not be init at that point so should 
-		//be stopped again.
-		if (!mIsInitialised){
-			stopSelf();
-		}
 		return START_NOT_STICKY;
 	}
 
@@ -249,7 +251,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		if (mIsInitialised){
+		if (isPlaying()){
 			pause();
 		}
 
@@ -460,6 +462,18 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		} else {
 			//Playback has been started now, so the mPlayer is correct#
 			mPlayer.seekTo(progress);
+		}
+	}
+
+	public Bundle getBundleFromTheTopOfThePlaylist(){
+		final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
+		final long episode_id = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+		if(episode_id == 0 || podcast_name == ""){
+			return null;
+		}else{
+			Bundle bundle = new Bundle();
+			bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+			return bundle;
 		}
 	}
 
