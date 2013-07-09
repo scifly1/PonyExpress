@@ -101,7 +101,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 	private boolean mPlayingPlaylist;
 
-
+//TODO Possibly change how errors are handled so the user has a better idea of what may have happened.
 
 	/**
 	 * Class for clients to access.  Because we know this service always
