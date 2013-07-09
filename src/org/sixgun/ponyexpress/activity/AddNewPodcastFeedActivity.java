@@ -27,6 +27,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -192,7 +193,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 	}
 	
 	public void backupButtonPressed(View v){
-		Log.d(TAG,"Opening FileChooser...");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Opening FileChooser...");
+		}
 		Intent intent = new Intent(mPonyExpressApp, FileChooserActivity.class);
 		intent.putExtra(FileChooserActivity._Theme, android.R.style.Theme_Dialog);
 		intent.putExtra(FileChooserActivity._SaveDialog, true);
@@ -203,7 +206,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 	}
 	
 	public void restoreButtonPressed(View v){
-		Log.d(TAG,"Restore from backup file...");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Restore from backup file...");
+		}
 		Intent intent = new Intent(mPonyExpressApp, FileChooserActivity.class);
 		intent.putExtra(FileChooserActivity._Theme, android.R.style.Theme_Dialog);
 		intent.putExtra(FileChooserActivity._MultiSelection, false);
@@ -232,17 +237,24 @@ public class AddNewPodcastFeedActivity extends Activity {
 				
 				if (!files.isEmpty()){
 					if (saveDialog){ //Backing up
-						Log.d(TAG, "Path returned is: " + files.get(0).getPath());
+						if (BuildConfig.DEBUG) {
+							Log.d(TAG, "Path returned is: "
+									+ files.get(0).getPath());
+						}
 						//Start the backup Async
 						Backup task = (Backup) new Backup().execute(files.get(0));
 						if (task.isCancelled()){
-							Log.d(TAG, "Backup canceled");
+							if (BuildConfig.DEBUG) {
+								Log.d(TAG, "Backup canceled");
+							}
 						}
 					} else {
 						//Start the restore Async
 						Restore task = (Restore) new Restore().execute(files.get(0));
 						if (task.isCancelled()){
-							Log.d(TAG, "Restore canceled");
+							if (BuildConfig.DEBUG) {
+								Log.d(TAG, "Restore canceled");
+							}
 						}
 					}
 				}
@@ -320,7 +332,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 			case ReturnCodes.ALL_OK:
 				Toast.makeText(mPonyExpressApp,
 						R.string.backup_successful, Toast.LENGTH_LONG).show();
-				Log.d(TAG,"Backup finished...");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Backup finished...");
+				}
 				break;
 			}
 		}
@@ -397,7 +411,9 @@ public class AddNewPodcastFeedActivity extends Activity {
 						R.string.error_parsing_backup_file, Toast.LENGTH_LONG).show();
 				break;
 			case ReturnCodes.ALL_OK:
-				Log.d(TAG,"Restore finished...");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Restore finished...");
+				}
 				sendToMainActivity(PonyExpressActivity.UPDATE_ALL);
 			}
 		}

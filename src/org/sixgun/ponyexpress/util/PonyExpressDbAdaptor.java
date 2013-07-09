@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.Podcast;
@@ -128,7 +129,7 @@ public class PonyExpressDbAdaptor {
 
 		@Override
     	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    		Log.w("PonyExpress", "Upgrading database from version " + oldVersion + " to "
+    		Log.i("PonyExpress", "Upgrading database from version " + oldVersion + " to "
                     + newVersion);
     		switch (oldVersion) {
     		case 1: //New installs have version 1.
@@ -248,7 +249,7 @@ public class PonyExpressDbAdaptor {
     						db.execSQL("DROP TABLE IF EXISTS " + c.getString(0));
     						c.moveToNext();
     					}
-    				} else {
+    				} else if (BuildConfig.DEBUG){
     					Log.d(TAG, "No old PodEps tables to update");
     				}
     				c.close();
@@ -328,10 +329,15 @@ public class PonyExpressDbAdaptor {
 				c.moveToFirst();
 				for (int i = 0; i < c.getCount(); i++){
 					long num = DatabaseUtils.queryNumEntries(db, c.getString(0));
-					Log.d(TAG, c.getString(0) + " has " + num + "rows");
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, c.getString(0) + " has " + num + "rows");
+					}
 					//if empty check the name isn't in the podcasts list.
 					if (num == 0 && !podcasts.contains(c.getString(0))){
-						Log.d(TAG, "Table " + c.getString(0) + " is to be dropped");
+						if (BuildConfig.DEBUG) {
+							Log.d(TAG, "Table " + c.getString(0)
+									+ " is to be dropped");
+						}
 						empty_tables.add(c.getString(0));
 					}
 					c.moveToNext();
@@ -385,7 +391,9 @@ public class PonyExpressDbAdaptor {
 			cursor_not_empty = cursor.moveToFirst();
 			if (cursor_not_empty){
 				id = cursor.getLong(0);
-				Log.d(TAG, "Podcast Id of Episode is: "+ id);
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Podcast Id of Episode is: " + id);
+				}
 			} else {
 				Log.e(TAG, "Looking for a Podcast name not in the database!");
 			}
@@ -523,29 +531,7 @@ public class PonyExpressDbAdaptor {
 		cursor.close();
 		return files;
 	}
-	/**
-	 * Method to determine the date of the latest episode in the database.
-	 * @param podcast_name
-	 * @return The Latest episodes date as a string.
-	 */
-//	public Date getLatestEpisodeDate(String podcast_name){
-//		final String table_name = getTableName(podcast_name);
-//		final String[] columns = {EpisodeKeys.DATE};
-//		final Cursor cursor = mDb.query(table_name, 
-//				columns, null, null, null, null, EpisodeKeys.DATE +" DESC", "1");
-//		final boolean result = cursor.moveToFirst();
-//		//Check the cursor is at a row.
-//		if (result == true){
-//			final Long latest_date = cursor.getLong(0);
-//			cursor.close();
-//			Log.d("PonyExpressDbAdaptor","Latest date is:" + latest_date.toString());
-//			return new Date(latest_date);
-//		}else{
-//			cursor.close();
-//			//return date 0 milliseconds
-//			return new Date(0);
-//		}
-//	}
+
 	
 	public String getEpisodeUrl(long row_ID){
 		final String[] columns = {EpisodeKeys._ID,EpisodeKeys.URL};
@@ -555,7 +541,9 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			url = cursor.getString(1);
-			Log.d(TAG, "Url of Episode is: "+ url);
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Url of Episode is: " + url);
+			}
 		} else {
 			Log.e(TAG, "Empty cursor at getEpisodeUrl()");
 		}
@@ -627,7 +615,9 @@ public class PonyExpressDbAdaptor {
 			filename = cursor.getString(1);
 			//get everything after last '/' (separator) 
 			short_filename = filename.substring(filename.lastIndexOf('/'));
-			Log.d(TAG, "Filename of Episode is: "+ short_filename);
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Filename of Episode is: " + short_filename);
+			}
 		} else {
 			Log.e(TAG, "Empty cursor at getEpisodeFilename()");
 		}
@@ -658,7 +648,9 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			downloaded = cursor.getInt(1);
-			Log.d(TAG, "Episode downloaded: "+ downloaded);
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Episode downloaded: " + downloaded);
+			}
 		} else {
 			Log.e(TAG, "Empty cursor at isEpisodeDownloaded()");
 		}
@@ -832,7 +824,9 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			name = cursor.getString(1);
-			Log.d(TAG, "Title of Podcast is: "+ name);
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Title of Podcast is: " + name);
+			}
 		} else {
 			Log.e(TAG, "Empty cursor at getPodcastName()");
 		}
@@ -918,7 +912,7 @@ public class PonyExpressDbAdaptor {
 			final String old_url = cursor.getString(1);
 			if (!artUrl.equals(old_url)){
 				//Album art has changed
-				Log.d(TAG, "Old art: " + old_url + " New art: " + artUrl);
+				Log.i(TAG, "Old art: " + old_url + " New art: " + artUrl);
 				update(cursor.getLong(0), artUrl);
 			}
 		} else {
@@ -951,17 +945,17 @@ public class PonyExpressDbAdaptor {
 			mDb.delete(PLAYLIST_TABLE, PodcastKeys.NAME + "=" + quote_name, null);
 			
 			final String path = PonyExpressApp.PODCAST_PATH + podcast_name;
-			Log.d(TAG, "Deleting " + path + "from SD Card");
+			Log.i(TAG, "Deleting " + path + "from SD Card");
 			File podcast_path = new File(rootPath + path);
 			deleted = Utils.deleteDir(podcast_path);
 			//Delete episodes from episode table
 			long podcast_id = getPodcastId(podcast_name);
 			final String where = EpisodeKeys.PODCAST_ID + "=" + podcast_id;
 			mDb.delete(EPISODES_TABLE, where, null);
-			Log.d(TAG, "Removing episodes from database");
+			Log.i(TAG, "Removing episodes from database");
 			//Remove entry from Podcasts table
 			mDb.delete(PODCAST_TABLE, PodcastKeys._ID + "=" + rowID, null);
-			Log.d(TAG, "Removing podcast from database");	
+			Log.i(TAG, "Removing podcast from database");	
 		}
 		//Send broadcast to inform app that database changed and can now update view.
 		Intent intent = new Intent("org.sixgun.ponyexpress.PODCAST_DELETED");

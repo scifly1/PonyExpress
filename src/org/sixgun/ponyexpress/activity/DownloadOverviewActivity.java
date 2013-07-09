@@ -21,6 +21,7 @@ package org.sixgun.ponyexpress.activity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
@@ -125,7 +126,9 @@ public class DownloadOverviewActivity extends ListActivity {
 						Log.e(TAG, "Download Progress thread interuppted", e);
 					}
 				}
-				Log.d(TAG, "Stopping download progress thread");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Stopping download progress thread");
+				}
 			}
 		}).start();
 	}
@@ -275,10 +278,14 @@ public class DownloadOverviewActivity extends ListActivity {
 				mDownloader = ((DownloaderService.DownloaderServiceBinder)service).getService();
 				//Query Downloader for current downloads
 				if (mDownloader.isDownloading()){
-					Log.d(TAG, "Currently Downloading");
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Currently Downloading");
+					}
 					startDownloadProgressThread();
 				} else {
-					Log.d(TAG, "Not Downloading");
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Not Downloading");
+					}
 				}
 			}
 		};

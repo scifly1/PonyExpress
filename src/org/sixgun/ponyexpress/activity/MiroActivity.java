@@ -21,6 +21,7 @@ package org.sixgun.ponyexpress.activity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.CategoryAdapter;
 import org.sixgun.ponyexpress.ChannelListAdapter;
 import org.sixgun.ponyexpress.EndlessChannelListAdapter;
@@ -87,9 +88,10 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		mMiroService = new MiroGuideService();
 		
 		if (savedInstanceState != null){
-			// Restore value of members from saved state
-			Log.d(TAG, "Restoring state of members");
-			
+			if (BuildConfig.DEBUG) {
+				// Restore value of members from saved state
+				Log.d(TAG, "Restoring state of members");
+			}
 			mListingChannels = savedInstanceState.getBoolean(LISTING_CHANNELS);
 			mListingItems = savedInstanceState.getBoolean(LISTING_ITEMS);
 			mListingSearch = savedInstanceState.getBoolean(LISTING_SEARCH);
@@ -106,28 +108,6 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		mDescriptionView = (TextView) getLayoutInflater().inflate(R.layout.podcast_description_header, null);
 		
 		//TODO Add album art to the Channel(podcast) lists.
-		//Probably want to fix bitmap handling first.
-		//Set the background
-//		mBackground = (ViewGroup) findViewById(R.id.miro_list);
-//		mBackground.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-//
-//			@Override
-//			public void onGlobalLayout() {
-//				if (mListingItems){
-//					Log.d(TAG,"listing items global layout");
-//					
-//					Resources res = getResources();
-//					Bitmap image = PonyExpressApp.sImageManager.get(mCurrentPodcast.getThumbnailUrl());
-//					if (image != null){
-//						int new_height = mBackground.getHeight();
-//						int new_width = mBackground.getWidth();
-//						BitmapDrawable new_background = Utils.createBackgroundFromAlbumArt
-//								(res, image, new_height, new_width);
-//						mBackground.setBackgroundDrawable(new_background);
-//					}
-//				} else mBackground.setBackgroundResource(R.drawable.background);
-//			}
-//		});
 		
 		// Get the intent, if a search action get the query
 	    Intent intent = getIntent();

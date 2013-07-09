@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Podcast;
 import org.xml.sax.Attributes;
 
@@ -94,7 +95,9 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "href");
-				Log.d(TAG,"Podcast art from: " + url);
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Podcast art from: " + url);
+				}
 				new_podcast.setArt_Url(url);				
 			}
 		});
@@ -105,7 +108,9 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void end(String body) {
 				if (new_podcast.getArt_Url() == null){
-					Log.d(TAG,"Podcast art from: " + body);
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Podcast art from: " + body);
+					}
 					new_podcast.setArt_Url(body);
 				}
 			}
@@ -175,7 +180,9 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "href");
-				Log.d(TAG,"Podcast art from: " + url);
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Podcast art from: " + url);
+				}
 				new_podcast.setArt_Url(url);				
 			}
 		});
@@ -186,7 +193,9 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void end(String body) {
 				if (new_podcast.getArt_Url() == null){
-					Log.d(TAG,"Podcast art from: " + body);
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Podcast art from: " + body);
+					}
 					new_podcast.setArt_Url(body);
 				}
 			}

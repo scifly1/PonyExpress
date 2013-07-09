@@ -27,6 +27,7 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.xmlpull.v1.XmlSerializer;
 
@@ -39,8 +40,9 @@ private static final String TAG = "PonyExpress BackupFileWriter";
 
 	public int writeBackupOpml(List<String> podcasts, File f){
 
-		Log.d(TAG, "BackupFileWriter started");
-
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "BackupFileWriter started");
+		}
 		//create a new backup file in the SD card
 		Utils.writePodcastPath();
 		File opmlfile = f;
@@ -87,7 +89,9 @@ private static final String TAG = "PonyExpress BackupFileWriter";
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		Log.d(TAG,"Backup successful");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Backup successful");
+		}
 		return ReturnCodes.ALL_OK;
 	}
 }

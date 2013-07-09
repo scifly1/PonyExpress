@@ -29,6 +29,7 @@ import java.net.URL;
 import java.util.Locale;
 
 import org.apache.http.HttpStatus;
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
@@ -94,7 +95,9 @@ public class Utils {
 			conn.setRequestProperty("Connection", "close");
 			conn.setConnectTimeout(TIMEOUT);
             conn.setReadTimeout(TIMEOUT);
-			Log.d(TAG,"Response code: " + conn.getResponseCode());
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Response code: " + conn.getResponseCode());
+			}
 			//Check that the server responds properly
 			if (conn.getResponseCode() != HttpStatus.SC_OK){
 				return null;
@@ -182,10 +185,14 @@ public class Utils {
 	public static boolean isSDCardWritable() {
 		final String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state)){
-			Log.d(TAG, "SD Card is mounted");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "SD Card is mounted");
+			}
 			File file = Environment.getExternalStorageDirectory();
 			if (file.canWrite()){
-				Log.d(TAG,"Can Write to SD card.");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Can Write to SD card.");
+				}
 				return true;
 			}
 		}

@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
@@ -98,7 +99,9 @@ public class DownloaderService extends Service {
 	 */
 	@Override
 	public IBinder onBind(Intent intent) {
-		Log.d(TAG, "Downloader bound.");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Downloader bound.");
+		}
 		return mBinder;
 	}
 	
@@ -108,7 +111,9 @@ public class DownloaderService extends Service {
 	 */
 	@Override
 	public boolean onUnbind(Intent intent) {
-		Log.d(TAG, "Downloader unbound.");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Downloader unbound.");
+		}
 		return super.onUnbind(intent);
 	}
 
@@ -119,7 +124,9 @@ public class DownloaderService extends Service {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-		Log.d(TAG, "Downloader Service Started");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Downloader Service Started");
+		}
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
 		mEpisodes = new ArrayList<DownloadingEpisode>();
@@ -131,7 +138,9 @@ public class DownloaderService extends Service {
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
-		Log.d(TAG, "Downloader Service Killed/Stopped");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Downloader Service Killed/Stopped");
+		}
 		mDownloaderAwake = false;
 	}
 
@@ -143,7 +152,7 @@ public class DownloaderService extends Service {
 	
 	private void handleCommand(Intent intent){
 		if (intent == null){
-			Log.d(TAG, "Null intent passed to handleCommand");
+			Log.w(TAG, "Null intent passed to handleCommand");
 			return;
 		}
 		int action = intent.getIntExtra("action", -1);
@@ -175,7 +184,7 @@ public class DownloaderService extends Service {
 		newEpisode.setSize(data.getInt(EpisodeKeys.SIZE));
 		
 		mQueue.add(newEpisode);
-		Log.d(TAG, newEpisode.getTitle() + " queued");
+		Log.i(TAG, newEpisode.getTitle() + " queued");
 		notifyPlayerActivityOfStart(QUEUED);
 	}
 	
@@ -221,7 +230,9 @@ public class DownloaderService extends Service {
 							byte[] buffer = new byte[1024];
 							int size = 0;
 
-							Log.d(TAG,"Writing " + url.getFile());
+							if (BuildConfig.DEBUG) {
+								Log.d(TAG, "Writing " + url.getFile());
+							}
 							try {
 								while ((size = inFile.read(buffer)) > 0 && !episode.downloadCancelled()) {
 									outFile.write(buffer,0, size);
@@ -229,12 +240,15 @@ public class DownloaderService extends Service {
 									mEpisodes.get(index).setDownloadProgress(totalDownloaded);
 								}
 								if (episode.downloadCancelled()){
-									Log.d(TAG, "Podcast download cancelled.");
+									if (BuildConfig.DEBUG) {
+										Log.d(TAG,
+												"Podcast download cancelled.");
+									}
 									//Delete partial download.
 									Utils.deleteFile(mPonyExpressApp, episode.getRowID(), episode.getPodcastName());
 								}
 								else {
-									Log.d(TAG,"Podcast written to SD card.");
+									Log.i(TAG,"Podcast written to SD card.");
 									episode.setDownloadCompleted(true);
 									mPonyExpressApp.getDbHelper().update(episode.getRowID(), 
 											EpisodeKeys.DOWNLOADED,"true");
@@ -251,7 +265,7 @@ public class DownloaderService extends Service {
 							}
 
 						} else {
-							Log.d(TAG, "No Internet Connection or outFile error.");
+							Log.e(TAG, "No Internet Connection or outFile error.");
 							setDownloadFailed(index);
 							clearEpisodeFromPlaylist(index);
 							mHandler.post(new Runnable(){
@@ -300,13 +314,19 @@ public class DownloaderService extends Service {
 	private boolean isSDCardWritable() {
 		final String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state)){
-			Log.d(TAG, "SD Card is mounted");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "SD Card is mounted");
+			}
 			mRoot = Environment.getExternalStorageDirectory();
 			if (mRoot.canWrite()){
-				Log.d(TAG,"Can Write to SD card.");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Can Write to SD card.");
+				}
 				return true;
 			} else {
-				Log.d(TAG, "SD Card is not writable.");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "SD Card is not writable.");
+				}
 				PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
 						0, new Intent(), 0);
 				int icon = R.drawable.stat_notify_error;
@@ -336,7 +356,6 @@ public class DownloaderService extends Service {
 		try {
 			outFile = new FileOutputStream(new File(path,filename));
 		} catch (FileNotFoundException e) {
-			// TODO Improve Error handling.
 			Log.e(TAG, "Cannot open FileOutputStream for writing.",e);
 		}
 		return outFile;
@@ -382,7 +401,7 @@ public class DownloaderService extends Service {
 						mEpisodes.add(episode);
 						final int index = mEpisodes.indexOf(episode);
 						downloadEpisode(index);
-						Log.d(TAG, episode.getTitle() + " downloading");
+						Log.i(TAG, episode.getTitle() + " downloading");
 						notifyPlayerActivityOfStart(index);
 					}
 					try {
@@ -459,7 +478,7 @@ public class DownloaderService extends Service {
 			if (episode.getTitle().equals(PodcastTitle)){
 				if (episode.isEpisodeDownloading()){
 					index = mEpisodes.indexOf(episode);
-				}else{
+				}else if (BuildConfig.DEBUG){
 					Log.d(TAG, "Episode: " + PodcastTitle + " not downloading!");
 				}
 			}

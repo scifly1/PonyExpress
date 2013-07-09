@@ -90,7 +90,9 @@ public class DownloadingEpisode extends Episode {
 	public boolean isEpisodeDownloading(){
 		final int percent = (int) getDownloadPercent();
 		if (percent == DownloadingEpisode.OVERSIZE_EPISODE_DOWNLOADED){
-			Log.d(TAG, "Oversize episode is no longer downloading");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Oversize episode is no longer downloading");
+			}
 			return false;
 		}
 		else if (percent < 100){
@@ -116,7 +118,9 @@ public class DownloadingEpisode extends Episode {
 			if (mDownloadCompleted){
 				//download completed, tell playerActivity or downloadOverview
 				percent = OVERSIZE_EPISODE_DOWNLOADED;
-				Log.d(TAG,"Oversize episode completed download");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Oversize episode completed download");
+				}
 			}
 		}
 		return percent;

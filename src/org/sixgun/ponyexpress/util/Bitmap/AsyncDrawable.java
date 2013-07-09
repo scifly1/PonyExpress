@@ -20,6 +20,8 @@ package org.sixgun.ponyexpress.util.Bitmap;
 
 import java.lang.ref.WeakReference;
 
+import org.sixgun.ponyexpress.BuildConfig;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -58,10 +60,14 @@ class AsyncDrawable extends BitmapDrawable {
 			if (isDisplayed) {
 				mDisplayRefCount++;
 				mHasBeenDisplayed = true;
-				Log.d(TAG, "IsDisplayed(true) Called");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "IsDisplayed(true) Called");
+				}
 			} else {
 				mDisplayRefCount--;
-				Log.d(TAG, "IsDisplayed(false) Called");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "IsDisplayed(false) Called");
+				}
 			}
 		}
 		// Check to see if recycle() can be called.
@@ -74,10 +80,14 @@ class AsyncDrawable extends BitmapDrawable {
 		synchronized (this) {
 			if (isCached) {
 				mCacheRefCount++;
-				Log.d(TAG, "Is cached(true) called");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Is cached(true) called");
+				}
 			} else {
 				mCacheRefCount--;
-				Log.d(TAG, "Is cached(false) called");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Is cached(false) called");
+				}
 			}
 		}
 		// Check to see if recycle() can be called.
@@ -87,12 +97,16 @@ class AsyncDrawable extends BitmapDrawable {
 	private synchronized void checkState() {
 		// If the drawable cache and display ref counts = 0, and this drawable
 		// has been displayed, then recycle.
-		Log.d(TAG,"CacheCount = " + mCacheRefCount);
-		Log.d(TAG,"DisplayCount = " + mDisplayRefCount);
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "CacheCount = " + mCacheRefCount);
+			Log.d(TAG, "DisplayCount = " + mDisplayRefCount);
+		}
 		if (mCacheRefCount <= 0 && mDisplayRefCount <= 0 && mHasBeenDisplayed
 				&& hasValidBitmap()) {
 			getBitmap().recycle();
-			Log.d(TAG, "Bitmap recycle called!!");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Bitmap recycle called!!");
+			}
 		}
 	}
 

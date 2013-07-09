@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.receiver;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 
 import android.content.BroadcastReceiver;
@@ -39,8 +40,9 @@ public class ScheduledDownloadReceiver extends BroadcastReceiver {
 	 */
 	@Override
 	public void onReceive(Context context, Intent intent) {
-		Log.d(TAG,"Recieved scheduled download alarm!");
-		
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Recieved scheduled download alarm!");
+		}
 		//If device is asleep when alarm triggered it may go back
 		// to sleep before the service is started so we need a wakelock.
 		if (ScheduledDownloadService.sWakeLock == null){
@@ -48,7 +50,9 @@ public class ScheduledDownloadReceiver extends BroadcastReceiver {
 			ScheduledDownloadService.sWakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
 		}
 		if (!ScheduledDownloadService.sWakeLock.isHeld()){
-			Log.d(TAG, "Acquiring wake lock");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Acquiring wake lock");
+			}
 			ScheduledDownloadService.sWakeLock.acquire();
 		}
 		//Get a wifiLock to use the wifi
@@ -57,7 +61,9 @@ public class ScheduledDownloadReceiver extends BroadcastReceiver {
 			ScheduledDownloadService.sWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL,WIFI_LOCK);
 		}
 		if (!ScheduledDownloadService.sWifiLock.isHeld()){
-			Log.d(TAG, "Acquiring Wifi lock");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Acquiring Wifi lock");
+			}
 			ScheduledDownloadService.sWifiLock.acquire();
 		}
 		//Start SheduledDownloadServiceSevice

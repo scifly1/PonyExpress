@@ -208,7 +208,9 @@ public class Episode implements Comparable<Episode> {
 		String epNumber = "";
 		if (m.find()){
 			epNumber = m.group(); 
-			Log.d(TAG, "Episode number: " + epNumber);
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Episode number: " + epNumber);
+			}
 		} 
 		Bundle bundle = new Bundle();
 		
