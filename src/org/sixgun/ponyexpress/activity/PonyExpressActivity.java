@@ -408,7 +408,12 @@ public class PonyExpressActivity extends ListActivity {
         	Toast.makeText(mPonyExpressApp, 
 					R.string.please_wait, Toast.LENGTH_LONG).show();
 		}else{
-			UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
+			boolean connectivity_required = true;
+			if (podcastName == SET_ALARM_ONLY){
+				connectivity_required = false;
+			}
+			UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes(connectivity_required)
+			.execute(podcastName);
 			if (BuildConfig.DEBUG && task.isCancelled()){
 				Log.d(TAG, "Cancelled Update, No Connectivity");
 			}
@@ -497,13 +502,18 @@ public class PonyExpressActivity extends ListActivity {
 	*/
 	private class UpdateEpisodes extends AsyncTask <String,Void,Void>{
 		
+		private boolean connectivity_required;
 		/*
 		 * This is carried out in the UI thread before the background tasks are started.
 		 */
+		public UpdateEpisodes(boolean conectivity_required){
+			this.connectivity_required = conectivity_required; 
+		}
+		
 		@Override
 		protected void onPreExecute() {
 			super.onPreExecute();
-			if (!mPonyExpressApp.getInternetHelper().checkConnectivity()){
+			if (connectivity_required && !mPonyExpressApp.getInternetHelper().checkConnectivity() ){
 				Toast.makeText(mPonyExpressApp, 
 						R.string.no_internet_connection, Toast.LENGTH_LONG).show();
 				cancel(true);
