@@ -21,7 +21,6 @@ package org.sixgun.ponyexpress.service;
 import java.io.File;
 import java.io.IOException;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
@@ -30,6 +29,7 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
 import org.sixgun.ponyexpress.activity.EpisodesActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
+import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Notification;
@@ -53,7 +53,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.RemoteViews;
 
 /**
@@ -136,7 +135,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			//completing an episode when an error is thrown.
 			@Override
 			public boolean onError(MediaPlayer mp, int arg1, int arg2) {
-				Log.e(TAG,"On error listener called");
+				PonyLogger.e(TAG,"On error listener called");
 				//TODO Implement handling if necessary.
 				mIsInitialised = false;
 				mEpisodeQueued = "";
@@ -150,15 +149,13 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			public void onCompletion(MediaPlayer mp) {
 				abandonAudioFocus();
 				//Set Listened to 0				
-				if (mPodcastName != null && savePlaybackPosition(0) && BuildConfig.DEBUG) {
-					Log.d(TAG, "Updated listened to position to " + 0);
+				if (mPodcastName != null && savePlaybackPosition(0)) {
+					PonyLogger.d(TAG, "Updated listened to position to " + 0);
 				}
 				//Delete episode if preference is set.
 				final boolean delete_episode = mPrefs.getBoolean(getString(R.string.auto_delete_key), false);
 				if (mPodcastName != null && delete_episode){
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Trying to delete episode");
-					}
+					PonyLogger.d(TAG, "Trying to delete episode");
 					if (Utils.deleteFile(mPonyExpressApp, mRowID, mPodcastName)){
 						mPonyExpressApp.getDbHelper().update(mRowID, EpisodeKeys.DOWNLOADED, "false");
 					}
@@ -198,9 +195,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mRemoteControlReceiver = new ComponentName(getPackageName(),
 				RemoteControlReceiver.class.getName());
 
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "PodcastPlayer started");
-		}
+		PonyLogger.d(TAG, "PodcastPlayer started");
 	}
 
 	@Override
@@ -241,10 +236,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			break;
 			//TODO Should recieve a skip from the reciever too, but can't test at present.
 		case -2:
-			Log.e(TAG, "no action received from RemoteControlReceiver!");
+			PonyLogger.e(TAG, "no action received from RemoteControlReceiver!");
 			break;
 		default:
-			Log.e(TAG, "unknown action received from RemoteControlReceiver: " + action);
+			PonyLogger.e(TAG, "unknown action received from RemoteControlReceiver: " + action);
 			break;
 		}
 		return START_NOT_STICKY;
@@ -268,9 +263,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			mPlayer.release();
 			mPlayer = null;
 		}
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "PodcastPlayer stopped");
-		}
+		PonyLogger.d(TAG, "PodcastPlayer stopped");
 	}
 
 	/** Initilises the free Media Player with the correct title and sets 
@@ -310,32 +303,30 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			try {
 				mFreePlayer.setDataSource(podcast.getAbsolutePath());
 			} catch (IllegalArgumentException e) {
-				Log.e(TAG, "Illegal path supplied to player", e);
+				PonyLogger.e(TAG, "Illegal path supplied to player", e);
 				isError = true;
 			} catch (IllegalStateException e) {
-				Log.e(TAG, "Player is not set up correctly", e);
+				PonyLogger.e(TAG, "Player is not set up correctly", e);
 				isError = true;
 			} catch (IOException e) {
-				Log.e(TAG,"Player cannot access path",e);
+				PonyLogger.e(TAG,"Player cannot access path",e);
 				isError = true;
 			}
 			if (!isError) {
 				try {
 					mFreePlayer.prepare();
 				} catch (IllegalStateException e) {
-					Log.e(TAG,"Cannot prepare Player. Incorrect state",e);
+					PonyLogger.e(TAG,"Cannot prepare Player. Incorrect state",e);
 					isError = true;
 				} catch (IOException e) {
-					Log.e(TAG,"Player cannot access path",e);
+					PonyLogger.e(TAG,"Player cannot access path",e);
 					isError = true;
 				}
 			}
 			//SeekTo last listened position
 			if (startPosition != -1){
 				mFreePlayer.seekTo(startPosition);
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Seeking to " + startPosition);
-				}
+				PonyLogger.d(TAG, "Seeking to " + startPosition);
 				mQueuedIsUnlistened = false;
 			} else {
 				mQueuedIsUnlistened = true;
@@ -364,8 +355,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		int result = mAudioManager.requestAudioFocus(this, AudioManager.STREAM_MUSIC,
 				AudioManager.AUDIOFOCUS_GAIN);
 
-		if (BuildConfig.DEBUG && result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
-			Log.d(TAG, "Audio focus granted");
+		if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+			PonyLogger.d(TAG, "Audio focus granted");
 		}
 		registerHeadPhoneReceiver();
 		registerRemoteControl();
@@ -398,9 +389,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			public void onSeekComplete(MediaPlayer mp) {
 				showNotification();
 				mEpisodePlaying = mEpisodeQueued;
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Playing " + mEpisodePlaying);
-				}
+				PonyLogger.d(TAG, "Playing " + mEpisodePlaying);
 				mp.start();
 				mp.setOnSeekCompleteListener(null);
 			}
@@ -431,9 +420,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			final int playbackPosition = mPlayer.getCurrentPosition();
 			boolean save = savePlaybackPosition(playbackPosition);
 			if (save){
-				Log.i(TAG, "Updated listened to position to " + playbackPosition);
+				PonyLogger.i(TAG, "Updated listened to position to " + playbackPosition);
 			}else{
-				Log.w(TAG, "Error saving playback position at " + playbackPosition);
+				PonyLogger.w(TAG, "Error saving playback position at " + playbackPosition);
 			}
 		}
 
@@ -580,12 +569,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Headphone unplugged");
-			}
+			PonyLogger.d(TAG, "Headphone unplugged");
 			pause();
 		}
-		
 	}
 
 	private void registerHeadPhoneReceiver() {
@@ -623,7 +609,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		notification.flags |= Notification.FLAG_ONGOING_EVENT;
 		notification.setLatestEventInfo(mPonyExpressApp, 
 				getText(R.string.app_name), text, intent);
-		
+
 		startForeground(NOTIFY_ID, notification);
 	}
 
@@ -679,9 +665,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		//Abandon audio focus
 		int result = mAudioManager.abandonAudioFocus(this);
 		if (result != AudioManager.AUDIOFOCUS_REQUEST_GRANTED ){
-			Log.e(TAG, "Audio focus failed to abandon");
-		}else if (BuildConfig.DEBUG){
-			Log.d(TAG, "Audio focus abandoned");
+			PonyLogger.e(TAG, "Audio focus failed to abandon");
+		}else{
+			PonyLogger.d(TAG, "Audio focus abandoned");
 		}
 	}
 
@@ -698,10 +684,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		switch (focus) {
 
 		case AudioManager.AUDIOFOCUS_GAIN:
-			if (BuildConfig.DEBUG) {
-				// resume play back when something else gives focus back
-				Log.d(TAG, "Audio focus has been returned from another app");
-			}
+			// resume play back when something else gives focus back
+			PonyLogger.d(TAG, "Audio focus has been returned from another app");
 			registerRemoteControl();
 			if (!mPlayer.isPlaying()) {
 				mPlayer.seekTo(getPlaybackPosition());
@@ -710,20 +694,16 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			break;
 
 		case AudioManager.AUDIOFOCUS_LOSS:
-			if (BuildConfig.DEBUG) {
-				// focus will be taken for an extend period of time, so we
-				// need to pause and stop the service
-				Log.d(TAG, "Audio focus lost-permanent");
-			}
+			// focus will be taken for an extend period of time, so we
+			// need to pause and stop the service
+			PonyLogger.d(TAG, "Audio focus lost-permanent");
 			unRegisterRemoteControl();
 			pause();
 			break;
 
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-			if (BuildConfig.DEBUG) {
-				// focus will be given back soon so we just need to pause for a moment
-				Log.d(TAG, "Audio focus lost-transient");
-			}
+			// focus will be given back soon so we just need to pause for a moment
+			PonyLogger.d(TAG, "Audio focus lost-transient");
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
 				savePlaybackPosition(mPlayer.getCurrentPosition());
@@ -731,11 +711,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 			break;
 
 		case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
-			if (BuildConfig.DEBUG) {
-				// focus will be given back soon and we can continue playing,
-				// if we so choose, but we will not
-				Log.d(TAG, "Audio focus lost-transient and can duck");
-			}
+			// focus will be given back soon and we can continue playing,
+			// if we so choose, but we will not
+			PonyLogger.d(TAG, "Audio focus lost-transient and can duck");
 			if (mPlayer.isPlaying()) {
 				mPlayer.pause();
 				savePlaybackPosition(mPlayer.getCurrentPosition());
