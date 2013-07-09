@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
@@ -508,7 +509,9 @@ public class PlayerActivity extends Activity {
 		
 		if(mIsDownloading){
 			activateDownloadCancelButton();
-			Log.d(TAG, "Player resuming..");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Player resuming..");
+			}
 			startDownloadProgressBar(mIndex);
 		} else if (!mEpisodeDownloaded){
 			//Check remaining space on SD card and warn if < 100Mbytes.
@@ -733,7 +736,9 @@ public class PlayerActivity extends Activity {
 				// rebound.  So sleep before trying to access it.
 				while (mDownloader == null){
 					try {
-						Log.d(TAG, "Sleeping while Downloader rebinds");
+						if (BuildConfig.DEBUG) {
+							Log.d(TAG, "Sleeping while Downloader rebinds");
+						}
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
 						Log.e(TAG, 
@@ -758,11 +763,13 @@ public class PlayerActivity extends Activity {
 								mDownloadPercent = 100;
 							}
 						} catch (InterruptedException e) {
-							Log.d(TAG, "Download thread interupted while sleeping!", e);
+							Log.w(TAG, "Download thread interupted while sleeping!", e);
 						}
 						if (mDownloadPercent == DownloadingEpisode.OVERSIZE_EPISODE){
-							//Real progress is unknown, so set to indeterminate.
-							Log.d(TAG, "Set Indeterminate");
+							if (BuildConfig.DEBUG) {
+								//Real progress is unknown, so set to indeterminate.
+								Log.d(TAG, "Set Indeterminate");
+							}
 							mHandler.post(setIndeterminate);
 						} else {
 							//Post progress to mHandler in UI thread

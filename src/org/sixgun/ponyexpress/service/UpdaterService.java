@@ -28,6 +28,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -82,8 +83,9 @@ public class UpdaterService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		// Get the application, and Log that this service has started.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
-		Log.d(TAG,"Updater Service started");
-		
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Updater Service started");
+		}
 		try {
 			// Initialize the status notification
 			mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -128,12 +130,16 @@ public class UpdaterService extends IntentService {
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
-					Log.d(TAG, "Releasing wakelock");
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Releasing wakelock");
+					}
 				}
 				sWakeLock = null;
 			}
 		}
-		Log.d(TAG,"Updater Service stopped");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Updater Service stopped");
+		}
 	}
 	
 	/**
@@ -161,8 +167,10 @@ public class UpdaterService extends IntentService {
 			final Intent intent = new Intent(this, UpdateAlarmReceiver.class);
 			final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
 			alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
-			Log.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
-		}else{
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
+			}
+		}else if (BuildConfig.DEBUG){
 			Log.d(TAG, "No background updates scheduled");
 		}				
 	}
@@ -198,7 +206,9 @@ public class UpdaterService extends IntentService {
 	 */
 	
 	public void checkForNewSixgunShows() {
-		Log.d(TAG,"Checking for new Sixgun podcasts");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Checking for new Sixgun podcasts");
+		}
 		//Get server list of sixgun podcasts and create list of urls
 		final Context ctx = mPonyExpressApp.getApplicationContext();
 		SixgunPodcastsParser parser = 
@@ -224,8 +234,10 @@ public class UpdaterService extends IntentService {
 	private void addSixgunShow(Podcast podcast) {
 		boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
 		if (checkdb == false) {
-			//Add any new podcasts to the podcasts table
-			Log.d(TAG, "Adding new Podcasts!");
+			if (BuildConfig.DEBUG) {
+				//Add any new podcasts to the podcasts table
+				Log.d(TAG, "Adding new Podcasts!");
+			}
 			mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
 		}
 	}
@@ -235,7 +247,7 @@ public class UpdaterService extends IntentService {
 	 * It should only be called if sixgun.org is offline during a first run.
 	 */
 	private void loadDefaultShow() {
-		Log.d(TAG,"Cannot parse sixgun list, loading default podcast.");
+		Log.w(TAG,"Cannot parse sixgun list, loading default podcast.");
 		final Context ctx = mPonyExpressApp.getApplicationContext();
 		String[] default_feed = ctx.getResources().getStringArray(R.array.default_lo_feed);
 		PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
@@ -251,14 +263,18 @@ public class UpdaterService extends IntentService {
 	 * has been lost and breaks if need be.  Finally, it calls the methods that handle the update alarm.
 	 */
 	private void updateAllFeeds(){
-		Log.d(TAG,"Updating all episodes");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Updating all episodes");
+		}
 		List<String> podcast_names = mPonyExpressApp.getDbHelper().listAllPodcasts();
 		
 		for (String podcast_name: podcast_names){
 			int return_code = updateFeed(podcast_name);
 			if (return_code == ReturnCodes.INTERNET_CONNECTIVITY_LOST){
 				//Internet unreachable, Listen for return of internet to launch update.
-				Log.d(TAG,"Registering connectivity reciever");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Registering connectivity reciever");
+				}
 				//Enable RescheduledUpdateReceiver
 				ComponentName receiver = new ComponentName(mPonyExpressApp, RescheduledUpdateReceiver.class);
 				PackageManager pm = mPonyExpressApp.getPackageManager();
@@ -279,8 +295,9 @@ public class UpdaterService extends IntentService {
 	 * @return
 	 */
 	private int updateFeed(String podcast_name){
-		Log.d(TAG, "Updating " + podcast_name);
-		
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Updating " + podcast_name);
+		}
 		String podcast_url = mPonyExpressApp.getDbHelper().getPodcastUrl(podcast_name);
 		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()){
 			return ReturnCodes.INTERNET_CONNECTIVITY_LOST;
@@ -324,7 +341,10 @@ public class UpdaterService extends IntentService {
 				}
 			}catch(IndexOutOfBoundsException e){
 				//The feed has fewer episodes than the number to keep so log and break
-				Log.d(TAG, "Number of episodes in this feed is less than the number to keep");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG,
+							"Number of episodes in this feed is less than the number to keep");
+				}
 				break;
 			}
 		}

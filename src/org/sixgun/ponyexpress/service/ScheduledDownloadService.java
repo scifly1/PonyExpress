@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -71,7 +72,9 @@ public class ScheduledDownloadService extends IntentService {
 	 */
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		Log.d(TAG, "Scheduled download service started.");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Scheduled download service started.");
+		}
 		mPonyExpressApp = (PonyExpressApp) getApplication();
 		
 		try {
@@ -83,9 +86,14 @@ public class ScheduledDownloadService extends IntentService {
 				set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
 			}
 			final long nextUpdate = getNextUpdateTime();
-			Log.d(TAG, "Next download scheduled for: " + nextUpdate);
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Next download scheduled for: " + nextUpdate);
+			}
+			
 			if (nextUpdate == 0){
-				Log.d(TAG, "Scheduled downloads not active");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Scheduled downloads not active");
+				}
 				return;
 			}
 			if (set_alarm_only && nextUpdate >= System.currentTimeMillis() ){
@@ -105,14 +113,18 @@ public class ScheduledDownloadService extends IntentService {
 						Log.e(TAG, "Interrupted waiting for updaterservice to finish");
 					}
 				}
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "Checking for downloads");
+				}
 				//Get list of podcasts and find undownloaded episodes in each
-				Log.d(TAG, "Checking for downloads");
 				ArrayList<DownloadingEpisode> downloads = getEpisodesToDownload();
 				if (!downloads.isEmpty()){
 					if (mPonyExpressApp.getInternetHelper().getConnectivityType() !=
 							ConnectivityManager.TYPE_WIFI){
 						//Either NO_CONNECTION or TYPE_MOBILE so
-						Log.d(TAG, "Wait for WIFI");
+						if (BuildConfig.DEBUG) {
+							Log.d(TAG, "Wait for WIFI");
+						}
 						try {
 							//Wait for WIFI to come up
 							Thread.sleep(60000);
@@ -122,20 +134,27 @@ public class ScheduledDownloadService extends IntentService {
 					}
 					switch (mPonyExpressApp.getInternetHelper().getConnectivityType()){
 					case InternetHelper.NO_CONNECTION:
-						Log.d(TAG, "No connection for scheduled download");
+						if (BuildConfig.DEBUG) {
+							Log.d(TAG, "No connection for scheduled download");
+						}
 						NotifyError(getString(R.string.no_connection_for_sched_download));
 						setNextAlarm(nextUpdate);
 						return;
 					case ConnectivityManager.TYPE_MOBILE:
 						if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
-							Log.d(TAG, "Scheduled downloads not allowed on mobile network");
+							if (BuildConfig.DEBUG) {
+								Log.d(TAG,
+										"Scheduled downloads not allowed on mobile network");
+							}
 							NotifyError(getString(R.string.prefs_dont_allow_downloads));
 							setNextAlarm(nextUpdate);
 							return;
 						}
 						//Fallthrough, download allowed on mobile network
 					case ConnectivityManager.TYPE_WIFI:
-						Log.d(TAG, "Starting scheduled downloads");
+						if (BuildConfig.DEBUG) {
+							Log.d(TAG, "Starting scheduled downloads");
+						}
 						doBindDownloaderService();
 						//Send intent for each episode to download with packaged episode
 						for (DownloadingEpisode episode: downloads){
@@ -148,7 +167,6 @@ public class ScheduledDownloadService extends IntentService {
 						if (mDownloader == null){
 							//Wait for the connection to be made
 							try {
-								Log.d(TAG, "Waiting for downloader to bind");
 								Thread.sleep(2000);
 							} catch (InterruptedException e) {
 								Log.e(TAG, "Interupted sleep waiting for Downloader to bind");
@@ -174,19 +192,25 @@ public class ScheduledDownloadService extends IntentService {
 			if (sWifiLock != null){
 				if (sWifiLock.isHeld()){
 					sWifiLock.release();
-					Log.d(TAG, "Releasing wifilock");
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Releasing wifilock");
+					}
 				}
 				sWifiLock = null;
 			}
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
-					Log.d(TAG, "Releasing wakelock");					
+					if (BuildConfig.DEBUG) {
+						Log.d(TAG, "Releasing wakelock");
+					}					
 				}
 				sWakeLock = null;
 			}
 		}
-		Log.d(TAG,"Scheduled Downloader stopped");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Scheduled Downloader stopped");
+		}
 	}
 
 	
@@ -207,8 +231,11 @@ public class ScheduledDownloadService extends IntentService {
 			final Intent intent = new Intent(this, ScheduledDownloadReceiver.class);
 			final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
 			alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
-			Log.d(TAG, "Downloads scheduled for: " + Long.toString(updateTime));
-		}else{
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG,
+						"Downloads scheduled for: " + Long.toString(updateTime));
+			}
+		}else if (BuildConfig.DEBUG){
 			Log.d(TAG, "No background downloads scheduled");
 		}				
 		

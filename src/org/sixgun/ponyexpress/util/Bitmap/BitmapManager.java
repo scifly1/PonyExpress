@@ -36,6 +36,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
+import org.sixgun.ponyexpress.BuildConfig;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -100,7 +101,9 @@ public class BitmapManager {
 			@Override
 			protected void entryRemoved(boolean evicted, String key,
 					BitmapDrawable oldValue, BitmapDrawable newValue) {
-				Log.d(TAG, "removed from cache");
+				if (BuildConfig.DEBUG) {
+					Log.d(TAG, "removed from cache");
+				}
 				if (AsyncDrawable.class.isInstance(oldValue)){
 					//Notify that it has been removed from cache
 					((AsyncDrawable) oldValue).setIsCached(false);
@@ -109,7 +112,7 @@ public class BitmapManager {
 			
 		};
 		
-		Log.d(TAG,"Cache size = " + cacheSize);
+		Log.i(TAG,"Cache size = " + cacheSize);
 		
 	}
 	
@@ -117,7 +120,9 @@ public class BitmapManager {
 	
 	void addBitmapToCache(String url, BitmapDrawable image){
 		if (getBitmapFromCache(url) == null){
-			Log.d(TAG, "Image added to cache");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Image added to cache");
+			}
 			//Mark as in the cache so it is not gc'ed
 			if (AsyncDrawable.class.isInstance(image)){
 				((AsyncDrawable) image).setIsCached(true);
@@ -127,7 +132,9 @@ public class BitmapManager {
 	}
 	
 	private BitmapDrawable getBitmapFromCache(String url){
-		Log.d(TAG, "Fetching " + url + " from cache");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Fetching " + url + " from cache");
+		}
 		if (url.equals(null)){
 			return null;
 		} else {
@@ -137,9 +144,10 @@ public class BitmapManager {
 	
 	Bitmap fetchImage(String url) throws IOException {
 		
-		Log.d(TAG, "Fetching image: " + url);
-
-	    InputStream is = getHttpInputStream(url);
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Fetching image: " + url);
+		}
+		InputStream is = getHttpInputStream(url);
 	    BitmapFactory.Options opts = getBitmapOptions(is);
 	    if (opts.outWidth > mMaxBitmapWidth || opts.outHeight > mMaxBitmapHeight){
 	    	//downsample the bitmap as it is too large
@@ -264,8 +272,10 @@ public class BitmapManager {
 		}
 		String hashedUrl = getMd5(url);
 	    FileInputStream fis = null;
-	    Log.d(TAG, "Looking for file " + url + " on disk" );
-	    Bitmap bitmap;
+	    if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Looking for file " + url + " on disk");
+		}
+		Bitmap bitmap;
 	    if (width == 0 || height == 0){
 	    	//Get unsampled bitmap
 	    	try {
@@ -381,7 +391,9 @@ public class BitmapManager {
 		if (bitmap == null){
 			//FIXME May need an async task here
 			bitmap = lookupFile(url, 0, 0);
-			Log.d(TAG, "Looking up image from disc");
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Looking up image from disc");
+			}
 		}
 		return bitmap;
 	}

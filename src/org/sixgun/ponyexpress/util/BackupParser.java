@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -53,7 +54,9 @@ public class BackupParser {
 
 	public List<String> parse() {
 
-		Log.d(TAG, "Starting BackupParser");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Starting BackupParser");
+		}
 		final List<String> urllist = new ArrayList<String>();
 		InputStream filename = null;
 
@@ -91,7 +94,9 @@ public class BackupParser {
 				Log.e(TAG, "OPML file is malformed, required data is missing!");
 			}
 		}
-		Log.d(TAG, "List returned");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "List returned");
+		}
 		return urllist;
 	}
 }

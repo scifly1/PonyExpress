@@ -18,6 +18,8 @@
 */
 package org.sixgun.ponyexpress.receiver;
 
+import org.sixgun.ponyexpress.BuildConfig;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -34,12 +36,13 @@ public class RescheduledUpdateReceiver extends UpdateAlarmReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		
-		Log.d(TAG,"Recieved connectivity change!");
-		
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Recieved connectivity change!");
+		}
 		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo networkInfo = cm.getActiveNetworkInfo();
 		if (networkInfo != null && networkInfo.isConnected()){
-			Log.d(TAG, "Internet connected");
+			Log.i(TAG, "Internet connected");
 			//disable this receiver now it has done it's job. 
 			ComponentName receiver = new ComponentName(context, RescheduledUpdateReceiver.class);
 			PackageManager pm = context.getPackageManager();
@@ -48,7 +51,7 @@ public class RescheduledUpdateReceiver extends UpdateAlarmReceiver {
 			//Trigger the update.
 			super.onReceive(context, intent);	
 		} else {
-			Log.d(TAG, "No Internet connection");
+			Log.i(TAG, "No Internet connection");
 			return;
 		}
 		

@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
@@ -108,7 +109,7 @@ public class PonyExpressActivity extends ListActivity {
 					ListView list = getListView();
 					int last_pos_visible = list.getLastVisiblePosition();
 					if (last_pos_visible == -1){
-						Log.d(TAG, "We should not be here!!");
+						Log.w(TAG, "We should not be here!!");
 						return; //we are being called when exiting activity which should not happen as mListingPodcasts should be false.
 					}
 					ViewGroup footer_layout = (ViewGroup) findViewById(R.id.footer_layout);
@@ -132,8 +133,9 @@ public class PonyExpressActivity extends ListActivity {
 		//Get the number of episodes to hold from preferences
 		final SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 		mEpisodesToHold = Integer.parseInt(prefs.getString(getString(R.string.eps_stored_key), "6"));
-		Log.d(TAG,"Eps to hold: " + mEpisodesToHold);
-				
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Eps to hold: " + mEpisodesToHold);
+		}
 		//Create Progress Dialogs for later use.
 		mProgDialog = new ProgressDialog(this);
 		mProgDialog.setMessage(getText(R.string.setting_up));
@@ -182,7 +184,9 @@ public class PonyExpressActivity extends ListActivity {
 	 */
 	@Override
 	protected void onNewIntent(Intent intent) {
-		Log.d(TAG, "New Intent recieved");
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "New Intent recieved");
+		}
 		mProgDialog.show();
 		final String podcast_name = intent.getExtras().
 				getString(PodcastKeys.NAME);
@@ -206,8 +210,10 @@ public class PonyExpressActivity extends ListActivity {
 				mPonyExpressApp.getInternetHelper().isDownloadAllowed() ){
 			PonyExpressApp.sBitmapManager.clear();
 			prefs.edit().putLong(LAST_CACHE_CLEAR, now).commit();
-			Log.d(TAG, "Clearing image cache");
-		} else {
+			if (BuildConfig.DEBUG) {
+				Log.d(TAG, "Clearing image cache");
+			}
+		} else if (BuildConfig.DEBUG){
 			Log.d(TAG, "Not clearing cache");
 		}
 		
@@ -403,7 +409,7 @@ public class PonyExpressActivity extends ListActivity {
 					R.string.please_wait, Toast.LENGTH_LONG).show();
 		}else{
 			UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes().execute(podcastName);
-			if (task.isCancelled()){
+			if (BuildConfig.DEBUG && task.isCancelled()){
 				Log.d(TAG, "Cancelled Update, No Connectivity");
 			}
 		}
@@ -448,8 +454,9 @@ public class PonyExpressActivity extends ListActivity {
 		
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.podcast_context, menu);
-		Log.d(TAG,"Creating context menu");
-		
+		if (BuildConfig.DEBUG) {
+			Log.d(TAG, "Creating context menu");
+		}
 		//Set the title of the menu
 		AdapterView.AdapterContextMenuInfo item = (AdapterContextMenuInfo) menuInfo;
 		TextView podcast_name = (TextView) item.targetView.findViewById(R.id.podcast_text);
@@ -568,7 +575,7 @@ public class PonyExpressActivity extends ListActivity {
 					try{
 						filesOnDisk.addAll(Arrays.asList(files));
 					}catch(NullPointerException e){
-						Log.d(TAG,"NullPOinter");
+						Log.w(TAG,"NullPOinter");
 					}
 				}
 				//Get a Map of filenames (and their index) that are in the database
