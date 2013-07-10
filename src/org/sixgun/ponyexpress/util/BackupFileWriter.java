@@ -27,11 +27,9 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.List;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.xmlpull.v1.XmlSerializer;
 
-import android.util.Log;
 import android.util.Xml;
 
 public class BackupFileWriter {
@@ -40,9 +38,7 @@ private static final String TAG = "PonyExpress BackupFileWriter";
 
 	public int writeBackupOpml(List<String> podcasts, File f){
 
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "BackupFileWriter started");
-		}
+		PonyLogger.d(TAG, "BackupFileWriter started");
 		//create a new backup file in the SD card
 		Utils.writePodcastPath();
 		File opmlfile = f;
@@ -51,14 +47,14 @@ private static final String TAG = "PonyExpress BackupFileWriter";
 		try{
 			opmlfile.createNewFile();
 		}catch(IOException e){
-			Log.e(TAG, "exception in createNewFile() method");
+			PonyLogger.e(TAG, "exception in createNewFile() method");
 		}
 
 		FileOutputStream fileos = null;
 		try{
 			fileos = new FileOutputStream(opmlfile);
 		}catch(FileNotFoundException e){
-			Log.e("FileNotFoundException", "can't create FileOutputStream");
+			PonyLogger.e("FileNotFoundException", "can't create FileOutputStream");
 		}
 
 		XmlSerializer serializer = Xml.newSerializer();
@@ -89,9 +85,7 @@ private static final String TAG = "PonyExpress BackupFileWriter";
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Backup successful");
-		}
+		PonyLogger.d(TAG, "Backup successful");
 		return ReturnCodes.ALL_OK;
 	}
 }

@@ -20,12 +20,11 @@ package org.sixgun.ponyexpress.util.Bitmap;
 
 import java.lang.ref.WeakReference;
 
-import org.sixgun.ponyexpress.BuildConfig;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
-import android.util.Log;
 
 /**
  * Stores a reference back to the BitmapWorkerTask which is handling the 
@@ -60,14 +59,10 @@ class AsyncDrawable extends BitmapDrawable {
 			if (isDisplayed) {
 				mDisplayRefCount++;
 				mHasBeenDisplayed = true;
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "IsDisplayed(true) Called");
-				}
+				PonyLogger.d(TAG, "IsDisplayed(true) Called");
 			} else {
 				mDisplayRefCount--;
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "IsDisplayed(false) Called");
-				}
+				PonyLogger.d(TAG, "IsDisplayed(false) Called");
 			}
 		}
 		// Check to see if recycle() can be called.
@@ -80,14 +75,10 @@ class AsyncDrawable extends BitmapDrawable {
 		synchronized (this) {
 			if (isCached) {
 				mCacheRefCount++;
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Is cached(true) called");
-				}
+				PonyLogger.d(TAG, "Is cached(true) called");
 			} else {
 				mCacheRefCount--;
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Is cached(false) called");
-				}
+				PonyLogger.d(TAG, "Is cached(false) called");
 			}
 		}
 		// Check to see if recycle() can be called.
@@ -97,16 +88,12 @@ class AsyncDrawable extends BitmapDrawable {
 	private synchronized void checkState() {
 		// If the drawable cache and display ref counts = 0, and this drawable
 		// has been displayed, then recycle.
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "CacheCount = " + mCacheRefCount);
-			Log.d(TAG, "DisplayCount = " + mDisplayRefCount);
-		}
+		PonyLogger.d(TAG, "CacheCount = " + mCacheRefCount);
+		PonyLogger.d(TAG, "DisplayCount = " + mDisplayRefCount);
 		if (mCacheRefCount <= 0 && mDisplayRefCount <= 0 && mHasBeenDisplayed
 				&& hasValidBitmap()) {
 			getBitmap().recycle();
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Bitmap recycle called!!");
-			}
+			PonyLogger.d(TAG, "Bitmap recycle called!!");
 		}
 	}
 

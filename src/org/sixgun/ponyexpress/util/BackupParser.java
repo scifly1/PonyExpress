@@ -26,7 +26,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -34,7 +33,6 @@ import org.xml.sax.SAXException;
 import android.sax.Element;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.util.Log;
 import android.util.Xml;
 
 
@@ -54,9 +52,7 @@ public class BackupParser {
 
 	public List<String> parse() {
 
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Starting BackupParser");
-		}
+		PonyLogger.d(TAG, "Starting BackupParser");
 		final List<String> urllist = new ArrayList<String>();
 		InputStream filename = null;
 
@@ -87,16 +83,14 @@ public class BackupParser {
 			} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
 				urllist.clear();
 				urllist.add(Integer.toString(ReturnCodes.PARSING_ERROR));
-				Log.e(TAG, "OPML file is malformed, required data is missing!");
+				PonyLogger.e(TAG, "OPML file is malformed, required data is missing!");
 			} catch (IOException e) {
 				urllist.clear();
 				urllist.add(Integer.toString(ReturnCodes.PARSING_ERROR));
-				Log.e(TAG, "OPML file is malformed, required data is missing!");
+				PonyLogger.e(TAG, "OPML file is malformed, required data is missing!");
 			}
 		}
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "List returned");
-		}
+		PonyLogger.d(TAG, "List returned");
 		return urllist;
 	}
 }

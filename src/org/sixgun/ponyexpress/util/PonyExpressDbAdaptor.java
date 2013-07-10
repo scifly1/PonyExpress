@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.Podcast;
@@ -23,7 +22,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Environment;
-import android.util.Log;
 
 /*
  * Helper class that handles all database interactions for the app.
@@ -129,7 +127,7 @@ public class PonyExpressDbAdaptor {
 
 		@Override
     	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    		Log.i("PonyExpress", "Upgrading database from version " + oldVersion + " to "
+    		PonyLogger.i("PonyExpress", "Upgrading database from version " + oldVersion + " to "
                     + newVersion);
     		switch (oldVersion) {
     		case 1: //New installs have version 1.
@@ -179,7 +177,7 @@ public class PonyExpressDbAdaptor {
 					//feeds do not need updating with this db upgrade.
 					db.setTransactionSuccessful();
 				} catch (SQLException e) {
-					Log.e(TAG, "SQLException on db upgrade to 12", e);
+					PonyLogger.e(TAG, "SQLException on db upgrade to 12", e);
 				} finally {
 					db.endTransaction();
 				}
@@ -209,7 +207,7 @@ public class PonyExpressDbAdaptor {
 					db.execSQL("DROP TABLE " + TEMP_PODCASTS_NAME);
     				db.setTransactionSuccessful();
     			} catch (SQLException e) {
-					Log.e(TAG, "SQLException on db upgrade to 13", e);
+					PonyLogger.e(TAG, "SQLException on db upgrade to 13", e);
 				} finally {
 					db.endTransaction();
 				}
@@ -249,15 +247,15 @@ public class PonyExpressDbAdaptor {
     						db.execSQL("DROP TABLE IF EXISTS " + c.getString(0));
     						c.moveToNext();
     					}
-    				} else if (BuildConfig.DEBUG){
-    					Log.d(TAG, "No old PodEps tables to update");
+    				}else{
+    					PonyLogger.d(TAG, "No old PodEps tables to update");
     				}
     				c.close();
     				//No need to set mDatabaseUpgraded to true as the 
 					//feeds do not need updating with this db upgrade.
     				db.setTransactionSuccessful();
     			} catch (SQLException e) {
-					Log.e(TAG, "SQLException on db upgrade to 14", e);
+					PonyLogger.e(TAG, "SQLException on db upgrade to 14", e);
 				} finally {
 					db.endTransaction();
 				}
@@ -288,13 +286,13 @@ public class PonyExpressDbAdaptor {
 					//feeds do not need updating with this db upgrade.
     				db.setTransactionSuccessful();
     			} catch (SQLException e) {
-					Log.e(TAG, "SQLException on db upgrade to 15", e);
+					PonyLogger.e(TAG, "SQLException on db upgrade to 15", e);
 				} finally {
 					db.endTransaction();
 				}
     			break; //Only the final upgrade case has a break.  
 			default:
-				Log.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
+				PonyLogger.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
 				break;
 			}
     	}
@@ -329,15 +327,10 @@ public class PonyExpressDbAdaptor {
 				c.moveToFirst();
 				for (int i = 0; i < c.getCount(); i++){
 					long num = DatabaseUtils.queryNumEntries(db, c.getString(0));
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, c.getString(0) + " has " + num + "rows");
-					}
+					PonyLogger.d(TAG, c.getString(0) + " has " + num + "rows");
 					//if empty check the name isn't in the podcasts list.
 					if (num == 0 && !podcasts.contains(c.getString(0))){
-						if (BuildConfig.DEBUG) {
-							Log.d(TAG, "Table " + c.getString(0)
-									+ " is to be dropped");
-						}
+						PonyLogger.d(TAG, "Table " + c.getString(0) + " is to be dropped");
 						empty_tables.add(c.getString(0));
 					}
 					c.moveToNext();
@@ -391,11 +384,9 @@ public class PonyExpressDbAdaptor {
 			cursor_not_empty = cursor.moveToFirst();
 			if (cursor_not_empty){
 				id = cursor.getLong(0);
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Podcast Id of Episode is: " + id);
-				}
+				PonyLogger.d(TAG, "Podcast Id of Episode is: " + id);
 			} else {
-				Log.e(TAG, "Looking for a Podcast name not in the database!");
+				PonyLogger.e(TAG, "Looking for a Podcast name not in the database!");
 			}
 		}
 		cursor.close();
@@ -464,7 +455,7 @@ public class PonyExpressDbAdaptor {
 				podcasts_cursor.moveToNext();
 			}
 		} else {
-			Log.e(TAG, "empty cursor at listAllPodcasts()");
+			PonyLogger.e(TAG, "empty cursor at listAllPodcasts()");
 		}
 		podcasts_cursor.close();
 		return podcast_names;
@@ -526,7 +517,7 @@ public class PonyExpressDbAdaptor {
 				cursor.moveToNext();
 			}
 		} else {
-			Log.e(TAG, "Empty cursor at getFilenamesFromDisk()");
+			PonyLogger.e(TAG, "Empty cursor at getFilenamesFromDisk()");
 		}
 		cursor.close();
 		return files;
@@ -541,11 +532,9 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			url = cursor.getString(1);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Url of Episode is: " + url);
-			}
+			PonyLogger.d(TAG, "Url of Episode is: " + url);
 		} else {
-			Log.e(TAG, "Empty cursor at getEpisodeUrl()");
+			PonyLogger.e(TAG, "Empty cursor at getEpisodeUrl()");
 		}
 		cursor.close();
 		return url;	
@@ -615,11 +604,9 @@ public class PonyExpressDbAdaptor {
 			filename = cursor.getString(1);
 			//get everything after last '/' (separator) 
 			short_filename = filename.substring(filename.lastIndexOf('/'));
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Filename of Episode is: " + short_filename);
-			}
+			PonyLogger.d(TAG, "Filename of Episode is: " + short_filename);
 		} else {
-			Log.e(TAG, "Empty cursor at getEpisodeFilename()");
+			PonyLogger.e(TAG, "Empty cursor at getEpisodeFilename()");
 		}
 		cursor.close();
 		return short_filename;	
@@ -634,7 +621,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			title = cursor.getString(1);
 		} else{
-			Log.e(TAG, "Empty cursor at getEpisodeTitle()");
+			PonyLogger.e(TAG, "Empty cursor at getEpisodeTitle()");
 		}
 		cursor.close();
 		return title;
@@ -648,11 +635,9 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			downloaded = cursor.getInt(1);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Episode downloaded: " + downloaded);
-			}
+			PonyLogger.d(TAG, "Episode downloaded: " + downloaded);
 		} else {
-			Log.e(TAG, "Empty cursor at isEpisodeDownloaded()");
+			PonyLogger.e(TAG, "Empty cursor at isEpisodeDownloaded()");
 		}
 		cursor.close();
 		if (downloaded == 0){
@@ -672,7 +657,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			description = cursor.getString(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getDescription()");
+			PonyLogger.e(TAG, "Empty cursor at getDescription()");
 		}
 		cursor.close();
 		return description;
@@ -687,7 +672,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			listened = cursor.getInt(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getListened()");
+			PonyLogger.e(TAG, "Empty cursor at getListened()");
 		}
 		cursor.close();
 		return listened;
@@ -708,7 +693,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			row_ID = cursor.getLong(0);
 		} else {
-			Log.e(TAG, "Empty cursor at getOldestEpisode()");
+			PonyLogger.e(TAG, "Empty cursor at getOldestEpisode()");
 		}
 		cursor.close();
 		return row_ID;
@@ -724,7 +709,7 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() >= 0){
 			rows = cursor.getCount();
 		} else {
-			Log.e(TAG,"Empty cursor at getNumberofRows()");
+			PonyLogger.e(TAG,"Empty cursor at getNumberofRows()");
 		}
 		cursor.close();
 		return rows;
@@ -740,7 +725,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			size = cursor.getInt(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getEpisodeSize()");
+			PonyLogger.e(TAG, "Empty cursor at getEpisodeSize()");
 		}
 		cursor.close();
 		return size;
@@ -824,11 +809,9 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			name = cursor.getString(1);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Title of Podcast is: " + name);
-			}
+			PonyLogger.d(TAG, "Title of Podcast is: " + name);
 		} else {
-			Log.e(TAG, "Empty cursor at getPodcastName()");
+			PonyLogger.e(TAG, "Empty cursor at getPodcastName()");
 		}
 		cursor.close();
 		return name;
@@ -845,7 +828,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			url = cursor.getString(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getPodcastUrl()");
+			PonyLogger.e(TAG, "Empty cursor at getPodcastUrl()");
 		}
 		cursor.close();
 		return url;
@@ -864,7 +847,7 @@ public class PonyExpressDbAdaptor {
 				podcasts_cursor.moveToNext();
 			}
 		} else {
-			Log.e(TAG, "empty cursor at getAllPodcastsUrls()");
+			PonyLogger.e(TAG, "empty cursor at getAllPodcastsUrls()");
 		}
 		podcasts_cursor.close();
 		return podcast_urls;
@@ -879,7 +862,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			url = cursor.getString(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getAlbumArtUrl()");
+			PonyLogger.e(TAG, "Empty cursor at getAlbumArtUrl()");
 		}
 		cursor.close();
 		return url;
@@ -896,7 +879,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			url = cursor.getString(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getAlbumArtUrl()");
+			PonyLogger.e(TAG, "Empty cursor at getAlbumArtUrl()");
 		}
 		cursor.close();
 		return url;
@@ -912,11 +895,11 @@ public class PonyExpressDbAdaptor {
 			final String old_url = cursor.getString(1);
 			if (!artUrl.equals(old_url)){
 				//Album art has changed
-				Log.i(TAG, "Old art: " + old_url + " New art: " + artUrl);
+				PonyLogger.i(TAG, "Old art: " + old_url + " New art: " + artUrl);
 				update(cursor.getLong(0), artUrl);
 			}
 		} else {
-			Log.e(TAG, "Empty cursor at updateAlbumArtUrl()");
+			PonyLogger.e(TAG, "Empty cursor at updateAlbumArtUrl()");
 		}
 		cursor.close();
 	}
@@ -945,17 +928,17 @@ public class PonyExpressDbAdaptor {
 			mDb.delete(PLAYLIST_TABLE, PodcastKeys.NAME + "=" + quote_name, null);
 			
 			final String path = PonyExpressApp.PODCAST_PATH + podcast_name;
-			Log.i(TAG, "Deleting " + path + "from SD Card");
+			PonyLogger.i(TAG, "Deleting " + path + "from SD Card");
 			File podcast_path = new File(rootPath + path);
 			deleted = Utils.deleteDir(podcast_path);
 			//Delete episodes from episode table
 			long podcast_id = getPodcastId(podcast_name);
 			final String where = EpisodeKeys.PODCAST_ID + "=" + podcast_id;
 			mDb.delete(EPISODES_TABLE, where, null);
-			Log.i(TAG, "Removing episodes from database");
+			PonyLogger.i(TAG, "Removing episodes from database");
 			//Remove entry from Podcasts table
 			mDb.delete(PODCAST_TABLE, PodcastKeys._ID + "=" + rowID, null);
-			Log.i(TAG, "Removing podcast from database");	
+			PonyLogger.i(TAG, "Removing podcast from database");	
 		}
 		//Send broadcast to inform app that database changed and can now update view.
 		Intent intent = new Intent("org.sixgun.ponyexpress.PODCAST_DELETED");
@@ -1051,7 +1034,7 @@ public class PonyExpressDbAdaptor {
 				c.moveToNext();
 			}
 		}else{
-			Log.e(TAG, "Empty cursor at moveUpPlaylist()");
+			PonyLogger.e(TAG, "Empty cursor at moveUpPlaylist()");
 			c.close();
 			return false;
 		}
@@ -1096,7 +1079,7 @@ public class PonyExpressDbAdaptor {
 				c.moveToNext();
 			}
 		}else{
-			Log.e(TAG, "Empty cursor at moveDownPlaylist()");
+			PonyLogger.e(TAG, "Empty cursor at moveDownPlaylist()");
 			c.close();
 			return false;
 		}
@@ -1141,7 +1124,7 @@ public class PonyExpressDbAdaptor {
 				c.moveToNext();
 			}
 		}else{
-			Log.e(TAG, "Empty cursor at moveToTop()");
+			PonyLogger.e(TAG, "Empty cursor at moveToTop()");
 			c.close();
 			return false;
 		}
@@ -1188,7 +1171,7 @@ public class PonyExpressDbAdaptor {
 				c.moveToNext();
 			}
 		}else{
-			Log.e(TAG, "Empty cursor at moveToBottom()");
+			PonyLogger.e(TAG, "Empty cursor at moveToBottom()");
 			c.close();
 			return false;
 		}
@@ -1211,7 +1194,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			podcast_name = cursor.getString(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getPodcastFromPlaylist(long)");
+			PonyLogger.e(TAG, "Empty cursor at getPodcastFromPlaylist(long)");
 		}
 		cursor.close();
 		return podcast_name;
@@ -1231,7 +1214,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			podcast_name = cursor.getString(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getPodcastFromPlaylist()");
+			PonyLogger.e(TAG, "Empty cursor at getPodcastFromPlaylist()");
 		}
 		cursor.close();
 		return podcast_name;
@@ -1250,7 +1233,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			episode_id = cursor.getLong(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
+			PonyLogger.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
 		}
 		cursor.close();
 		return episode_id;
@@ -1270,7 +1253,7 @@ public class PonyExpressDbAdaptor {
 			cursor.moveToFirst();
 			episode_id = cursor.getLong(1);
 		} else {
-			Log.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
+			PonyLogger.e(TAG, "Empty cursor at getEpisodeFromPlaylist()");
 		}
 		cursor.close();
 		return episode_id;
@@ -1327,7 +1310,7 @@ public class PonyExpressDbAdaptor {
 			play_order_position = c.getInt(1);
 			c.close();
 		} else {
-			Log.e(TAG, "Null cursor returned by removeEpisodeFromPlaylist(String,long)");
+			PonyLogger.e(TAG, "Null cursor returned by removeEpisodeFromPlaylist(String,long)");
 			c.close();
 		}
 				
@@ -1349,7 +1332,7 @@ public class PonyExpressDbAdaptor {
 			//Remove from the Playlist table
 			removeEpisodeFromPlaylist(podcastName, rowId);
 		} catch (EpisodeNotFoundException e) {
-			Log.e(TAG, "Seaching for an unknown episode", e);
+			PonyLogger.e(TAG, "Seaching for an unknown episode", e);
 		}
 		
 		
@@ -1367,12 +1350,12 @@ public class PonyExpressDbAdaptor {
 					cv.put(PodcastKeys.PLAY_ORDER, c.getInt(1) - 1);
 					mDb.update(PLAYLIST_TABLE, cv, PodcastKeys._ID + "=" + c.getLong(0), null);
 				}else if (c.getInt(1) == position){
-					Log.e(TAG, "This episode should be gone! Shouldn't be here!");
+					PonyLogger.e(TAG, "This episode should be gone! Shouldn't be here!");
 				}
 				c.moveToNext();
 			}
 		}else{
-			Log.e(TAG, "Empty cursor at fillGap(int)");
+			PonyLogger.e(TAG, "Empty cursor at fillGap(int)");
 			c.close();
 			return;
 		}
@@ -1407,7 +1390,7 @@ public class PonyExpressDbAdaptor {
 		try {
 			rowId = getRowIdOfEpisode(podcast_name, episode_title);
 		} catch (EpisodeNotFoundException e) {
-			Log.e(TAG, "Seaching for an unknown episode", e);
+			PonyLogger.e(TAG, "Seaching for an unknown episode", e);
 			return false;
 		}
 		final String quoted_name = Utils.handleQuotes(podcast_name);

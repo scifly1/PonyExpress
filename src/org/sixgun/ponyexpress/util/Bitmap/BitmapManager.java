@@ -36,7 +36,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpConnectionParams;
-import org.sixgun.ponyexpress.BuildConfig;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.app.ActivityManager;
 import android.content.Context;
@@ -46,7 +46,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.support.v4.util.LruCache;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.WindowManager;
@@ -101,9 +100,7 @@ public class BitmapManager {
 			@Override
 			protected void entryRemoved(boolean evicted, String key,
 					BitmapDrawable oldValue, BitmapDrawable newValue) {
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "removed from cache");
-				}
+				PonyLogger.d(TAG, "removed from cache");
 				if (AsyncDrawable.class.isInstance(oldValue)){
 					//Notify that it has been removed from cache
 					((AsyncDrawable) oldValue).setIsCached(false);
@@ -112,7 +109,7 @@ public class BitmapManager {
 			
 		};
 		
-		Log.i(TAG,"Cache size = " + cacheSize);
+		PonyLogger.i(TAG,"Cache size = " + cacheSize);
 		
 	}
 	
@@ -120,9 +117,7 @@ public class BitmapManager {
 	
 	void addBitmapToCache(String url, BitmapDrawable image){
 		if (getBitmapFromCache(url) == null){
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Image added to cache");
-			}
+			PonyLogger.d(TAG, "Image added to cache");
 			//Mark as in the cache so it is not gc'ed
 			if (AsyncDrawable.class.isInstance(image)){
 				((AsyncDrawable) image).setIsCached(true);
@@ -132,9 +127,7 @@ public class BitmapManager {
 	}
 	
 	private BitmapDrawable getBitmapFromCache(String url){
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Fetching " + url + " from cache");
-		}
+		PonyLogger.d(TAG, "Fetching " + url + " from cache");
 		if (url.equals(null)){
 			return null;
 		} else {
@@ -144,9 +137,7 @@ public class BitmapManager {
 	
 	Bitmap fetchImage(String url) throws IOException {
 		
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Fetching image: " + url);
-		}
+		PonyLogger.d(TAG, "Fetching image: " + url);
 		InputStream is = getHttpInputStream(url);
 	    BitmapFactory.Options opts = getBitmapOptions(is);
 	    if (opts.outWidth > mMaxBitmapWidth || opts.outHeight > mMaxBitmapHeight){
@@ -183,7 +174,7 @@ public class BitmapManager {
 	    try {
 	      response = client.execute(get);
 	    } catch (ClientProtocolException e) {
-	    	Log.e(TAG, e.getMessage(), e);
+	    	PonyLogger.e(TAG, e.getMessage(), e);
 	      throw new IOException("Invalid client protocol.");
 	    }
 
@@ -205,7 +196,7 @@ public class BitmapManager {
 	 */
 	void writeFile(String url, Bitmap bitmap) {
 	    if (bitmap == null) {
-	    	Log.w(TAG, "Can't write file. Bitmap is null.");
+	    	PonyLogger.w(TAG, "Can't write file. Bitmap is null.");
 	      return;
 	    }
 
@@ -215,17 +206,17 @@ public class BitmapManager {
 	      fos = mContext.openFileOutput(hashedUrl,
 	          Context.MODE_PRIVATE);
 	    } catch (FileNotFoundException e) {
-	    	Log.w(TAG, "Error creating file.");
+	    	PonyLogger.w(TAG, "Error creating file.");
 	      return;
 	    }
 
-	    Log.i(TAG, "Writing file: " + hashedUrl);
+	    PonyLogger.i(TAG, "Writing file: " + hashedUrl);
 	    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, fos);
 
 	    try {
 	      fos.close();
 	    } catch (IOException e) {
-	    	Log.w(TAG, "Could not close file.");
+	    	PonyLogger.w(TAG, "Could not close file.");
 	    }
 	    
 	  }
@@ -272,9 +263,7 @@ public class BitmapManager {
 		}
 		String hashedUrl = getMd5(url);
 	    FileInputStream fis = null;
-	    if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Looking for file " + url + " on disk");
-		}
+	    PonyLogger.d(TAG, "Looking for file " + url + " on disk");
 		Bitmap bitmap;
 	    if (width == 0 || height == 0){
 	    	//Get unsampled bitmap
@@ -391,9 +380,7 @@ public class BitmapManager {
 		if (bitmap == null){
 			//FIXME May need an async task here
 			bitmap = lookupFile(url, 0, 0);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Looking up image from disc");
-			}
+			PonyLogger.d(TAG, "Looking up image from disc");
 		}
 		return bitmap;
 	}

@@ -33,7 +33,6 @@ import android.sax.Element;
 import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
-import android.util.Log;
 import android.util.Xml;
 
 
@@ -91,7 +90,7 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 				istream = new BufferedInputStream(conn.getInputStream());
 			}
 		} catch (IOException e) {
-			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			PonyLogger.e(TAG, "Error reading feed from " + mFeedUrl, e);
 			NotifyError("");
 		}
 		try {
@@ -103,7 +102,7 @@ public class SixgunPodcastsParser extends BaseFeedParser {
 		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
 			Throwable cause = e.getCause();
 			if (cause instanceof SocketTimeoutException){
-				Log.e(TAG, "SocketTimeoutException caught parsing sixgun podcasts");
+				PonyLogger.e(TAG, "SocketTimeoutException caught parsing sixgun podcasts");
 				NotifyError("");
 				return null;
 			}

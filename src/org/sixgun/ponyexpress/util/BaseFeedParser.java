@@ -31,7 +31,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 /*
  * BaseFeedParser is an abstract class that takes a url and its getInputStream() 
@@ -73,7 +72,7 @@ public abstract class BaseFeedParser {
     			conn = openConnection();
     			attempts++;
     		} catch (SocketTimeoutException ste) {
-    			Log.e(TAG, "Server timed out from getReponseCode()", ste);
+    			PonyLogger.e(TAG, "Server timed out from getReponseCode()", ste);
     			if (conn != null){
     				conn.disconnect();
     			}

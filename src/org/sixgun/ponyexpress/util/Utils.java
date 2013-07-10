@@ -29,14 +29,12 @@ import java.net.URL;
 import java.util.Locale;
 
 import org.apache.http.HttpStatus;
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 
 import android.content.Context;
 import android.os.Environment;
 import android.os.StatFs;
-import android.util.Log;
 
 /**
  * Utility class with general utility methods.
@@ -75,7 +73,7 @@ public class Utils {
 		try {
 			url = new URL(_url);
 		} catch (MalformedURLException e) {
-			Log.e(TAG, "Episode URL badly formed.", e);
+			PonyLogger.e(TAG, "Episode URL badly formed.", e);
 			return null;
 		}
 		return url;
@@ -95,9 +93,7 @@ public class Utils {
 			conn.setRequestProperty("Connection", "close");
 			conn.setConnectTimeout(TIMEOUT);
             conn.setReadTimeout(TIMEOUT);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Response code: " + conn.getResponseCode());
-			}
+			PonyLogger.d(TAG, "Response code: " + conn.getResponseCode());
 			//Check that the server responds properly
 			if (conn.getResponseCode() != HttpStatus.SC_OK){
 				return null;
@@ -138,7 +134,7 @@ public class Utils {
 			}
 			return path.delete();
 		} else {
-			Log.w(TAG, "Path for deletion could not be found!");
+			PonyLogger.w(TAG, "Path for deletion could not be found!");
 			return true;
 		}
 		
@@ -185,14 +181,10 @@ public class Utils {
 	public static boolean isSDCardWritable() {
 		final String state = Environment.getExternalStorageState();
 		if (Environment.MEDIA_MOUNTED.equals(state)){
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "SD Card is mounted");
-			}
+			PonyLogger.d(TAG, "SD Card is mounted");
 			File file = Environment.getExternalStorageDirectory();
 			if (file.canWrite()){
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Can Write to SD card.");
-				}
+				PonyLogger.d(TAG, "Can Write to SD card.");
 				return true;
 			}
 		}

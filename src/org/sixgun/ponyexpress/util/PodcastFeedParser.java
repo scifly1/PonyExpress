@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Podcast;
 import org.xml.sax.Attributes;
 
@@ -33,7 +32,6 @@ import android.sax.Element;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.util.Log;
 import android.util.Xml;
 
 /**
@@ -84,7 +82,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			
 			@Override
 			public void end(String body) {
-				Log.d(TAG,"Podcast is: " + body);
+				PonyLogger.d(TAG,"Podcast is: " + body);
 				new_podcast.setName(body);
 			}
 		});
@@ -95,9 +93,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "href");
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Podcast art from: " + url);
-				}
+				PonyLogger.d(TAG, "Podcast art from: " + url);
 				new_podcast.setArt_Url(url);				
 			}
 		});
@@ -108,9 +104,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void end(String body) {
 				if (new_podcast.getArt_Url() == null){
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Podcast art from: " + body);
-					}
+					PonyLogger.d(TAG, "Podcast art from: " + body);
 					new_podcast.setArt_Url(body);
 				}
 			}
@@ -125,7 +119,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 				istream = new BufferedInputStream(conn.getInputStream());
 			}
 		} catch (IOException e) {
-			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			PonyLogger.e(TAG, "Error reading feed from " + mFeedUrl, e);
 			NotifyError("");
 		} 
 
@@ -141,7 +135,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
 			Throwable cause = e.getCause();
 			if (cause instanceof SocketTimeoutException){
-				Log.e(TAG, "SocketTimeoutException caught parsing podcast feed");
+				PonyLogger.e(TAG, "SocketTimeoutException caught parsing podcast feed");
 				NotifyError("");
 				return null;
 			}
@@ -180,9 +174,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void start(Attributes attributes) {
 				String url = attributes.getValue("", "href");
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Podcast art from: " + url);
-				}
+				PonyLogger.d(TAG, "Podcast art from: " + url);
 				new_podcast.setArt_Url(url);				
 			}
 		});
@@ -193,9 +185,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 			@Override
 			public void end(String body) {
 				if (new_podcast.getArt_Url() == null){
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Podcast art from: " + body);
-					}
+					PonyLogger.d(TAG, "Podcast art from: " + body);
 					new_podcast.setArt_Url(body);
 				}
 			}
@@ -210,7 +200,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 				istream = new BufferedInputStream(conn.getInputStream());
 			}
 		} catch (IOException e) {
-			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			PonyLogger.e(TAG, "Error reading feed from " + mFeedUrl, e);
 			NotifyError("");
 		} 
 		try {
@@ -225,7 +215,7 @@ public class PodcastFeedParser extends BaseFeedParser {
 		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
 			Throwable cause = e.getCause();
 			if (cause instanceof SocketTimeoutException){
-				Log.e(TAG, "SocketTimeoutException caught parsing album art url");
+				PonyLogger.e(TAG, "SocketTimeoutException caught parsing album art url");
 				return null;
 			}
 		} catch (Exception e) {

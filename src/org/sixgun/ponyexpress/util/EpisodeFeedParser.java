@@ -38,7 +38,6 @@ import android.sax.EndElementListener;
 import android.sax.EndTextElementListener;
 import android.sax.RootElement;
 import android.sax.StartElementListener;
-import android.util.Log;
 import android.util.Xml;
 
 /**
@@ -190,7 +189,7 @@ public class EpisodeFeedParser extends BaseFeedParser{
 				istream = new BufferedInputStream(conn.getInputStream());
 			}
 		} catch (IOException e) {
-			Log.e(TAG, "Error reading feed from " + mFeedUrl, e);
+			PonyLogger.e(TAG, "Error reading feed from " + mFeedUrl, e);
 			NotifyError("");
 		} 
 
@@ -203,10 +202,10 @@ public class EpisodeFeedParser extends BaseFeedParser{
 		}catch (AssertionError e){ //xml.parse repacks SocketTimeoutException as Assertion errors.
 			Throwable cause = e.getCause();
 			if (cause instanceof SocketTimeoutException){
-				Log.e(TAG, "SocketTimeoutException caught parsing feed url");
+				PonyLogger.e(TAG, "SocketTimeoutException caught parsing feed url");
 			}
 		} catch (SAXException e) { //Thrown if any requiredChild calls are not satisfied
-			Log.e(TAG, "RSS feed is malformed, required data is missing!",e);
+			PonyLogger.e(TAG, "RSS feed is malformed, required data is missing!",e);
 			NotifyError(mCtx.getString(R.string.malformed_feed));
 		} catch (IOException e) {
 			NotifyError("");
