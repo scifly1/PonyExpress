@@ -18,7 +18,7 @@
 */
 package org.sixgun.ponyexpress;
 
-import android.util.Log;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 /**
  * SubClass of Episode holding information about an episode that is being downloaded.
@@ -90,9 +90,7 @@ public class DownloadingEpisode extends Episode {
 	public boolean isEpisodeDownloading(){
 		final int percent = (int) getDownloadPercent();
 		if (percent == DownloadingEpisode.OVERSIZE_EPISODE_DOWNLOADED){
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Oversize episode is no longer downloading");
-			}
+			PonyLogger.d(TAG, "Oversize episode is no longer downloading");
 			return false;
 		}
 		else if (percent < 100){
@@ -118,9 +116,7 @@ public class DownloadingEpisode extends Episode {
 			if (mDownloadCompleted){
 				//download completed, tell playerActivity or downloadOverview
 				percent = OVERSIZE_EPISODE_DOWNLOADED;
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Oversize episode completed download");
-				}
+				PonyLogger.d(TAG, "Oversize episode completed download");
 			}
 		}
 		return percent;

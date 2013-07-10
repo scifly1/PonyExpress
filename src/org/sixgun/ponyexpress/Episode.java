@@ -26,10 +26,10 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.os.Bundle;
-import android.util.Log;
 
 /*
  * POJO representing an Episode of a podcast.  Holds the pubDate,
@@ -107,11 +107,11 @@ public class Episode implements Comparable<Episode> {
         try {
             this.mDate = FORMATTER.parse(date.trim());
         } catch (ParseException e) {
-            Log.e(TAG,"Error parsing the date from the feed! Setting date to Epoch",e);
+            PonyLogger.e(TAG,"Error parsing the date from the feed! Setting date to Epoch",e);
             try {
 				this.mDate = FORMATTER.parse(EPOCH);
 			} catch (ParseException e1) {
-				Log.e(TAG, "Unable to set EPOCH as pubDate!");
+				PonyLogger.e(TAG, "Unable to set EPOCH as pubDate!");
 			}
         }
     }
@@ -208,9 +208,7 @@ public class Episode implements Comparable<Episode> {
 		String epNumber = "";
 		if (m.find()){
 			epNumber = m.group(); 
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Episode number: " + epNumber);
-			}
+			PonyLogger.d(TAG, "Episode number: " + epNumber);
 		} 
 		Bundle bundle = new Bundle();
 		

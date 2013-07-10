@@ -24,9 +24,9 @@ import java.util.List;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,7 +100,7 @@ public class EndlessChannelListAdapter extends EndlessAdapter {
 		try {
 			mChannels = miro.getChannelList("category", mCategoryName, "name", MiroGuideChannel.DEFAULT_LIMIT, mOffset);
 		} catch (MiroGuideException e) {
-			Log.e(TAG, "Could not get Miro channels", e);
+			PonyLogger.e(TAG, "Could not get Miro channels", e);
 		} finally {
 			miro.close();
 		}
