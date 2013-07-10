@@ -25,6 +25,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.TimePreference;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -37,7 +38,6 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.widget.Toast;
 
 
@@ -64,7 +64,7 @@ public class PreferencesActivity extends PreferenceActivity {
 		try {
 			info = pm.getPackageInfo("org.sixgun.ponyexpress", 0);
 		} catch (NameNotFoundException e) {
-			Log.e(TAG,"Cannot find package info..");
+			PonyLogger.e(TAG,"Cannot find package info..");
 		}
 			
 		Preference version = (Preference)findPreference(getString(R.string.version_key));

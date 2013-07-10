@@ -50,6 +50,10 @@ public class PonyLogger {
 		Log.w(tag, msg);
 	}
 	
+	public static void w(String tag, String msg, Throwable error){
+		Log.w(tag, msg, error);
+	}
+	
 	public static void wtf(String tag, String msg){
 		Log.wtf(tag, msg);
 	}

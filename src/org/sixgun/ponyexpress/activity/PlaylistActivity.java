@@ -28,6 +28,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.InternetHelper;
+import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
 import android.app.Activity;
@@ -44,7 +45,6 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -242,7 +242,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 				try {
 					Thread.sleep(3000);
 				} catch (InterruptedException e) {
-					Log.e(TAG, "Interupted sleep in startDownload", e);
+					PonyLogger.e(TAG, "Interupted sleep in startDownload", e);
 				}
 				runOnUiThread(new Runnable() {
 					
@@ -681,7 +681,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 				}
 				break;
 			default:
-				Log.e(TAG, "Unknown return from InternetHelper.isDownloadPossible");
+				PonyLogger.e(TAG, "Unknown return from InternetHelper.isDownloadPossible");
 				return;
 			}
 		} else {

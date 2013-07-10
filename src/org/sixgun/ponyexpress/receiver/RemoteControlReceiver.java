@@ -18,13 +18,12 @@
 */
 package org.sixgun.ponyexpress.receiver;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 import android.view.KeyEvent;
 
 
@@ -51,18 +50,14 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 				case KeyEvent.KEYCODE_MEDIA_REWIND:
 					//Fallthrough
 				case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Rewind received");
-					}
+					PonyLogger.d(TAG, "Rewind received");
 					serviceIntent.putExtra(ACTION, PodcastPlayer.REWIND);
 					context.startService(serviceIntent);
 					break;
 				case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 					//Fallthrough
 				case KeyEvent.KEYCODE_HEADSETHOOK:
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Play/Pause received");
-					}
+					PonyLogger.d(TAG, "Play/Pause received");
 					serviceIntent.putExtra(ACTION, PodcastPlayer.PLAY_PAUSE);
 					context.startService(serviceIntent);
 					break;
@@ -70,14 +65,12 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 					//Fallthrough
 					//TODO Should use skip to next properly, can't test, no headset.
 				case KeyEvent.KEYCODE_MEDIA_NEXT:
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Fast forward received");
-					}
+					PonyLogger.d(TAG, "Fast forward received");
 					serviceIntent.putExtra(ACTION, PodcastPlayer.FASTFORWARD);
 					context.startService(serviceIntent);
 					break;
 				default:
-					Log.w(TAG, String.valueOf(button.getKeyCode()));
+					PonyLogger.w(TAG, String.valueOf(button.getKeyCode()));
 				}
 			}
         }

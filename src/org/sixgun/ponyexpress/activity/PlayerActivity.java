@@ -18,7 +18,6 @@
 */
 package org.sixgun.ponyexpress.activity;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
@@ -27,6 +26,7 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
+import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
@@ -44,7 +44,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -509,9 +508,7 @@ public class PlayerActivity extends Activity {
 		
 		if(mIsDownloading){
 			activateDownloadCancelButton();
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Player resuming..");
-			}
+			PonyLogger.d(TAG, "Player resuming..");
 			startDownloadProgressBar(mIndex);
 		} else if (!mEpisodeDownloaded){
 			//Check remaining space on SD card and warn if < 100Mbytes.
@@ -658,7 +655,7 @@ public class PlayerActivity extends Activity {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						Log.e(TAG, 
+						PonyLogger.e(TAG, 
 								"SeekBar thread failed to sleep while waiting for podcast player to bind", e);
 					}
 				}
@@ -736,12 +733,10 @@ public class PlayerActivity extends Activity {
 				// rebound.  So sleep before trying to access it.
 				while (mDownloader == null){
 					try {
-						if (BuildConfig.DEBUG) {
-							Log.d(TAG, "Sleeping while Downloader rebinds");
-						}
+						PonyLogger.d(TAG, "Sleeping while Downloader rebinds");
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						Log.e(TAG, 
+						PonyLogger.e(TAG, 
 								"DownloadProgressBar thread failed to sleep while " +
 								"waiting for downloaderservice to bind", e);
 					}
@@ -763,13 +758,11 @@ public class PlayerActivity extends Activity {
 								mDownloadPercent = 100;
 							}
 						} catch (InterruptedException e) {
-							Log.w(TAG, "Download thread interupted while sleeping!", e);
+							PonyLogger.w(TAG, "Download thread interupted while sleeping!", e);
 						}
 						if (mDownloadPercent == DownloadingEpisode.OVERSIZE_EPISODE){
-							if (BuildConfig.DEBUG) {
-								//Real progress is unknown, so set to indeterminate.
-								Log.d(TAG, "Set Indeterminate");
-							}
+							//Real progress is unknown, so set to indeterminate.
+							PonyLogger.d(TAG, "Set Indeterminate");
 							mHandler.post(setIndeterminate);
 						} else {
 							//Post progress to mHandler in UI thread
