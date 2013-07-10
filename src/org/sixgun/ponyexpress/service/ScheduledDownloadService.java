@@ -23,7 +23,6 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -31,6 +30,7 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.PonyExpressActivity;
 import org.sixgun.ponyexpress.receiver.ScheduledDownloadReceiver;
 import org.sixgun.ponyexpress.util.InternetHelper;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.app.AlarmManager;
 import android.app.IntentService;
@@ -49,7 +49,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 
 public class ScheduledDownloadService extends IntentService {
@@ -72,9 +71,7 @@ public class ScheduledDownloadService extends IntentService {
 	 */
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Scheduled download service started.");
-		}
+		PonyLogger.d(TAG, "Scheduled download service started.");
 		mPonyExpressApp = (PonyExpressApp) getApplication();
 		
 		try {
@@ -86,14 +83,10 @@ public class ScheduledDownloadService extends IntentService {
 				set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
 			}
 			final long nextUpdate = getNextUpdateTime();
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Next download scheduled for: " + nextUpdate);
-			}
-			
+			PonyLogger.d(TAG, "Next download scheduled for: " + nextUpdate);
+						
 			if (nextUpdate == 0){
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Scheduled downloads not active");
-				}
+				PonyLogger.d(TAG, "Scheduled downloads not active");
 				return;
 			}
 			if (set_alarm_only && nextUpdate >= System.currentTimeMillis() ){
@@ -110,51 +103,40 @@ public class ScheduledDownloadService extends IntentService {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						Log.e(TAG, "Interrupted waiting for updaterservice to finish");
+						PonyLogger.e(TAG, "Interrupted waiting for updaterservice to finish");
 					}
 				}
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Checking for downloads");
-				}
+				PonyLogger.d(TAG, "Checking for downloads");
 				//Get list of podcasts and find undownloaded episodes in each
 				ArrayList<DownloadingEpisode> downloads = getEpisodesToDownload();
 				if (!downloads.isEmpty()){
 					if (mPonyExpressApp.getInternetHelper().getConnectivityType() !=
 							ConnectivityManager.TYPE_WIFI){
 						//Either NO_CONNECTION or TYPE_MOBILE so
-						if (BuildConfig.DEBUG) {
-							Log.d(TAG, "Wait for WIFI");
-						}
+						PonyLogger.d(TAG, "Wait for WIFI");
 						try {
 							//Wait for WIFI to come up
 							Thread.sleep(60000);
 						} catch (InterruptedException e) {
-							Log.e(TAG,"Interupted sleep waiting for wifi to come on");
+							PonyLogger.e(TAG,"Interupted sleep waiting for wifi to come on");
 						}
 					}
 					switch (mPonyExpressApp.getInternetHelper().getConnectivityType()){
 					case InternetHelper.NO_CONNECTION:
-						if (BuildConfig.DEBUG) {
-							Log.d(TAG, "No connection for scheduled download");
-						}
+						PonyLogger.d(TAG, "No connection for scheduled download");
 						NotifyError(getString(R.string.no_connection_for_sched_download));
 						setNextAlarm(nextUpdate);
 						return;
 					case ConnectivityManager.TYPE_MOBILE:
 						if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
-							if (BuildConfig.DEBUG) {
-								Log.d(TAG,
-										"Scheduled downloads not allowed on mobile network");
-							}
+							PonyLogger.d(TAG, "Scheduled downloads not allowed on mobile network");
 							NotifyError(getString(R.string.prefs_dont_allow_downloads));
 							setNextAlarm(nextUpdate);
 							return;
 						}
 						//Fallthrough, download allowed on mobile network
 					case ConnectivityManager.TYPE_WIFI:
-						if (BuildConfig.DEBUG) {
-							Log.d(TAG, "Starting scheduled downloads");
-						}
+						PonyLogger.d(TAG, "Starting scheduled downloads");
 						doBindDownloaderService();
 						//Send intent for each episode to download with packaged episode
 						for (DownloadingEpisode episode: downloads){
@@ -169,14 +151,14 @@ public class ScheduledDownloadService extends IntentService {
 							try {
 								Thread.sleep(2000);
 							} catch (InterruptedException e) {
-								Log.e(TAG, "Interupted sleep waiting for Downloader to bind");
+								PonyLogger.e(TAG, "Interupted sleep waiting for Downloader to bind");
 							}
 						} 
 						do {  //wait for downloads to finish
 							try {
 								Thread.sleep(10000);
 							} catch (InterruptedException e) {
-								Log.e(TAG,"Interupted sleep while downloading");
+								PonyLogger.e(TAG,"Interupted sleep while downloading");
 							}
 						}
 						while (mDownloader != null && mDownloader.isDownloading());
@@ -192,25 +174,19 @@ public class ScheduledDownloadService extends IntentService {
 			if (sWifiLock != null){
 				if (sWifiLock.isHeld()){
 					sWifiLock.release();
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Releasing wifilock");
-					}
+					PonyLogger.d(TAG, "Releasing wifilock");
 				}
 				sWifiLock = null;
 			}
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Releasing wakelock");
-					}					
+					PonyLogger.d(TAG, "Releasing wakelock");
 				}
 				sWakeLock = null;
 			}
 		}
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Scheduled Downloader stopped");
-		}
+		PonyLogger.d(TAG, "Scheduled Downloader stopped");
 	}
 
 	
@@ -231,12 +207,9 @@ public class ScheduledDownloadService extends IntentService {
 			final Intent intent = new Intent(this, ScheduledDownloadReceiver.class);
 			final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
 			alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG,
-						"Downloads scheduled for: " + Long.toString(updateTime));
-			}
-		}else if (BuildConfig.DEBUG){
-			Log.d(TAG, "No background downloads scheduled");
+			PonyLogger.d(TAG, "Downloads scheduled for: " + Long.toString(updateTime));
+		}else{
+			PonyLogger.d(TAG, "No background downloads scheduled");
 		}				
 		
 	}

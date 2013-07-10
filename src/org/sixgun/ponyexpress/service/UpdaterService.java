@@ -28,7 +28,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -39,6 +38,7 @@ import org.sixgun.ponyexpress.receiver.RescheduledUpdateReceiver;
 import org.sixgun.ponyexpress.receiver.UpdateAlarmReceiver;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
 import org.sixgun.ponyexpress.util.PodcastFeedParser;
+import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.SixgunPodcastsParser;
 import org.sixgun.ponyexpress.util.Utils;
 
@@ -55,7 +55,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PowerManager.WakeLock;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 public class UpdaterService extends IntentService {
 	
@@ -83,9 +82,7 @@ public class UpdaterService extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 		// Get the application, and Log that this service has started.
 		mPonyExpressApp = (PonyExpressApp)getApplication();
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Updater Service started");
-		}
+		PonyLogger.d(TAG, "Updater Service started");
 		try {
 			// Initialize the status notification
 			mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
@@ -130,16 +127,12 @@ public class UpdaterService extends IntentService {
 			if (sWakeLock != null){
 				if (sWakeLock.isHeld()){
 					sWakeLock.release();
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Releasing wakelock");
-					}
+					PonyLogger.d(TAG, "Releasing wakelock");
 				}
 				sWakeLock = null;
 			}
 		}
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Updater Service stopped");
-		}
+		PonyLogger.d(TAG, "Updater Service stopped");
 	}
 	
 	/**
@@ -167,11 +160,9 @@ public class UpdaterService extends IntentService {
 			final Intent intent = new Intent(this, UpdateAlarmReceiver.class);
 			final PendingIntent pending_intent = PendingIntent.getBroadcast(this, 0, intent, 0);
 			alarm_mgr.set(AlarmManager.RTC_WAKEUP, updateTime, pending_intent);
-			if (BuildConfig.DEBUG) {
-				Log.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
-			}
-		}else if (BuildConfig.DEBUG){
-			Log.d(TAG, "No background updates scheduled");
+			PonyLogger.d(TAG, "Update scheduled for: " + Long.toString(updateTime));
+		}else{
+			PonyLogger.d(TAG, "No background updates scheduled");
 		}				
 	}
 
@@ -206,9 +197,7 @@ public class UpdaterService extends IntentService {
 	 */
 	
 	public void checkForNewSixgunShows() {
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Checking for new Sixgun podcasts");
-		}
+		PonyLogger.d(TAG, "Checking for new Sixgun podcasts");
 		//Get server list of sixgun podcasts and create list of urls
 		final Context ctx = mPonyExpressApp.getApplicationContext();
 		SixgunPodcastsParser parser = 
@@ -234,10 +223,8 @@ public class UpdaterService extends IntentService {
 	private void addSixgunShow(Podcast podcast) {
 		boolean checkdb = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
 		if (checkdb == false) {
-			if (BuildConfig.DEBUG) {
-				//Add any new podcasts to the podcasts table
-				Log.d(TAG, "Adding new Podcasts!");
-			}
+			//Add any new podcasts to the podcasts table
+			PonyLogger.d(TAG, "Adding new Podcasts!");
 			mPonyExpressApp.getDbHelper().addNewPodcast(podcast);		
 		}
 	}
@@ -247,7 +234,7 @@ public class UpdaterService extends IntentService {
 	 * It should only be called if sixgun.org is offline during a first run.
 	 */
 	private void loadDefaultShow() {
-		Log.w(TAG,"Cannot parse sixgun list, loading default podcast.");
+		PonyLogger.w(TAG,"Cannot parse sixgun list, loading default podcast.");
 		final Context ctx = mPonyExpressApp.getApplicationContext();
 		String[] default_feed = ctx.getResources().getStringArray(R.array.default_lo_feed);
 		PodcastFeedParser default_parser = new PodcastFeedParser(ctx, default_feed[0]);
@@ -263,18 +250,14 @@ public class UpdaterService extends IntentService {
 	 * has been lost and breaks if need be.  Finally, it calls the methods that handle the update alarm.
 	 */
 	private void updateAllFeeds(){
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Updating all episodes");
-		}
+		PonyLogger.d(TAG, "Updating all episodes");
 		List<String> podcast_names = mPonyExpressApp.getDbHelper().listAllPodcasts();
 		
 		for (String podcast_name: podcast_names){
 			int return_code = updateFeed(podcast_name);
 			if (return_code == ReturnCodes.INTERNET_CONNECTIVITY_LOST){
 				//Internet unreachable, Listen for return of internet to launch update.
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Registering connectivity reciever");
-				}
+				PonyLogger.d(TAG, "Registering connectivity reciever");
 				//Enable RescheduledUpdateReceiver
 				ComponentName receiver = new ComponentName(mPonyExpressApp, RescheduledUpdateReceiver.class);
 				PackageManager pm = mPonyExpressApp.getPackageManager();
@@ -295,9 +278,7 @@ public class UpdaterService extends IntentService {
 	 * @return
 	 */
 	private int updateFeed(String podcast_name){
-		if (BuildConfig.DEBUG) {
-			Log.d(TAG, "Updating " + podcast_name);
-		}
+		PonyLogger.d(TAG, "Updating " + podcast_name);
 		String podcast_url = mPonyExpressApp.getDbHelper().getPodcastUrl(podcast_name);
 		if (!mPonyExpressApp.getInternetHelper().checkConnectivity()){
 			return ReturnCodes.INTERNET_CONNECTIVITY_LOST;
@@ -305,7 +286,7 @@ public class UpdaterService extends IntentService {
 		
 		if (pingUrl(podcast_url) == ReturnCodes.URL_OFFLINE) {
 			showErrorNotification(podcast_url + " " + getText(R.string.url_offline));
-			Log.e(TAG, podcast_url + " offline during update");
+			PonyLogger.e(TAG, podcast_url + " offline during update");
 			return ReturnCodes.URL_OFFLINE;
 		}
 		
@@ -318,7 +299,7 @@ public class UpdaterService extends IntentService {
 			episodes = parser.parse();
 		}catch (RuntimeException e){
 			showErrorNotification(getString(R.string.parse_error));
-			Log.e(TAG, podcast_url + " - RuntimeException during feed parse");
+			PonyLogger.e(TAG, podcast_url + " - RuntimeException during feed parse");
 			return ReturnCodes.PARSING_ERROR;
 		}
 				
@@ -341,10 +322,7 @@ public class UpdaterService extends IntentService {
 				}
 			}catch(IndexOutOfBoundsException e){
 				//The feed has fewer episodes than the number to keep so log and break
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG,
-							"Number of episodes in this feed is less than the number to keep");
-				}
+				PonyLogger.d(TAG, "Number of episodes in this feed is less than the number to keep");
 				break;
 			}
 		}
@@ -365,7 +343,7 @@ public class UpdaterService extends IntentService {
 				}
 				//remove from database after deleting.
 				mPonyExpressApp.getDbHelper().deleteEpisode(rowID);
-			} else {Log.e(TAG, "Cannot find oldest episode");}
+			} else {PonyLogger.e(TAG, "Cannot find oldest episode");}
 		}
 	}
 
@@ -391,7 +369,7 @@ public class UpdaterService extends IntentService {
 					return ReturnCodes.URL_OFFLINE;
 				}
 			}catch (SocketTimeoutException ste){
-				Log.e(TAG, podcast_url + " timed out", ste);
+				PonyLogger.e(TAG, podcast_url + " timed out", ste);
 				return ReturnCodes.URL_OFFLINE;
 			}
 		} catch (MalformedURLException e1) {
