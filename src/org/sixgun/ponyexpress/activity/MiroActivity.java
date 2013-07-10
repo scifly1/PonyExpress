@@ -21,7 +21,6 @@ package org.sixgun.ponyexpress.activity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.CategoryAdapter;
 import org.sixgun.ponyexpress.ChannelListAdapter;
 import org.sixgun.ponyexpress.EndlessChannelListAdapter;
@@ -33,6 +32,7 @@ import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideItem;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
@@ -41,7 +41,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -88,10 +87,8 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 		mMiroService = new MiroGuideService();
 		
 		if (savedInstanceState != null){
-			if (BuildConfig.DEBUG) {
-				// Restore value of members from saved state
-				Log.d(TAG, "Restoring state of members");
-			}
+			// Restore value of members from saved state
+			PonyLogger.d(TAG, "Restoring state of members");
 			mListingChannels = savedInstanceState.getBoolean(LISTING_CHANNELS);
 			mListingItems = savedInstanceState.getBoolean(LISTING_ITEMS);
 			mListingSearch = savedInstanceState.getBoolean(LISTING_SEARCH);
@@ -293,7 +290,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			try {
 				sCategories = mMiroService.getCategories();
 			} catch (MiroGuideException e) {
-				Log.e(TAG, "Could not get Miro categories", e);
+				PonyLogger.e(TAG, "Could not get Miro categories", e);
 			}
 			return null;
 		}
@@ -324,7 +321,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			try {
 				return mMiroService.getChannelList("category", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
 			} catch (MiroGuideException e) {
-				Log.e(TAG, "Could not get Miro channels", e);
+				PonyLogger.e(TAG, "Could not get Miro channels", e);
 			}
 			return null;
 		}
@@ -364,7 +361,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			try {
 				return mMiroService.getChannelList("name", params[0], "name", MiroGuideChannel.DEFAULT_LIMIT, 0);
 			} catch (MiroGuideException e) {
-				Log.e(TAG, "Could not get Miro channels", e);
+				PonyLogger.e(TAG, "Could not get Miro channels", e);
 			}
 			return null;
 		}
@@ -383,7 +380,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 			try {
 				return mMiroService.getChannel(params[0].getId());
 			} catch (MiroGuideException e) {
-				Log.e(TAG, "Could not get Miro channels", e);
+				PonyLogger.e(TAG, "Could not get Miro channels", e);
 			}
 			return null;
 		}

@@ -21,11 +21,11 @@ package org.sixgun.ponyexpress.activity;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.sixgun.ponyexpress.BuildConfig;
 import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.service.DownloaderService;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -35,7 +35,6 @@ import android.content.ServiceConnection;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -123,12 +122,10 @@ public class DownloadOverviewActivity extends ListActivity {
 					try {
 						Thread.sleep(1000);
 					} catch (InterruptedException e) {
-						Log.e(TAG, "Download Progress thread interuppted", e);
+						PonyLogger.e(TAG, "Download Progress thread interuppted", e);
 					}
 				}
-				if (BuildConfig.DEBUG) {
-					Log.d(TAG, "Stopping download progress thread");
-				}
+				PonyLogger.d(TAG, "Stopping download progress thread");
 			}
 		}).start();
 	}
@@ -278,14 +275,10 @@ public class DownloadOverviewActivity extends ListActivity {
 				mDownloader = ((DownloaderService.DownloaderServiceBinder)service).getService();
 				//Query Downloader for current downloads
 				if (mDownloader.isDownloading()){
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Currently Downloading");
-					}
+					PonyLogger.d(TAG, "Currently Downloading");
 					startDownloadProgressThread();
 				} else {
-					if (BuildConfig.DEBUG) {
-						Log.d(TAG, "Not Downloading");
-					}
+					PonyLogger.d(TAG, "Not Downloading");
 				}
 			}
 		};
