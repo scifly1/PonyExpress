@@ -3,7 +3,8 @@
 	<item
 		android:title="@string/updatefeeds"
 		android:id="@+id/update_feeds" 
-		android:icon="@drawable/ic_menu_refresh" />
+		android:icon="@drawable/ic_menu_refresh"
+		android:showAsAction="ifRoom" />
 	<item 
 	    android:title="@string/add_podcast"
 	    android:id="@+id/add_podcast" 
@@ -11,7 +12,8 @@
 	<item
 		android:title="@string/settings"
 		android:id="@+id/settings_menu" 
-		android:icon="@drawable/ic_menu_preferences" />
+		android:icon="@drawable/ic_menu_preferences"
+		android:showAsAction="ifRoom" />
 	<item
 		android:title="@string/about"
 		android:id="@+id/about"

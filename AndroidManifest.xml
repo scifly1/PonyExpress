@@ -22,7 +22,7 @@
 	
 	<application
 	    android:icon="@drawable/pony_icon"
-	    android:theme="@style/ThemeSelector"
+	    android:theme="@style/ponyTheme"
 		android:label="@string/app_name"
 		android:name="PonyExpressApp">
 		<activity android:name=".activity.PonyExpressActivity"
