@@ -452,17 +452,19 @@ public class BitmapManager {
 	 */
 	public BitmapDrawable createBackgroundFromAlbumArt(Resources res, String url, int height, int width){
 		Bitmap art = loadImage(url);
-		Bitmap new_image;
-		if (height >  width){
-			new_image = Bitmap.createScaledBitmap(art, height, height, true);
-		} else {
-			new_image = Bitmap.createScaledBitmap(art, width, width, true);	
-		}
-		BitmapDrawable new_background = new BitmapDrawable(res, new_image);
-		
-		new_background.setGravity(Gravity.TOP| Gravity.LEFT);
-		new_background.setAlpha(80);
-		return new_background;
+		if (art != null){
+			Bitmap new_image;
+			if (height >  width){
+				new_image = Bitmap.createScaledBitmap(art, height, height, true);
+			} else {
+				new_image = Bitmap.createScaledBitmap(art, width, width, true);	
+			}
+			BitmapDrawable new_background = new BitmapDrawable(res, new_image);
+
+			new_background.setGravity(Gravity.TOP| Gravity.LEFT);
+			new_background.setAlpha(80);
+			return new_background;
+		} else return null;
 	}
 	
 	
