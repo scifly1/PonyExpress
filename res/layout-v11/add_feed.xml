@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--Make sure that any views added here are also added to the landscape version 
+	if needed. -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@drawable/background"
+    android:orientation="vertical" >
+        
+
+    <RelativeLayout
+        android:id="@+id/pony_header"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="#ff000000"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/sixgun_subtitle"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/app_name"
+            android:background="#FF000000"
+            android:paddingLeft="10dp"
+            android:text="@string/Add_feeds"
+            android:textSize="18sp" />
+
+       
+    </RelativeLayout>
+	<TextView
+	    	android:id="@+id/gradient"
+			android:background="@drawable/gradient"
+			android:layout_height="wrap_content"
+			android:layout_width="fill_parent"
+			android:layout_below="@id/pony_header"
+			android:textIsSelectable="false"
+			 />
+	<LinearLayout android:id="@+id/miro_buttons"
+	    android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:orientation="horizontal"
+    	android:layout_below="@id/gradient"
+    	android:layout_centerHorizontal="true"
+    	android:layout_marginBottom="10dp"
+    	android:layout_marginTop="20dp">
+    		    
+	<Button
+        android:id="@+id/browse_miro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="browseButtonPressed"
+        android:text="@string/browse_miro" 
+        android:layout_marginRight="5dp"/>
+	<Button
+        android:id="@+id/search_miro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:onClick="searchButtonPressed"
+        android:text="@string/search_miro" 
+        android:layout_marginLeft="5dp"/>
+	</LinearLayout>
+    
+
+    <TextView
+        android:id="@+id/import_export_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/miro_buttons"
+        android:text="@string/import_export" 
+        android:layout_marginTop="20dp"
+        android:paddingLeft="10dp"/>
+    
+    <LinearLayout android:id="@+id/opml_buttons"
+	    android:layout_width="wrap_content"
+    	android:layout_height="wrap_content"
+    	android:orientation="horizontal"
+    	android:layout_below="@+id/import_export_label"
+    	android:layout_centerHorizontal="true"
+    	android:layout_marginTop="5dp">
+    
+    <Button
+        android:id="@+id/backup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/backup" 
+        android:onClick="backupButtonPressed"
+        android:layout_marginRight="5dp"/>
+
+    <Button
+        android:id="@+id/restore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/restore" 
+        android:onClick="restoreButtonPressed"
+        android:layout_marginLeft="5dp"/>
+    </LinearLayout>
+    <TextView
+        android:id="@+id/feed_label"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/opml_buttons"
+        android:text="@string/Feed_uri" 
+        android:layout_marginTop="20dp"
+        android:paddingLeft="10dp"
+        android:layout_marginBottom="5dp"/>
+
+    <EditText
+        android:id="@+id/feed_entry"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/feed_label"
+        android:background="@android:drawable/editbox_background"
+        android:inputType="textUri"
+        android:text="@string/http"
+        android:textColor="#ff000000" />
+
+
+    <Button
+        android:id="@+id/ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@id/feed_entry"
+        android:layout_marginLeft="5dip"
+        android:layout_marginRight="5dp"
+        android:onClick="okButtonPressed"
+        android:text="@string/ok" />
+
+    <Button
+        android:id="@+id/cancel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/feed_entry"
+        android:layout_toLeftOf="@id/ok"
+        android:text="@string/cancel" 
+        android:onClick="cancelButtonPressed"/>
+
+</RelativeLayout>
