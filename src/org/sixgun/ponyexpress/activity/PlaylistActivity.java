@@ -129,7 +129,9 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		} else {
 			mPodcastEpisodeLists.setVisibility(View.GONE);
 			mDivider.setVisibility(View.GONE);
-			mDownloadButton.setVisibility(View.GONE);
+			if (mDownloadButton != null){
+				mDownloadButton.setVisibility(View.GONE);
+			}
 			mPlaylist.setStackFromBottom(false);
 		}
 		
@@ -349,6 +351,9 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 		super.onPrepareOptionsMenu(menu);
 		if (mPonyExpressApp.getDbHelper().playlistEmpty()){
 			menu.removeItem(R.id.clear_playlist);
+		}
+		if (mAutoPlaylistsOn){
+			menu.removeItem(R.id.downloads);
 		}
 		return true;
 	}
