@@ -375,6 +375,9 @@ public class PonyExpressActivity extends ListActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.playlist_menu:
+			showPlaylist(null);
+			return true;
 	    case R.id.update_feeds:
 	        updateFeed(UPDATE_ALL);
 	        return true;
