@@ -360,6 +360,9 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.play_button:
+			startPlaylist(null);
+			return true;
 		case R.id.settings_menu:
 	    	startActivity(new Intent(
 	        		mPonyExpressApp,PreferencesActivity.class));

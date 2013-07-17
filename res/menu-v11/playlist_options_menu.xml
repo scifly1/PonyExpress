@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item 
+	    android:title="@string/Playlist_title"
+	    android:id="@+id/play_button"
+	    android:icon="@drawable/play_button"
+	    android:showAsAction="always"/>
+	<item 
+	    android:title="@string/Downloads_title"
+	    android:id="@+id/downloads"
+	    android:icon="@drawable/ic_download_overview"
+	    android:showAsAction="ifRoom" />
+	<item
+		android:title="@string/settings"
+		android:id="@+id/settings_menu" 
+		android:icon="@drawable/ic_menu_preferences"
+		android:showAsAction="ifRoom" />
+	<item
+		android:title="@string/clear_playlist"
+		android:id="@+id/clear_playlist"
+		android:icon="@drawable/ic_menu_clear_playlist"
+		android:showAsAction="ifRoom" />
+	
+	<item
+		android:title="@string/about"
+		android:id="@+id/about" 
+		android:icon="@drawable/ic_menu_about"
+		android:showAsAction="ifRoom" />	
+</menu>
