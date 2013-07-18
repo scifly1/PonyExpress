@@ -474,6 +474,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		}else{
 			Bundle bundle = new Bundle();
 			bundle = Episode.packageEpisode(mPonyExpressApp, podcast_name, episode_id);
+			bundle.putBoolean(PodcastKeys.PLAYLIST, true);
 			return bundle;
 		}
 	}
