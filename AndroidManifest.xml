@@ -25,7 +25,7 @@
 	    android:theme="@style/ponyTheme"
 		android:label="@string/app_name"
 		android:name="PonyExpressApp">
-		<activity android:name=".activity.PonyExpressActivity"
+		<activity android:name=".activity.PonyExpressFragsActivity"
 		    android:launchMode="singleTop" >
 			<intent-filter>
 				<action android:name="android.intent.action.MAIN" />
