@@ -501,6 +501,10 @@ public class PlayerActivity extends Activity {
 			restoreSeekBar(mSavedState);
 			mIsDownloading = mSavedState.getBoolean(IS_DOWNLOADING);
 		}
+		if (mPodcastPlayer != null && mPodcastPlayer.isPlaying()){
+			queryPlayer();
+		}
+
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
 		registerReceiver(mDownloadReciever,filter);
 		IntentFilter completed = new IntentFilter("org.sixgun.ponyexpress.COMPLETED");
