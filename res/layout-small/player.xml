@@ -29,21 +29,13 @@
 		android:paddingBottom="7dp"
 		android:paddingTop="5dp"
 		android:visibility="gone" />
-	<SeekBar
-		android:layout_width="wrap_content"
-		android:id="@+id/PlayerSeekBar"
-		android:layout_centerHorizontal="true"
-		android:paddingTop="5dp"
-		android:layout_height="wrap_content"
-		android:paddingBottom="7dp"
-		android:minWidth="250dp"
-		android:layout_below="@+id/album_art" />
 	<RelativeLayout
 		android:id="@+id/player_controls"
 		android:layout_height="wrap_content"
 		android:layout_width="fill_parent"
 		android:layout_centerHorizontal="true"
-		android:layout_below="@+id/PlayerSeekBar">
+		android:paddingTop="5dp"
+		android:layout_below="@+id/album_art">
 		<ImageButton
 			android:src="@drawable/media_playback_start"
 			android:layout_height="wrap_content"
@@ -52,7 +44,6 @@
 			android:layout_width="wrap_content"
 			android:layout_centerHorizontal="true" />
 		<ImageButton
-			android:layout_below="@+id/PlayerSeekBar"
 			android:layout_toLeftOf="@+id/PlayButton"
 			android:src="@drawable/media_seek_backward"
 			android:layout_height="wrap_content"
@@ -60,7 +51,6 @@
 			android:contentDescription="@string/rewind_button_desc"
 			android:layout_width="wrap_content" />
 		<ImageButton
-			android:layout_below="@+id/PlayerSeekBar"
 			android:src="@drawable/media_seek_forward"
 			android:layout_toRightOf="@+id/PlayButton"
 			android:layout_height="wrap_content"
@@ -84,13 +74,21 @@
 			android:text="@string/counter"
 			android:layout_marginTop="10dp" />
 	</RelativeLayout>
+	<SeekBar
+		android:layout_width="wrap_content"
+		android:id="@+id/PlayerSeekBar"
+		android:layout_below="@+id/player_controls"
+		android:layout_centerHorizontal="true"
+		android:layout_height="wrap_content"
+		android:paddingTop="7dp"
+		android:minWidth="250dp" />
 	<Button
 		android:text="@string/download"
 		android:layout_height="wrap_content"
 		android:id="@+id/DownloadButton"
 		android:layout_width="wrap_content"
 		android:layout_centerHorizontal="true"
-		android:layout_below="@+id/DownloadProgressBar"
+		android:layout_below="@+id/player_controls"
 		android:visibility="gone" />
 
 	<Button
