@@ -9,7 +9,7 @@
             android:id="@+id/ponyexpress_fragment" android:layout_weight="1"
             android:layout_width="0dp" android:layout_height="match_parent" />
 
-    <FrameLayout android:id="@+id/details" android:layout_weight="1"
+    <FrameLayout android:id="@+id/episodes" android:layout_weight="1"
             android:layout_width="0dp" android:layout_height="match_parent"
             android:background="?android:attr/detailsElementBackground" />
 

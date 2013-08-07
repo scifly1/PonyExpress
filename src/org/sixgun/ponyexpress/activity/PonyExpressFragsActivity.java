@@ -21,10 +21,14 @@ package org.sixgun.ponyexpress.activity;
 
 import org.sixgun.ponyexpress.R;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.View;
 
 public class PonyExpressFragsActivity extends FragmentActivity {
+
+	public static final int ABOUT_DIALOG = 4;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,4 +37,28 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 		setContentView(R.layout.main_frags);
 	}
 	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onCreateDialog(int, android.os.Bundle)
+	 */
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		Dialog dialog;
+		switch (id){
+		case ABOUT_DIALOG:
+			dialog = AboutDialog.create(this);
+			break;
+		default:
+			dialog = null;
+			break;
+		}
+		return dialog;
+	}
+	
+	/**
+	 * Bring up the About dialog via a button click.
+	 * @param v, a reference to the button that was clicked to call this.
+	 */
+	public void showAbout(View v){
+		showDialog(ABOUT_DIALOG);
+	}
 }
