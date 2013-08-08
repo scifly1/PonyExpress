@@ -20,7 +20,6 @@
             android:layout_height="wrap_content"
             android:background="#FF000000"
             android:clickable="true"
-            android:onClick="showAbout"
             android:paddingLeft="10dp"
             android:paddingTop="10dp"
             android:text="@string/app_name"
@@ -34,7 +33,6 @@
             android:layout_below="@id/app_name"
             android:background="#FF000000"
             android:clickable="true"
-            android:onClick="showAbout"
             android:paddingLeft="10dp"
             android:text="@string/sixgun"
             android:textSize="16sp" />
@@ -78,11 +76,10 @@
 			android:background="@drawable/reverse_gradient" />
 
 		<Button
-			android:id="@+id/pony_footer"
+			android:id="@+id/footer_button"
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
 			android:background="#ff000000"
-			android:onClick="showAbout"
 			android:text="@string/footer"
 			android:textColor="#ffcccccc"
 			android:textSize="18sp" />

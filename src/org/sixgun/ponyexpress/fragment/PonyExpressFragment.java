@@ -24,7 +24,6 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodesActivity;
-import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.PonyLogger;
@@ -46,16 +45,18 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class PonyExpressFragment extends ListFragment {
+public class PonyExpressFragment extends ListFragment implements OnClickListener{
 
 	private static final String TAG = "PonyExpressFragment";
 	
@@ -76,6 +77,8 @@ public class PonyExpressFragment extends ListFragment {
 
 	private BroadcastReceiver mPodcastDeletedReceiver;
 
+	private ViewGroup mFooter_layout;
+
 	
 	
 	@Override
@@ -93,10 +96,10 @@ public class PonyExpressFragment extends ListFragment {
 		final View v = inflater.inflate(R.layout.main, container, false);
 		
 		mListFooter = (ViewGroup) inflater.inflate(R.layout.main_footer, null);
-		
+		mFooter_layout = (ViewGroup) v.findViewById(R.id.footer_layout);
 		ViewGroup list_root = (ViewGroup) v.findViewById(R.id.podcast_list_root);
 		list_root.getViewTreeObserver().addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
-
+		
 			@Override
 			public void onGlobalLayout() {
 				//Determine if we need to add a footer and hide the base footer.
@@ -108,21 +111,51 @@ public class PonyExpressFragment extends ListFragment {
 						PonyLogger.w(TAG, "We should not be here!!");
 						return; //we are being called when exiting activity which should not happen as mListingPodcasts should be false.
 					}
-					ViewGroup footer_layout = (ViewGroup) v.findViewById(R.id.footer_layout);
-					if (last_pos_visible < mListSize - 1 && footer_layout.getVisibility() == View.VISIBLE && list.getFooterViewsCount() < 1){
+					
+					if (last_pos_visible < mListSize - 1 && mFooter_layout.getVisibility() == View.VISIBLE && list.getFooterViewsCount() < 1){
 						//The last position is not visible and we don't have a footer already
 						//so add footer to list and hide the 'other' footer.
 						listPodcasts(true);
-					} else if (last_pos_visible == mListSize && footer_layout.getVisibility() == View.GONE){
+					} else if (last_pos_visible == mListSize && mFooter_layout.getVisibility() == View.GONE){
 						//last Position is visible so remove footer if present.
 						list.removeFooterView(mListFooter);
-						footer_layout.setVisibility(View.VISIBLE);
+						mFooter_layout.setVisibility(View.VISIBLE);
 					}
 					mListingPodcasts = false;
 				}			
 			}
 		});
+		
+		//Set up click listeners
+		Button footer_button_list = ((Button)mListFooter.findViewById(R.id.footer_button));
+		footer_button_list.setOnClickListener(this);
+		Button footer_button_layout = ((Button)mFooter_layout.findViewById(R.id.footer_button));
+		footer_button_layout.setOnClickListener(this);
+		TextView app_name =  (TextView) v.findViewById(R.id.app_name);
+		if (app_name != null){
+			app_name.setOnClickListener(this);
+		}
+		
+		TextView subtitle = (TextView) v.findViewById(R.id.sixgun_subtitle);
+		subtitle.setOnClickListener(this);
+		
 		return v;
+	}
+	
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.footer_button:
+			//fallthrough
+		case R.id.app_name:
+			//fallthrough
+		case R.id.sixgun_subtitle:
+			showAbout(v);
+			break;
+		default:
+			break;
+		}
+		
 	}
 
 	@Override
@@ -134,7 +167,7 @@ public class PonyExpressFragment extends ListFragment {
 		
 		// Check to see if we have a frame in which to embed the EpisodesFragment
         // directly in the containing UI.
-        View episodesFrame = getActivity().findViewById(R.id.episodes);
+        View episodesFrame = getActivity().findViewById(R.id.second_pane);
         mDualPane = episodesFrame != null && episodesFrame.getVisibility() == View.VISIBLE;
 
         if (savedInstanceState != null) {
@@ -191,12 +224,11 @@ public class PonyExpressFragment extends ListFragment {
 		mListingPodcasts = true;
 		//Add footer to the listview if required.
 		if (addFooter){
-			ViewGroup footer_layout = (ViewGroup) getActivity().findViewById(R.id.footer_layout);
 			ListView list = getListView();
 			//prevent more than one footer being added each time we pass through here.
 			if (list.getFooterViewsCount() == 0){
 				list.addFooterView(mListFooter);
-				footer_layout.setVisibility(View.GONE);
+				mFooter_layout.setVisibility(View.GONE);
 			}
 		}
 		mListSize = adapter.getCount();
@@ -270,7 +302,7 @@ public class PonyExpressFragment extends ListFragment {
 	        		mPonyExpressApp,PreferencesActivity.class));
 	    	return true;
 	    case R.id.add_podcast:
-	    	//addPodcast(null, "");
+//	    	addPodcast(null, "");
 	    	return true;
 	    case R.id.about:
 	    	showAbout(null);
@@ -297,7 +329,7 @@ public class PonyExpressFragment extends ListFragment {
 		
 		if (mDualPane) {
             mEpisodes = (EpisodesFragment)
-                    getFragmentManager().findFragmentById(R.id.episodes);
+                    getFragmentManager().findFragmentById(R.id.second_pane);
             if (mEpisodes == null || !mEpisodes.getShownPodcast().equals(name)) {
                 // Make new fragment to show this selection.
                 mEpisodes = EpisodesFragment.newInstance(name,url);
@@ -305,7 +337,7 @@ public class PonyExpressFragment extends ListFragment {
                 // Execute a transaction, replacing any existing fragment
                 // with this one inside the frame.
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
-                ft.replace(R.id.episodes, mEpisodes);
+                ft.replace(R.id.second_pane, mEpisodes);
                 ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
                 ft.commit();
             }
@@ -431,4 +463,5 @@ public class PonyExpressFragment extends ListFragment {
 		}
 		
 	}
+
 }

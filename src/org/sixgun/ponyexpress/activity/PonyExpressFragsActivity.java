@@ -20,17 +20,14 @@ package org.sixgun.ponyexpress.activity;
 
 
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.view.View;
 
 public class PonyExpressFragsActivity extends FragmentActivity {
 
 
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -39,11 +36,6 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 		
 	}
 	
-	//Pass onCLick() calls to showAbout() (in the xml) onto the Fragment
-	public void showAbout(View v){
-		FragmentManager fm = getSupportFragmentManager();
-		Fragment pony = fm.findFragmentById(R.id.ponyexpress_fragment);
-		((PonyExpressFragment) pony).showAbout(null);
-	}
+	
 	
 }

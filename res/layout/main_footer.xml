@@ -18,6 +18,5 @@
 		android:text="@string/footer"
 		android:textSize="18sp"
 		android:textColor="#ffcccccc"
-		android:background="#ff000000"
-		android:onClick="showAbout" />
+		android:background="#ff000000" />
 </LinearLayout>
