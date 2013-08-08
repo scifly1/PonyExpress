@@ -16,34 +16,22 @@
  *  You should have received a copy of the GNU General Public License
  *  along with PonyExpress.  If not, see <http://www.gnu.org/licenses/>.
 */
-package org.sixgun.ponyexpress.activity;
-
+package org.sixgun.ponyexpress.fragment;
 
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 
+import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.view.View;
-
-public class PonyExpressFragsActivity extends FragmentActivity {
+import android.support.v4.app.DialogFragment;
 
 
+public class ProgressDialogFragment extends DialogFragment {
 	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.main_frags);
-		
+	public Dialog onCreateDialog(final Bundle savedInstanceState) {
+	    final ProgressDialog dialog = new ProgressDialog(getActivity());
+	    dialog.setMessage(getText(R.string.setting_up));
+	    dialog.setIndeterminate(true);
+	    return dialog;
 	}
-	
-	//Pass onCLick() calls to showAbout() (in the xml) onto the Fragment
-	public void showAbout(View v){
-		FragmentManager fm = getSupportFragmentManager();
-		Fragment pony = fm.findFragmentById(R.id.ponyexpress_fragment);
-		((PonyExpressFragment) pony).showAbout(null);
-	}
-	
 }

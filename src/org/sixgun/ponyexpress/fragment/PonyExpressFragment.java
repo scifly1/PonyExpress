@@ -26,22 +26,28 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodesActivity;
 import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
+import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.PonyLogger;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.database.Cursor;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
-import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
@@ -52,6 +58,13 @@ import android.widget.Toast;
 public class PonyExpressFragment extends ListFragment {
 
 	private static final String TAG = "PonyExpressFragment";
+	
+	//Update codes
+	public static final String UPDATE_SIXGUN_SHOW_LIST = "Update_Sixgun";
+	public static final String UPDATE_ALL = "Update_all";
+	public static final String UPDATE_SINGLE = "Update_single";
+	public static final String SET_ALARM_ONLY = "Set_alarm_only";
+	
 	private PonyExpressApp mPonyExpressApp;
 	private boolean mListingPodcasts;
 	private int mListSize;
@@ -59,6 +72,9 @@ public class PonyExpressFragment extends ListFragment {
 	private boolean mDualPane;
 	private int mCurrentPodcastPosition;
 	private EpisodesFragment mEpisodes;
+	private ProgressDialogFragment mProgDialog;
+
+	private BroadcastReceiver mPodcastDeletedReceiver;
 
 	
 	
@@ -67,6 +83,8 @@ public class PonyExpressFragment extends ListFragment {
 		super.onCreate(savedInstanceState);
 		
 		setHasOptionsMenu(true);
+		mProgDialog = new ProgressDialogFragment();
+		mPodcastDeletedReceiver = new PodcastDeleted();
 	}
 
 	@Override
@@ -141,6 +159,23 @@ public class PonyExpressFragment extends ListFragment {
 
         super.onSaveInstanceState(outState);
     }
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PODCAST_DELETED");
+		getActivity().getApplicationContext().registerReceiver(mPodcastDeletedReceiver, filter);
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onPause()
+	 */
+	@Override
+	public void onPause() {
+		super.onPause();
+		getActivity().getApplicationContext().unregisterReceiver(mPodcastDeletedReceiver);
+	}
 
 	/**
 	 * This method lists the podcasts found in the database in the ListView.
@@ -148,7 +183,7 @@ public class PonyExpressFragment extends ListFragment {
 	 * a footer, determine with the globalLayoutListener if we need a footer and then
 	 * re-call this to add a footer to the adapter.
 	 */
-	protected void listPodcasts(boolean addFooter) {
+	private void listPodcasts(boolean addFooter) {
 		Cursor c = mPonyExpressApp.getDbHelper().getAllPodcastNamesAndArt();
 		getActivity().startManagingCursor(c);
 		//Create a CursorAdapter to map podcast title and art to the ListView.
@@ -184,12 +219,12 @@ public class PonyExpressFragment extends ListFragment {
 //			updateFeed(podcast_name);
 			return true;
 		case R.id.remove_podcast:
+			//FIXME Deletion should happen in an async task with a progress dialog, its too slow
 			boolean deleted = mPonyExpressApp.getDbHelper().removePodcast(info.id);
 			if(!deleted) {
 				Toast.makeText(mPonyExpressApp, R.string.delete_failed, Toast.LENGTH_SHORT)
 					.show();
 			}
-			listPodcasts(false);
 			return true;			
 		default:
 		return super.onContextItemSelected(item);
@@ -228,7 +263,7 @@ public class PonyExpressFragment extends ListFragment {
 			//showPlaylist(null);
 			return true;
 	    case R.id.update_feeds:
-	        //updateFeed(UPDATE_ALL);
+	        updateFeed(UPDATE_ALL);
 	        return true;
 	    case R.id.settings_menu:
 	    	startActivity(new Intent(
@@ -238,7 +273,7 @@ public class PonyExpressFragment extends ListFragment {
 	    	//addPodcast(null, "");
 	    	return true;
 	    case R.id.about:
-	    	getActivity().showDialog(PonyExpressFragsActivity.ABOUT_DIALOG);
+	    	showAbout(null);
 	    	return true;
 	    case R.id.add_sixgun:
 	        //updateFeed(UPDATE_SIXGUN_SHOW_LIST);
@@ -285,6 +320,115 @@ public class PonyExpressFragment extends ListFragment {
             startActivity(intent);
         }
 	}
+	private void updateFeed(String podcastName){
+		if (mPonyExpressApp.isUpdaterServiceRunning() && podcastName != SET_ALARM_ONLY){
+        	Toast.makeText(mPonyExpressApp, 
+					R.string.please_wait, Toast.LENGTH_LONG).show();
+		}else{
+			boolean connectivity_required = true;
+			if (podcastName == SET_ALARM_ONLY){
+				connectivity_required = false;
+			}
+			UpdateEpisodes task = (UpdateEpisodes) new UpdateEpisodes(connectivity_required)
+			.execute(podcastName);
+			if (task.isCancelled()){
+				PonyLogger.d(TAG, "Cancelled Update, No Connectivity");
+			}
+		}
+	}
 	
+	/**
+	 * Bring up the About dialog via a button click.
+	 * @param v, a reference to the button that was clicked to call this.
+	 */
+	public void showAbout(View v){
+		FragmentManager fm = getFragmentManager();
+		AboutDialogFragment about = new AboutDialogFragment();
+		about.show(fm, "AboutDialog");
+
+	}
 	
+	/** 
+	* Parse the RSS feed and update the database with new episodes in a background thread.
+	* 
+	*/
+	private class UpdateEpisodes extends AsyncTask <String,Void,Void>{
+		
+		private boolean connectivity_required;
+		/*
+		 * This is carried out in the UI thread before the background tasks are started.
+		 */
+		public UpdateEpisodes(boolean connectivity_required){
+			this.connectivity_required = connectivity_required; 
+		}
+		
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			if (connectivity_required && !mPonyExpressApp.getInternetHelper().checkConnectivity() ){
+				Toast.makeText(mPonyExpressApp, 
+						R.string.no_internet_connection, Toast.LENGTH_LONG).show();
+				cancel(true);
+			}
+			if (mPonyExpressApp.isUpdaterServiceRunning()){
+				cancel(true);
+			}
+			mProgDialog.show(getFragmentManager(), "update Progress Dialog");
+		}
+		/*
+		 * This is done in a new thread,
+		 */
+		@Override
+		protected Void doInBackground(String... input_string) {
+			
+			//Start UpdaterSevice with the input_string[0]
+			Intent intent = new Intent(mPonyExpressApp,UpdaterService.class);
+			intent.putExtra(input_string[0], true);
+			intent.putExtra(UPDATE_SINGLE, input_string[0]);
+			getActivity().startService(intent);
+						
+			//Pause until all UpdaterServices are done
+			while (mPonyExpressApp.isUpdaterServiceRunning()){
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					PonyLogger.e(TAG, "UpdateEpisodes failed to sleep");
+				}
+			}
+			return null;
+		}
+		
+		/* 
+		 */
+		@Override
+		protected void onCancelled() {
+			super.onCancelled();
+			mProgDialog.dismiss();
+		}
+		/* 
+		 */
+		@Override
+		protected void onPostExecute(Void result) {
+			super.onPostExecute(result);
+			mProgDialog.dismiss();
+			//re-list podcasts to update new episode counts
+			listPodcasts(false);
+		}
+		
+	};
+	
+	/**
+	 * Receiver that takes a broadcast sent by the DbHandler when 
+	 * the database has been changed by the deletion of a podcast, so the list 
+	 * can be updated.
+	 */
+	public class PodcastDeleted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			//need to recheck the ListSize to see if the footer needs to be moved
+			listPodcasts(false);
+		}
+		
+	}
 }
