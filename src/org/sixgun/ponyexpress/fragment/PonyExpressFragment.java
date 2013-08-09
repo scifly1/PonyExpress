@@ -88,6 +88,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		setHasOptionsMenu(true);
 		mProgDialog = new ProgressDialogFragment();
 		mPodcastDeletedReceiver = new PodcastDeleted();
+		mPonyExpressApp = (PonyExpressApp) getActivity().getApplication();
 	}
 
 	@Override
@@ -162,7 +163,6 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 		
-		mPonyExpressApp = (PonyExpressApp) getActivity().getApplication();
 		listPodcasts(false);
 		
 		// Check to see if we have a frame in which to embed the EpisodesFragment
@@ -245,10 +245,9 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		case R.id.view_eps:
 			selectPodcast(info.id, info.position);
 			return true;
-			//FIXME
 		case R.id.refresh_feeds:
 			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastName(info.id);
-//			updateFeed(podcast_name);
+			updateFeed(podcast_name);
 			return true;
 		case R.id.remove_podcast:
 			//FIXME Deletion should happen in an async task with a progress dialog, its too slow
@@ -351,7 +350,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
             startActivity(intent);
         }
 	}
-	private void updateFeed(String podcastName){
+	public void updateFeed(String podcastName){
 		if (mPonyExpressApp.isUpdaterServiceRunning() && podcastName != SET_ALARM_ONLY){
         	Toast.makeText(mPonyExpressApp, 
 					R.string.please_wait, Toast.LENGTH_LONG).show();
