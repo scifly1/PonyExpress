@@ -23,7 +23,7 @@ import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.EpisodesActivity;
+import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.PonyLogger;
@@ -345,8 +345,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
             // Otherwise we need to launch a new activity to display
             // the episodes fragment.
             Intent intent = new Intent();
-            //FIXME doesn't use the fragment
-            intent.setClass(getActivity(), EpisodesActivity.class);
+            intent.setClass(getActivity(), EpisodesFragActivity.class);
             intent.putExtra(PodcastKeys.NAME, name);
     		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
             startActivity(intent);

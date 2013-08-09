@@ -79,7 +79,7 @@
 		<service android:name=".service.DownloaderService" />
 		<service android:name="group.pals.android.lib.ui.filechooser.services.LocalFileProvider" />
 		
-		<activity android:name=".activity.EpisodesActivity" />
+		<activity android:name=".activity.EpisodesFragActivity" />
 		<activity android:name=".activity.PlayerActivity" />
 		<activity android:name=".activity.EpisodeTabs"
 			 android:launchMode="singleTop" />

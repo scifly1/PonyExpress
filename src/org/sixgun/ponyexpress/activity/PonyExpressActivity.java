@@ -266,14 +266,14 @@ public class PonyExpressActivity extends ListActivity {
 			//Add Click listener's for each row.
 			final int id_index = cursor.getColumnIndex(PodcastKeys._ID);
 			final long id = cursor.getLong(id_index);
-			view.setOnClickListener(new OnClickListener() {
+//			view.setOnClickListener(new OnClickListener() {
 
-				@Override
-				public void onClick(View v) {
-					selectPodcast(id);
-
-				}
-			});
+//				@Override
+//				public void onClick(View v) {
+//					selectPodcast(id);
+//
+//				}
+//			});
 			view.setOnLongClickListener(new OnLongClickListener() {
 
 				@Override
@@ -293,16 +293,16 @@ public class PonyExpressActivity extends ListActivity {
 	 * Starts the EpisodesActivity with the selected podcast
 	 * @param id row_id of the podcast in the database
 	 */
-	protected void selectPodcast(long id) {
-		//Get the podcast name and album art url and number of unlistened episodes.
-		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
-		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
-		//Store in an intent and send to EpisodesActivity
-		Intent intent = new Intent(this,EpisodesActivity.class);
-		intent.putExtra(PodcastKeys.NAME, name);
-		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
-		startActivity(intent);
-	}
+//	protected void selectPodcast(long id) {
+//		//Get the podcast name and album art url and number of unlistened episodes.
+//		final String name = mPonyExpressApp.getDbHelper().getPodcastName(id);
+//		final String url = mPonyExpressApp.getDbHelper().getAlbumArtUrl(id);
+//		//Store in an intent and send to EpisodesActivity
+//		Intent intent = new Intent(this,EpisodesActivity.class);
+//		intent.putExtra(PodcastKeys.NAME, name);
+//		intent.putExtra(PodcastKeys.ALBUM_ART_URL, url);
+//		startActivity(intent);
+//	}
 	
 	/**
 	 * Bring up the Settings (preferences) menu via a button click.
@@ -469,9 +469,9 @@ public class PonyExpressActivity extends ListActivity {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()){
-		case R.id.view_eps:
-			selectPodcast(info.id);
-			return true;
+//		case R.id.view_eps:
+//			selectPodcast(info.id);
+//			return true;
 		case R.id.refresh_feeds:
 			final String podcast_name = mPonyExpressApp.getDbHelper().getPodcastName(info.id);
 			updateFeed(podcast_name);

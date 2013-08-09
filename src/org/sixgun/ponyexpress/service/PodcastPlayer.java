@@ -27,7 +27,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
-import org.sixgun.ponyexpress.activity.EpisodesActivity;
+import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
@@ -618,7 +618,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	private void showErrorNotification(){
 		//Shows a notification that there is an error with an episode file 
 		//and suggests the user long press to re-download.
-		Intent notificationIntent = new Intent(this,EpisodesActivity.class);
+		Intent notificationIntent = new Intent(this,EpisodesFragActivity.class);
 		notificationIntent.putExtras(mData);
 		PendingIntent contentIntent = PendingIntent.getActivity(mPonyExpressApp, 
 				0, notificationIntent, 0);
