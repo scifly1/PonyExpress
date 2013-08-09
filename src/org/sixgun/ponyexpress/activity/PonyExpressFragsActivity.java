@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
@@ -82,8 +83,24 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 
 		//Check SDCard contents and database match.
 		new DatabaseCheck().execute();
-
-				
+		
+		//If started by clicking a podcast link call AddPodcast in Pony fragment
+		Intent intent = getIntent();
+		if (intent.getAction() != null && intent.getAction().equals(Intent.ACTION_VIEW)){
+			final String url = intent.getDataString();
+			mPonyFragment.addPodcast(null, url);
+		}	
+	}
+	//Update the feeds when new podcast(s) have been added.
+	/* (non-Javadoc)
+	 * @see android.app.Activity#onNewIntent(android.content.Intent)
+	 */
+	@Override
+	protected void onNewIntent(Intent intent) {
+		PonyLogger.d(TAG, "New Intent recieved");
+		final String podcast_name = intent.getExtras().
+				getString(PodcastKeys.NAME);
+		mPonyFragment.updateFeed(podcast_name);
 	}
 
 	// This method shows a dialog, and calls updateFeed() if this is the first time Pony 

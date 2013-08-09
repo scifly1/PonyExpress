@@ -157,11 +157,11 @@ public class PonyExpressActivity extends ListActivity {
 		//Check SDCard contents and database match.
 		new DatabaseCheck().execute();
 		
-		//Update the Episodes list if the database has been upgraded.
-		if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
-			updateFeed(UPDATE_ALL);
-			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
-		}
+//		//Update the Episodes list if the database has been upgraded.
+//		if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
+//			updateFeed(UPDATE_ALL);
+//			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
+//		}
 		
 		mPodcastDeletedReceiver = new PodcastDeleted();
 		

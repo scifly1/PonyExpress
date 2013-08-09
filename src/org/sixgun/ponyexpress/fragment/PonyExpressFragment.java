@@ -23,7 +23,9 @@ import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.AddNewPodcastFeedActivity;
 import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
+import org.sixgun.ponyexpress.activity.PlaylistActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.PonyLogger;
@@ -51,6 +53,7 @@ import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,6 +68,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	public static final String UPDATE_ALL = "Update_all";
 	public static final String UPDATE_SINGLE = "Update_single";
 	public static final String SET_ALARM_ONLY = "Set_alarm_only";
+	public static final int ADD_FEED = 0;
 	
 	private PonyExpressApp mPonyExpressApp;
 	private boolean mListingPodcasts;
@@ -133,12 +137,19 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		Button footer_button_layout = ((Button)mFooter_layout.findViewById(R.id.footer_button));
 		footer_button_layout.setOnClickListener(this);
 		TextView app_name =  (TextView) v.findViewById(R.id.app_name);
-		if (app_name != null){
+		if (app_name != null){//not present on android > 3
 			app_name.setOnClickListener(this);
 		}
-		
 		TextView subtitle = (TextView) v.findViewById(R.id.sixgun_subtitle);
 		subtitle.setOnClickListener(this);
+		ImageButton add_feeds_button = (ImageButton) v.findViewById(R.id.add_feeds_button);
+		if (add_feeds_button != null){ //not present on android > 3
+			add_feeds_button.setOnClickListener(this);
+		}
+		ImageButton playlist_button = (ImageButton) v.findViewById(R.id.playlist_button);
+		if (playlist_button != null){ //not present on android > 3
+			playlist_button.setOnClickListener(this);
+		}
 		
 		return v;
 	}
@@ -152,6 +163,12 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 			//fallthrough
 		case R.id.sixgun_subtitle:
 			showAbout(v);
+			break;
+		case R.id.add_feeds_button:
+			addPodcast(v,"");
+			break;
+		case R.id.playlist_button:
+			showPlaylist(v);
 			break;
 		default:
 			break;
@@ -289,9 +306,8 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		//FIXME
 		case R.id.playlist_menu:
-			//showPlaylist(null);
+			showPlaylist(null);
 			return true;
 	    case R.id.update_feeds:
 	        updateFeed(UPDATE_ALL);
@@ -301,13 +317,13 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	        		mPonyExpressApp,PreferencesActivity.class));
 	    	return true;
 	    case R.id.add_podcast:
-//	    	addPodcast(null, "");
+	    	addPodcast(null, "");
 	    	return true;
 	    case R.id.about:
 	    	showAbout(null);
 	    	return true;
 	    case R.id.add_sixgun:
-	        //updateFeed(UPDATE_SIXGUN_SHOW_LIST);
+	        updateFeed(UPDATE_SIXGUN_SHOW_LIST);
 	        return true;
 	    default:
 	        return super.onOptionsItemSelected(item);
@@ -378,6 +394,24 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 
 	}
 	
+	/**
+	 * Show the playlist
+	 */
+	public void showPlaylist(View v) {
+		//FIXME doesn't start fragment yet
+		startActivity(new Intent(mPonyExpressApp, PlaylistActivity.class));
+	}
+	
+	/**
+	 * Bring up the add Podcasts activity.
+	 * @param v
+	 */
+	public void addPodcast(View v, String url) {
+		//FIXME doesn't start fragment yet
+		Intent intent = new Intent(mPonyExpressApp, AddNewPodcastFeedActivity.class);
+		intent.putExtra(PodcastKeys.FEED_URL, url);
+		startActivityForResult(intent, ADD_FEED);
+	}
 	/** 
 	* Parse the RSS feed and update the database with new episodes in a background thread.
 	* 

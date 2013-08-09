@@ -103,7 +103,7 @@ public class PonyExpressDbAdaptor {
     private static final String TAG = "PonyExpressDbAdaptor";
 	private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
-    public boolean mDatabaseUpgraded = false;
+//    public boolean mDatabaseUpgraded = false;
     
     private final Context mCtx;
 	

@@ -44,7 +44,6 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:background="#ff000000"
-            android:onClick="showPlaylist"
             android:paddingTop="10dp"
             android:paddingRight="10dp"
             android:src="@drawable/playlist_button" />
@@ -56,7 +55,6 @@
             android:layout_height="wrap_content"
             android:layout_toLeftOf="@+id/playlist_button"
             android:background="#ff000000"
-            android:onClick="addPodcast"
             android:paddingTop="10dp"
             android:src="@drawable/add_button" />
     </RelativeLayout>
