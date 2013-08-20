@@ -60,6 +60,7 @@
 	<string name="download_settings">Download Settings</string>
 	<string name="player_settings">Player Settings</string>
 	<string name="add_podcast">Add a podcast</string>
+	<string name="adding_podcast">Adding podcast&#8230;</string>
 	<string name="updatefeeds">Refresh subscriptions</string>
 	<string name="version">Pony Express Version</string>
 	<string name="about">About</string>

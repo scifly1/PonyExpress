@@ -183,7 +183,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 	
 	public void okButtonPressed(View v) {
 		final String feed = mFeedText.getText().toString();
-		addPodcast(feed);		
+		new AddPodcast().execute(feed);		
 	}
 	
 	public void cancelButtonPressed(View v){
@@ -250,7 +250,7 @@ public class AddNewPodcastFeedActivity extends Activity {
 			} break;
 		case PonyExpressActivity.ADD_FEED:
 			final String feed_url = data.getExtras().getString(PodcastKeys.FEED_URL);
-			addPodcast(feed_url);
+			new AddPodcast().execute(feed_url);
 			break;
 		default:
 			PonyLogger.e(TAG, "Unknown request code in result recieved by AddNEwPodcastFeedsActivity");
@@ -267,32 +267,70 @@ public class AddNewPodcastFeedActivity extends Activity {
 		if (mProgDialog.isShowing()){
 			mProgDialog.dismiss();
 		}
-	}
-	private void addPodcast(String feed_url){
-		Podcast podcast = new Podcast();
+	} 
+	
+	
+	private class AddPodcast extends AsyncTask<String, Void, Integer>{
 
-		URL  feedUrl = Utils.getURL(feed_url);
-		HttpURLConnection conn = null;
-		try {
-			conn = Utils.checkURL(feedUrl);
-		} catch (SocketTimeoutException e) {
-			PonyLogger.e(TAG, "Feed url timed out", e);
+		private String aPodcastName;
+
+		@Override
+		protected void onPreExecute() {
+			super.onPreExecute();
+			mProgDialog.setMessage(getText(R.string.adding_podcast));
+			mProgDialog.show();
 		}
-		if (conn != null){
-			conn.disconnect();
-			podcast.setFeedUrl(feedUrl);
-			//Check if the new url is already in the database
-			boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
-			if (checkDatabase) {
-				Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
-			}else{
-				final String name = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
-				Toast.makeText(mPonyExpressApp, R.string.adding_podcast, Toast.LENGTH_SHORT).show();
-				//Send podcast name back to PonyExpressActivity so it can update the new feed.
-				sendToMainActivity(name);
-				
+		
+		@Override
+		protected void onCancelled() {
+			super.onCancelled();
+			mProgDialog.cancel();
+		}
+
+		@Override
+		protected Integer doInBackground(String... params) {
+			Podcast podcast = new Podcast();
+			HttpURLConnection conn = null;
+			
+			final URL  feedUrl = Utils.getURL(params[0]);
+			try {
+				conn = Utils.openConnection(feedUrl);
+			} catch (SocketTimeoutException e) {
+				PonyLogger.e(TAG, "Feed url timed out", e);
 			}
-		} else Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
+			if (conn != null){
+				conn.disconnect();
+				podcast.setFeedUrl(feedUrl);
+				//Check if the new url is already in the database
+				boolean checkDatabase = mPonyExpressApp.getDbHelper().checkDatabaseForUrl(podcast);
+				if (checkDatabase) {
+					return ReturnCodes.ALREADY_DOWNLOADED;
+				}else{
+					aPodcastName = mPonyExpressApp.getDbHelper().addNewPodcast(podcast);
+					return ReturnCodes.ALL_OK;
+				}
+			} else return ReturnCodes.URL_OFFLINE;
+
+		}
+
+		@Override
+		protected void onPostExecute(Integer result) {
+			super.onPostExecute(result);
+			mProgDialog.hide();
+			
+			switch (result){
+			case ReturnCodes.ALREADY_DOWNLOADED:
+				Toast.makeText(mPonyExpressApp, R.string.already_in_db, Toast.LENGTH_SHORT).show();
+				break;
+			case ReturnCodes.URL_OFFLINE:
+				Toast.makeText(mPonyExpressApp, R.string.url_error, Toast.LENGTH_SHORT).show();
+				break;
+			case ReturnCodes.ALL_OK:
+				//Send podcast name back to PonyExpressActivity so it can update the new feed.
+				sendToMainActivity(aPodcastName);
+			}
+		}	
+		
 	}
 
 	private class Backup extends AsyncTask<File,Integer,Integer>{

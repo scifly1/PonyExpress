@@ -80,19 +80,20 @@ public class Utils {
 	}
 	
 	/**
-	 * Checks that the given URL returns status 200 (OK)
-	 * The returned connection  must be disconnected by the caller.
+	 * Checks that the given URL returns status 200 (OK). Must also be run off 
+	 * the main thread in a service or AsyncTask etc...
 	 * @param the URL
-	 * @return the connection if connection can be made or null otherwise.
+	 * @return the connection if a connection can be made, caller is responsible
+	 *  for disconnecting the connection. 
 	 * @throws SocketTimeoutException
 	 */
-	static public HttpURLConnection checkURL(URL _url) throws SocketTimeoutException{
-		HttpURLConnection conn;
+	static public HttpURLConnection openConnection(URL _url) throws SocketTimeoutException{
+		HttpURLConnection conn = null;
 		try {
 			conn = (HttpURLConnection) _url.openConnection();
 			conn.setRequestProperty("Connection", "close");
 			conn.setConnectTimeout(TIMEOUT);
-            conn.setReadTimeout(TIMEOUT);
+			conn.setReadTimeout(TIMEOUT);
 			PonyLogger.d(TAG, "Response code: " + conn.getResponseCode());
 			//Check that the server responds properly
 			if (conn.getResponseCode() != HttpStatus.SC_OK){

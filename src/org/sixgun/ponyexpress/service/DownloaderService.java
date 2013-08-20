@@ -208,7 +208,7 @@ public class DownloaderService extends Service {
 						InputStream inFile = null;
 						int totalDownloaded = 0;
 						try {
-							HttpURLConnection conn = Utils.checkURL(url);
+							HttpURLConnection conn = Utils.openConnection(url);
 							if (conn != null){
 								inFile = conn.getInputStream();
 							} else {

@@ -69,7 +69,7 @@ public abstract class BaseFeedParser {
 		//try to connect to server a maximum of five times
     	do {
     		try{
-    			conn = openConnection();
+    			conn = Utils.openConnection(mFeedUrl);
     			attempts++;
     		} catch (SocketTimeoutException ste) {
     			PonyLogger.e(TAG, "Server timed out from getReponseCode()", ste);
@@ -85,16 +85,6 @@ public abstract class BaseFeedParser {
 		return null;
     }
     
-    /** 
-     * Checks that a connection can be made to mFeedUrl and 
-     * if so returns the connection. The connection should be disconnected
-     * after use by the caller.
-     * @return the HttpUrlConnection
-     * @throws SocketTimeoutException
-     */
-    private HttpURLConnection openConnection() throws SocketTimeoutException{
-    	return Utils.checkURL(mFeedUrl);	
-    }
     /**
      * Sends an error notification.
      * The default error message is "There was an error getting a feed" which is used
