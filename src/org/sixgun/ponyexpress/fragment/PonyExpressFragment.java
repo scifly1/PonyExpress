@@ -437,7 +437,10 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 			if (mPonyExpressApp.isUpdaterServiceRunning()){
 				cancel(true);
 			}
-			mProgDialog.show(getFragmentManager(), "update Progress Dialog");
+			if (connectivity_required){ //Set alarm only doesn't need connectivity, is quick
+				// and so doesn't need progDialog.
+				mProgDialog.show(getFragmentManager(), "update Progress Dialog");
+			}
 		}
 		/*
 		 * This is done in a new thread,
@@ -467,14 +470,18 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		@Override
 		protected void onCancelled() {
 			super.onCancelled();
-			mProgDialog.dismiss();
+			if (mProgDialog.isAdded()){
+				mProgDialog.dismiss();
+			}
 		}
 		/* 
 		 */
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			mProgDialog.dismiss();
+			if (mProgDialog.isAdded()){
+				mProgDialog.dismiss();
+			}
 			//re-list podcasts to update new episode counts
 			listPodcasts(false);
 		}
