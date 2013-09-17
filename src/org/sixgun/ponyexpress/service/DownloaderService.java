@@ -176,6 +176,10 @@ public class DownloaderService extends Service {
 		
 		mQueue.add(newEpisode);
 		PonyLogger.i(TAG, newEpisode.getTitle() + " queued");
+		if (!mDownloaderAwake){
+			mDownloaderAwake = true;
+			beginLooperThread();
+		}
 		notifyPlayerActivityOfStart(QUEUED);
 	}
 	
@@ -194,6 +198,7 @@ public class DownloaderService extends Service {
 			
 			@Override
 			public void run() {
+				PonyLogger.d(TAG, "Starting download thread");
 				boolean IOe = false;
 				final URL url = episode.getLink();
 				final String podcastPath = episode.getPodcastPath();
@@ -404,6 +409,7 @@ public class DownloaderService extends Service {
 						}
 
 						mNM.cancel(NOTIFY_ID);
+						PonyLogger.d(TAG, "Downloader going to sleep");
 						mDownloaderAwake = false;
 						stopSelf();
 					}
