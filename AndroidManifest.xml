@@ -70,7 +70,12 @@
 			    <data android:mimeType="application/atom+xml" />
 			    <data android:mimeType="application/xml" />
 			</intent-filter>
-					
+			
+			<!-- enable the search dialog. Searches are sent to this activity
+		     which will then be forwarded on to MiroActivity via 
+		     startActivtyForResult -->
+        	<meta-data android:name="android.app.default_searchable"
+                   android:value=".activity.AddNewPodcastFragActivity" />		
 
 		</activity>
 		<service android:name=".service.ScheduledDownloadService" />
@@ -90,7 +95,7 @@
        			<category android:name="android.intent.category.DEFAULT" />
     		</intent-filter>
     	</activity>
-		<activity android:name=".activity.AddNewPodcastFeedActivity" 
+		<activity android:name=".activity.AddNewPodcastFragActivity" 
 		    android:launchMode="singleTop" >
 		   <!--Declare this a searchable activity  -->
 		    <intent-filter>
@@ -103,7 +108,7 @@
 		     which will then be forwarded on to MiroActivity via 
 		     startActivtyForResult -->
         	<meta-data android:name="android.app.default_searchable"
-                   android:value=".activity.AddNewPodcastFeedActivity" />
+                   android:value=".activity.AddNewPodcastFragActivity" />
 		    </activity>
 		<activity android:name=".activity.PlaylistActivity" />	
 		<activity android:name=".activity.DownloadOverviewActivity" />

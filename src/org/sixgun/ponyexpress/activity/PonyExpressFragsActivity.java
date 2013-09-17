@@ -32,7 +32,6 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
-import org.sixgun.ponyexpress.fragment.ProgressDialogFragment;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.util.PonyLogger;
 
@@ -47,7 +46,7 @@ import android.support.v4.app.FragmentManager;
 
 public class PonyExpressFragsActivity extends FragmentActivity {
 
-	private static final String TAG = "PonyExpressActivity";
+	private static final String TAG = "PonyExpressFragActivity";
 	public static final String FIRST = "first";
 	private static final String LAST_CACHE_CLEAR = "last_cache_clear";
 	private PonyExpressApp mPonyExpressApp;

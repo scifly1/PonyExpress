@@ -60,14 +60,12 @@
         android:id="@+id/browse_miro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="browseButtonPressed"
         android:text="@string/browse_miro" 
         android:layout_marginRight="5dp"/>
 	<Button
         android:id="@+id/search_miro"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:onClick="searchButtonPressed"
         android:text="@string/search_miro" 
         android:layout_marginLeft="5dp"/>
 	</LinearLayout>
@@ -95,7 +93,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/backup" 
-        android:onClick="backupButtonPressed"
         android:layout_marginRight="5dp"/>
 
     <Button
@@ -103,7 +100,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/restore" 
-        android:onClick="restoreButtonPressed"
         android:layout_marginLeft="5dp"/>
     </LinearLayout>
     <TextView
@@ -135,7 +131,6 @@
         android:layout_below="@id/feed_entry"
         android:layout_marginLeft="5dip"
         android:layout_marginRight="5dp"
-        android:onClick="okButtonPressed"
         android:text="@string/ok" />
 
     <Button
@@ -144,8 +139,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/feed_entry"
         android:layout_toLeftOf="@id/ok"
-        android:text="@string/cancel" 
-        android:onClick="cancelButtonPressed"/>
+        android:text="@string/cancel" />
 
 </RelativeLayout>
 </ScrollView>

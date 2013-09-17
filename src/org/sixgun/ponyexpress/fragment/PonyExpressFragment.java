@@ -23,7 +23,7 @@ import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.AddNewPodcastFeedActivity;
+import org.sixgun.ponyexpress.activity.AddNewPodcastFragActivity;
 import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
 import org.sixgun.ponyexpress.activity.PlaylistActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
@@ -82,6 +82,8 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	private BroadcastReceiver mPodcastDeletedReceiver;
 
 	private ViewGroup mFooter_layout;
+
+	private AddNewPodcastsFragment mAddNew;
 
 	
 	
@@ -184,8 +186,8 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		
 		// Check to see if we have a frame in which to embed the EpisodesFragment
         // directly in the containing UI.
-        View episodesFrame = getActivity().findViewById(R.id.second_pane);
-        mDualPane = episodesFrame != null && episodesFrame.getVisibility() == View.VISIBLE;
+        View secondFrame = getActivity().findViewById(R.id.second_pane);
+        mDualPane = secondFrame != null && secondFrame.getVisibility() == View.VISIBLE;
 
         if (savedInstanceState != null) {
             // Restore last state for checked podcast.
@@ -331,7 +333,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	}
 
 	/**
-	 * Embeds the correct EpsiodesFragment in the UI is enough room or
+	 * Embeds the correct EpsiodesFragment in the UI if enough room or
 	 * starts the EpisodesActivity with the selected podcast.
 	 * @param id row_id of the podcast in the database
 	 */
@@ -344,7 +346,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		
 		if (mDualPane) {
             mEpisodes = (EpisodesFragment)
-                    getFragmentManager().findFragmentById(R.id.second_pane);
+                    getFragmentManager().findFragmentByTag("episodes");
             if (mEpisodes == null || !mEpisodes.getShownPodcast().equals(name)) {
                 // Make new fragment to show this selection.
                 mEpisodes = EpisodesFragment.newInstance(name,url);
@@ -367,6 +369,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
         }
 	}
 	public void updateFeed(String podcastName){
+		PonyLogger.d(TAG, "UpdateFeed called");
 		if (mPonyExpressApp.isUpdaterServiceRunning() && podcastName != SET_ALARM_ONLY){
         	Toast.makeText(mPonyExpressApp, 
 					R.string.please_wait, Toast.LENGTH_LONG).show();
@@ -403,14 +406,31 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	}
 	
 	/**
-	 * Bring up the add Podcasts activity.
-	 * @param v
+	 * Embeds the AddPodcastsFragment in the UI if enough room or
+	 * starts the AddPodcastsActivity.
+	 * @param v,url
 	 */
 	public void addPodcast(View v, String url) {
-		//FIXME doesn't start fragment yet
-		Intent intent = new Intent(mPonyExpressApp, AddNewPodcastFeedActivity.class);
-		intent.putExtra(PodcastKeys.FEED_URL, url);
-		startActivityForResult(intent, ADD_FEED);
+		PonyLogger.d(TAG, "Starting AddNewPodcasts");
+
+		if (mDualPane) {
+			if (mAddNew == null) {
+				mAddNew = AddNewPodcastsFragment.newInstance(url);
+			}
+			// Execute a transaction, replacing any existing fragment
+			// with this one inside the frame.
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			ft.replace(R.id.second_pane, mAddNew);
+			ft.addToBackStack(null);
+			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+			ft.commit();
+		}else {
+			// Otherwise we need to launch a new activity to display
+			//AddNewPodcastsFragment
+			Intent intent = new Intent(mPonyExpressApp, AddNewPodcastFragActivity.class);
+			intent.putExtra(PodcastKeys.FEED_URL, url);
+			startActivity(intent);
+		}
 	}
 	/** 
 	* Parse the RSS feed and update the database with new episodes in a background thread.

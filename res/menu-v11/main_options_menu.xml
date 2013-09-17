@@ -1,34 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item 
-	    android:title="@string/Playlist_title"
-	    android:id="@+id/playlist_menu"
-	    android:icon="@drawable/ic_playlist"
-	    android:showAsAction="ifRoom" />
-	<item
-		android:title="@string/updatefeeds"
-		android:id="@+id/update_feeds" 
-		android:icon="@drawable/ic_menu_refresh"
-		android:showAsAction="ifRoom" />
-	<item 
-	    android:title="@string/add_podcast"
-	    android:id="@+id/add_podcast" 
-	    android:icon="@drawable/ic_menu_add"
-	    android:showAsAction="ifRoom"/>
-	<item
-		android:title="@string/settings"
-		android:id="@+id/settings_menu" 
-		android:icon="@drawable/ic_menu_preferences"
-		android:showAsAction="ifRoom" />
-	<item
-		android:title="@string/about"
-		android:id="@+id/about"
-		android:icon="@drawable/ic_menu_about"
-		android:showAsAction="ifRoom" />
-	<item 
-	    android:id="@+id/add_sixgun" 
-	    android:title="@string/add_sixgun" 
-	    android:icon="@drawable/ic_sixgun_prod">
-	    
-	</item>
+
+	<group android:id="@+id/main_group">
+	    <item
+	        android:id="@+id/playlist_menu"
+	        android:icon="@drawable/ic_playlist"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/Playlist_title"/>
+	    <item
+	        android:id="@+id/update_feeds"
+	        android:icon="@drawable/ic_menu_refresh"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/updatefeeds"/>
+	    <item
+	        android:id="@+id/add_podcast"
+	        android:icon="@drawable/ic_menu_add"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/add_podcast"/>
+	    <item
+	        android:id="@+id/settings_menu"
+	        android:icon="@drawable/ic_menu_preferences"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/settings"/>
+	    <item
+	        android:id="@+id/about"
+	        android:icon="@drawable/ic_menu_about"
+	        android:showAsAction="ifRoom"
+	        android:title="@string/about"/>
+	    <item
+	        android:id="@+id/add_sixgun"
+	        android:icon="@drawable/ic_sixgun_prod"
+	        android:title="@string/add_sixgun">
+	    </item>
+	</group>
+
 </menu>

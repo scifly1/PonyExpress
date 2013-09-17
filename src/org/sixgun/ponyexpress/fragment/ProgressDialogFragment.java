@@ -27,11 +27,34 @@ import android.support.v4.app.DialogFragment;
 
 
 public class ProgressDialogFragment extends DialogFragment {
+
+	private static final String MESSAGE_TEXT = "text";
+
+	public static ProgressDialogFragment newInstance(CharSequence message){
+		ProgressDialogFragment dialog = new ProgressDialogFragment();
+		Bundle args = new Bundle();
+		args.putCharSequence(MESSAGE_TEXT, message);
+		dialog.setArguments(args);
+		return dialog;
+	}
+	
 	@Override
 	public Dialog onCreateDialog(final Bundle savedInstanceState) {
 	    final ProgressDialog dialog = new ProgressDialog(getActivity());
-	    dialog.setMessage(getText(R.string.setting_up));
+	    Bundle data;
+		if (savedInstanceState != null){
+			data = savedInstanceState;
+		} else {
+			data = getArguments();
+		}
+		if (data == null){
+			dialog.setMessage(getText(R.string.setting_up));
+		} else {
+			CharSequence text = data.getCharSequence(MESSAGE_TEXT);
+			dialog.setMessage(text);
+		}
 	    dialog.setIndeterminate(true);
 	    return dialog;
 	}
+	
 }
