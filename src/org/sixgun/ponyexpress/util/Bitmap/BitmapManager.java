@@ -410,7 +410,7 @@ public class BitmapManager {
 
 	    if (bitmapWorkerTask != null) {
 	        final String bitmapUrl = bitmapWorkerTask.url;
-	        if (!bitmapUrl.equals(data)){
+	        if (bitmapUrl != null && !bitmapUrl.equals(data)){
 	            // Cancel previous task
 	            bitmapWorkerTask.cancel(true);
 	        } else {

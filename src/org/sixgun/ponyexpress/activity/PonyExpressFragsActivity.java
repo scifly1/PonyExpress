@@ -31,10 +31,12 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.fragment.AddNewPodcastsFragment;
 import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.util.PonyLogger;
 
+import android.app.SearchManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -51,6 +53,8 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 	private static final String LAST_CACHE_CLEAR = "last_cache_clear";
 	private PonyExpressApp mPonyExpressApp;
 	private PonyExpressFragment mPonyFragment;
+	private String mNewPodcastName;//Used when a new podcast is being added.
+	private boolean mNewPodcast;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -97,11 +101,28 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		PonyLogger.d(TAG, "New Intent recieved");
-		final String podcast_name = intent.getExtras().
-				getString(PodcastKeys.NAME);
-		mPonyFragment.updateFeed(podcast_name);
+		//if a search action, get the query and send on to add new podcasts fragment to deal with
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())){
+			String query = intent.getStringExtra(SearchManager.QUERY);
+			AddNewPodcastsFragment fragment = (AddNewPodcastsFragment) 
+					getSupportFragmentManager().findFragmentByTag("addNew");
+			fragment.startSearch(query);
+		} else {
+			mNewPodcastName = intent.getExtras().getString(PodcastKeys.NAME);
+			mNewPodcast = true;
+		}
 	}
 
+	@Override
+	protected void onPostResume() {
+		super.onPostResume();
+		//Updating the new podcast happens here when the activity is fully set up.
+		if (mNewPodcast){
+			mPonyFragment.updateFeed(mNewPodcastName);
+			mNewPodcast = false;
+		}
+		
+	}
 	// This method shows a dialog, and calls updateFeed() if this is the first time Pony 
 	// has been run.  The SharedPrefrences then get changed to false.
 	private void onFirstRun(SharedPreferences prefs) {

@@ -32,6 +32,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.ReturnCodes;
+import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.activity.MiroActivity;
 import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
@@ -41,9 +42,11 @@ import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -434,5 +437,16 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 		if (getActivity().getSupportFragmentManager().findFragmentById(R.id.ponyexpress_fragment)!= null){
 			getActivity().getSupportFragmentManager().popBackStackImmediate();
 		}
+	}
+
+
+	public void startSearch(String query) {
+		SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
+				SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
+		suggestions.saveRecentQuery(query, null);
+		final Intent searchIntent = new Intent(mPonyExpressApp, MiroActivity.class);
+		searchIntent.setAction(Intent.ACTION_SEARCH);
+		searchIntent.putExtra(SearchManager.QUERY, query);
+		startActivityForResult(searchIntent, ADD_FEED);
 	}
 }

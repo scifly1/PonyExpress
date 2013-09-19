@@ -416,11 +416,12 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 		if (mDualPane) {
 			if (mAddNew == null) {
 				mAddNew = AddNewPodcastsFragment.newInstance(url);
+				
 			}
 			// Execute a transaction, replacing any existing fragment
 			// with this one inside the frame.
 			FragmentTransaction ft = getFragmentManager().beginTransaction();
-			ft.replace(R.id.second_pane, mAddNew);
+			ft.replace(R.id.second_pane, mAddNew, "addNew");
 			ft.addToBackStack(null);
 			ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 			ft.commit();

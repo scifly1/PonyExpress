@@ -24,6 +24,8 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 
 
 public class ProgressDialogFragment extends DialogFragment {
@@ -56,5 +58,6 @@ public class ProgressDialogFragment extends DialogFragment {
 	    dialog.setIndeterminate(true);
 	    return dialog;
 	}
+	
 	
 }

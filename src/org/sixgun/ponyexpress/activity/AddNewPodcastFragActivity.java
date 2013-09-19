@@ -18,17 +18,21 @@
 */
 package org.sixgun.ponyexpress.activity;
 
-import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.fragment.AddNewPodcastsFragment;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.FragmentActivity;
 
 
 public class AddNewPodcastFragActivity extends FragmentActivity {
+
+	private static final String TAG = "AddNewPodcastFragActivity";
+	
+
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +40,29 @@ public class AddNewPodcastFragActivity extends FragmentActivity {
 
 		if (savedInstanceState == null){
 			// During initial setup, plug in the AddNewPodcasts fragment.
-			AddNewPodcastsFragment newPods = new AddNewPodcastsFragment();
-			newPods.setArguments(getIntent().getExtras());
-			getSupportFragmentManager().beginTransaction().add(android.R.id.content,newPods).commit();
+			AddNewPodcastsFragment fragment = new AddNewPodcastsFragment();
+			fragment.setArguments(getIntent().getExtras());
+			getSupportFragmentManager().beginTransaction().add(android.R.id.content,fragment,"addNew").commit();
 		}
+		handleIntent(getIntent());
+	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		PonyLogger.d(TAG, "New intent received");
+		setIntent(intent);
+		handleIntent(intent);
 	}
 
+
+
+	private void handleIntent(Intent intent){
+		//if a search action, get the query and send on to fragment to deal with
+		if (Intent.ACTION_SEARCH.equals(intent.getAction())){
+			String query = intent.getStringExtra(SearchManager.QUERY);
+			AddNewPodcastsFragment fragment = (AddNewPodcastsFragment) getSupportFragmentManager().findFragmentByTag("addNew");
+			fragment.startSearch(query);
+		}
+	}
 
 }
