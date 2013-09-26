@@ -23,7 +23,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
-import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 
 import android.content.Context;
@@ -106,7 +106,7 @@ public class TimePreference extends DialogPreference {
 
     			//Set new alarm
     			Intent intent = new Intent(getContext(), ScheduledDownloadService.class);
-    			intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+    			intent.putExtra(PonyExpressFragment.SET_ALARM_ONLY, true);
     			getContext().startService(intent);
     		}
     	}

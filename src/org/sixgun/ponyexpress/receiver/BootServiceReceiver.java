@@ -19,7 +19,7 @@
 
 package org.sixgun.ponyexpress.receiver;
 
-import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.service.UpdaterService;
 
@@ -35,12 +35,12 @@ public class BootServiceReceiver extends BroadcastReceiver {
 		
 		//Start UpdaterSevice with SET_ALARM_ONLY string
 		intent = new Intent(context,UpdaterService.class);
-		intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+		intent.putExtra(PonyExpressFragment.SET_ALARM_ONLY, true);
 		context.startService(intent);
 		
 		//Start ScheduledDownloaderService with SET_ALARM_ONLY
 		intent = new Intent(context, ScheduledDownloadService.class);
-		intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+		intent.putExtra(PonyExpressFragment.SET_ALARM_ONLY, true);
 		context.startService(intent);
 	}
 

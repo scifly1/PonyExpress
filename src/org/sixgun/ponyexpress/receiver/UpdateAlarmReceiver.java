@@ -20,10 +20,11 @@
 package org.sixgun.ponyexpress.receiver;
 
 
-import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.PonyLogger;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -33,7 +34,7 @@ import android.os.PowerManager;
 public class UpdateAlarmReceiver extends BroadcastReceiver{
 
 	private String TAG = "PonyExpress UpdaterAlarmReceiver";
-		
+	@SuppressLint("Wakelock") //WakeLock is released by UpdaterService
 	@Override
 	public void onReceive(Context context, Intent intent) {
 		
@@ -50,7 +51,7 @@ public class UpdateAlarmReceiver extends BroadcastReceiver{
 		}
 		//Start UpdaterSevice with UPDATE_ALL string
 		intent = new Intent(context,UpdaterService.class);
-		intent.putExtra(PonyExpressActivity.UPDATE_ALL, true);
+		intent.putExtra(PonyExpressFragment.UPDATE_ALL, true);
 		context.startService(intent);
 	}
 }

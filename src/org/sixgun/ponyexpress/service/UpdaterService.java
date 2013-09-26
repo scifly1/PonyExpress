@@ -33,7 +33,8 @@ import org.sixgun.ponyexpress.Podcast;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.ReturnCodes;
-import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
+import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.receiver.RescheduledUpdateReceiver;
 import org.sixgun.ponyexpress.receiver.UpdateAlarmReceiver;
 import org.sixgun.ponyexpress.util.EpisodeFeedParser;
@@ -90,10 +91,10 @@ public class UpdaterService extends IntentService {
 			// Get the input data from the intent and parse it, starting the various
 			// updater methods and setting notification text as needed.
 			Bundle data = intent.getExtras();
-			final boolean update_sixgun = data.getBoolean(PonyExpressActivity.UPDATE_SIXGUN_SHOW_LIST);	
-			final boolean update_all = data.getBoolean(PonyExpressActivity.UPDATE_ALL);
-			final boolean set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
-			final String update_single = data.getString(PonyExpressActivity.UPDATE_SINGLE);
+			final boolean update_sixgun = data.getBoolean(PonyExpressFragment.UPDATE_SIXGUN_SHOW_LIST);	
+			final boolean update_all = data.getBoolean(PonyExpressFragment.UPDATE_ALL);
+			final boolean set_alarm_only = data.getBoolean(PonyExpressFragment.SET_ALARM_ONLY);
+			final String update_single = data.getString(PonyExpressFragment.UPDATE_SINGLE);
 
 			if (checkBackgroundUpdate() && set_alarm_only){
 				final long nextUpdate = getNextUpdateTime();
@@ -118,7 +119,7 @@ public class UpdaterService extends IntentService {
 
 			if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
 				showStatusNotification(getText(R.string.checking) + " " + update_single);
-				updateFeed(data.getString(PonyExpressActivity.UPDATE_SINGLE));
+				updateFeed(data.getString(PonyExpressFragment.UPDATE_SINGLE));
 			}
 
 			// This method is done at this point, so cancel the notification and log. 
@@ -173,7 +174,7 @@ public class UpdaterService extends IntentService {
 	 */
 	private long getNextUpdateTime() {
 		SharedPreferences prefs = getPreferences();
-		final Long lastUpdate = prefs.getLong(PonyExpressActivity.LASTUPDATE, System.currentTimeMillis());
+		final Long lastUpdate = prefs.getLong(PonyExpressFragment.LASTUPDATE, System.currentTimeMillis());
 		final Long updateDelta =  3600000 * Long.parseLong
 				(prefs.getString(getString(R.string.update_freqs_key), "24"));
 		return lastUpdate + updateDelta;
@@ -187,7 +188,7 @@ public class UpdaterService extends IntentService {
 	private void setLastUpdateTime() {
 		SharedPreferences prefs = getPreferences();
 		SharedPreferences.Editor editor = prefs.edit();
-		editor.putLong(PonyExpressActivity.LASTUPDATE, System.currentTimeMillis());
+		editor.putLong(PonyExpressFragment.LASTUPDATE, System.currentTimeMillis());
 		editor.commit();
 	}
 
@@ -431,7 +432,7 @@ public class UpdaterService extends IntentService {
         // TODO Set this to the proper value so The user can click on the notification and
         // get a detailed error report.
         PendingIntent intent = PendingIntent.getActivity(mPonyExpressApp, 
-				0, new Intent(this, PonyExpressActivity.class), 0);
+				0, new Intent(this, PonyExpressFragsActivity.class), 0);
 
 		notification.setLatestEventInfo(mPonyExpressApp, 
 				getText(R.string.app_name), text, intent);
@@ -453,7 +454,7 @@ public class UpdaterService extends IntentService {
         
         // TODO Set this to the proper value so The user can click on the notification and
         // get a detailed error report.
-		Intent intent = new Intent(this, PonyExpressActivity.class);
+		Intent intent = new Intent(this, PonyExpressFragsActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		PendingIntent pintent = PendingIntent.getActivity(mPonyExpressApp, 
 				0, intent, PendingIntent.FLAG_ONE_SHOT);

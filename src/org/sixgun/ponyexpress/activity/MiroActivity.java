@@ -28,7 +28,6 @@ import org.sixgun.ponyexpress.ItemListAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.fragment.AddNewPodcastsFragment;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 import org.sixgun.ponyexpress.miroguide.model.MiroGuideChannel;
@@ -206,7 +205,7 @@ public class MiroActivity<mPonyExpressApp> extends ListActivity {
 	}
 
 	public void goHome(View v) {
-		Intent intent = new Intent(mPonyExpressApp, PonyExpressActivity.class);
+		Intent intent = new Intent(mPonyExpressApp, PonyExpressFragsActivity.class);
 		startActivity(intent);
 	}
 

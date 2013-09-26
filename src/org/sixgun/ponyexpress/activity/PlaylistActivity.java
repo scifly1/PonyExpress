@@ -26,12 +26,12 @@ import org.sixgun.ponyexpress.PodcastCursorAdapter;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.fragment.AboutDialogFragment;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
 import android.app.Dialog;
@@ -45,6 +45,8 @@ import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.LayoutInflater;
@@ -65,7 +67,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
-public class PlaylistActivity extends Activity implements PlaylistInterface {
+public class PlaylistActivity extends FragmentActivity implements PlaylistInterface {
 
 	private static final int START_PLAYBACK = 0;
 	private static final int NOT_DOWNLOADED_DIALOG = 0;
@@ -299,9 +301,7 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 			});
 			dialog = (AlertDialog) builder.create();
 		break;
-		case ABOUT_DIALOG:
-			dialog = AboutDialog.create(this);
-			break;
+		
 		default:	
 			dialog = null;
 			break;
@@ -381,7 +381,9 @@ public class PlaylistActivity extends Activity implements PlaylistInterface {
 					mPonyExpressApp, DownloadOverviewActivity.class));
 			return true;
 		case R.id.about:
-			showDialog(ABOUT_DIALOG);
+			FragmentManager fm = getSupportFragmentManager();
+			AboutDialogFragment about = new AboutDialogFragment();
+			about.show(fm, "AboutDialog");
 		default: 
 			return super.onOptionsItemSelected(item);
 		}

@@ -27,7 +27,7 @@ import org.sixgun.ponyexpress.DownloadingEpisode;
 import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.PonyExpressActivity;
+import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.receiver.ScheduledDownloadReceiver;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyLogger;
@@ -80,7 +80,7 @@ public class ScheduledDownloadService extends IntentService {
 			Bundle data = intent.getExtras();
 			boolean set_alarm_only = false;
 			if (data != null){
-				set_alarm_only = data.getBoolean(PonyExpressActivity.SET_ALARM_ONLY);
+				set_alarm_only = data.getBoolean(PonyExpressFragment.SET_ALARM_ONLY);
 			}
 			final long nextUpdate = getNextUpdateTime();
 			PonyLogger.d(TAG, "Next download scheduled for: " + nextUpdate);
@@ -95,7 +95,7 @@ public class ScheduledDownloadService extends IntentService {
 				//Update the feeds to ensure they are current.
 				if (!mPonyExpressApp.isUpdaterServiceRunning()){
 					Intent up_intent = new Intent(mPonyExpressApp,UpdaterService.class);
-					up_intent.putExtra(PonyExpressActivity.UPDATE_ALL, true);
+					up_intent.putExtra(PonyExpressFragment.UPDATE_ALL, true);
 					startService(up_intent);
 				}
 				while (mPonyExpressApp.isUpdaterServiceRunning()){

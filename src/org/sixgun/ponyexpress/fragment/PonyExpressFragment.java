@@ -69,6 +69,8 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	public static final String UPDATE_SINGLE = "Update_single";
 	public static final String SET_ALARM_ONLY = "Set_alarm_only";
 	public static final int ADD_FEED = 0;
+
+	public static final String LASTUPDATE = "lastupdate";
 	
 	private PonyExpressApp mPonyExpressApp;
 	private boolean mListingPodcasts;

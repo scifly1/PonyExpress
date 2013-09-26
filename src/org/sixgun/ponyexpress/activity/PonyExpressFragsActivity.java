@@ -77,7 +77,7 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 
 			if (!mPonyExpressApp.isScheduledDownloadServiceRunning()){
 				Intent intent = new Intent(mPonyExpressApp, ScheduledDownloadService.class);
-				intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+				intent.putExtra(PonyExpressFragment.SET_ALARM_ONLY, true);
 				mPonyExpressApp.startService(intent);
 			}
 		}

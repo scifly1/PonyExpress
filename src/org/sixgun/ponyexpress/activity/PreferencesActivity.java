@@ -24,6 +24,7 @@ import java.util.GregorianCalendar;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.TimePreference;
+import org.sixgun.ponyexpress.fragment.PonyExpressFragment;
 import org.sixgun.ponyexpress.service.ScheduledDownloadService;
 import org.sixgun.ponyexpress.util.PonyLogger;
 
@@ -88,7 +89,7 @@ public class PreferencesActivity extends PreferenceActivity {
 					
 					//Set new alarm
 					Intent intent = new Intent(getApplicationContext(), ScheduledDownloadService.class);
-					intent.putExtra(PonyExpressActivity.SET_ALARM_ONLY, true);
+					intent.putExtra(PonyExpressFragment.SET_ALARM_ONLY, true);
 					getApplicationContext().startService(intent);
 				} else if (key.equals(getString(R.string.auto_playlist_key))){
 					if (prefs.getBoolean(key, false) == true){
