@@ -42,11 +42,15 @@ import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -193,8 +197,7 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 	        		mPonyExpressApp,PreferencesActivity.class));
 			return true;
 		case R.id.clear_search:
-			//FIXME
-//			showDialog(CLEAR_HISTORY);
+			new ClearSearchDialog().show(getFragmentManager(), "clear_search_dialog");
 			return true;
 		case R.id.search:
 			getActivity().onSearchRequested();
@@ -203,7 +206,8 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 			return super.onOptionsItemSelected(item);
 		}
 	}
-	
+
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		if (resultCode == Activity.RESULT_CANCELED){
@@ -448,5 +452,33 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 		searchIntent.setAction(Intent.ACTION_SEARCH);
 		searchIntent.putExtra(SearchManager.QUERY, query);
 		startActivityForResult(searchIntent, ADD_FEED);
+	}
+	
+	static public class ClearSearchDialog extends DialogFragment {
+
+		@Override
+		public Dialog onCreateDialog(Bundle savedInstanceState) {
+			
+			AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+			builder.setMessage(R.string.clear_history_dialog_message)
+		       .setTitle(R.string.clear_history_dialog_title);
+			// Add the buttons
+			builder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			               // User clicked OK button
+			        	   SearchRecentSuggestions suggestions = new SearchRecentSuggestions(getActivity(),
+			        		        SearchSuggestionsProvider.AUTHORITY, SearchSuggestionsProvider.MODE);
+			        		suggestions.clearHistory();
+			           }
+			       });
+			builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+			           public void onClick(DialogInterface dialog, int id) {
+			               // User cancelled the dialog
+			        	   dialog.cancel();
+			           }
+			       });
+			AlertDialog dialog = builder.create();
+			return dialog;
+		}
 	}
 }
