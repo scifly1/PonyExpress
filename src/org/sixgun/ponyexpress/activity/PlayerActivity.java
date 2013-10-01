@@ -670,6 +670,11 @@ public class PlayerActivity extends Activity {
 							mCurrentPosition = mPodcastPlayer.getEpisodePosition();
 						} catch (InterruptedException e) {
 							return;
+						} catch (IllegalStateException e){
+							//It is possible that the player may complete 
+							//while the thread is asleep and getEpisodePosition()
+							//will through an exception.
+							return;
 						}
 						
 						mHandler.post(new Runnable(){
