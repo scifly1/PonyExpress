@@ -34,6 +34,7 @@ import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.ReturnCodes;
 import org.sixgun.ponyexpress.SearchSuggestionsProvider;
 import org.sixgun.ponyexpress.activity.MiroActivity;
+import org.sixgun.ponyexpress.activity.MiroFragsActivity;
 import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.util.BackupFileWriter;
@@ -52,6 +53,7 @@ import android.os.Bundle;
 import android.provider.SearchRecentSuggestions;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -80,6 +82,8 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 	private PonyExpressApp mPonyExpressApp;
 	private TextView mFeedText;
 	public ProgressDialogFragment mProgDialog;
+	private boolean mDualPane;
+	private MiroCategoriesFragment mMiroCategories;
 	private static final String TAG = "AddNewPodcastsFragment";
 	private static final String PONY_EXPRESS_PODCASTS_OPML = "PonyExpress_Podcasts.opml";
 	private static final int FILE_CHOOSER = 0;
@@ -138,11 +142,35 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 	}
 	
 	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		
+		// Check to see if we have a frame in which to embed the MiroFragments
+        // directly in the containing UI.
+        View secondFrame = getActivity().findViewById(R.id.second_pane);
+        mDualPane = secondFrame != null && secondFrame.getVisibility() == View.VISIBLE;
+	}
+
+
+	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.browse_miro:
-			final Intent intent = new Intent(mPonyExpressApp, MiroActivity.class);
-			startActivityForResult(intent, ADD_FEED);
+			if (mDualPane){
+				if (mMiroCategories == null) {
+					mMiroCategories = new MiroCategoriesFragment();
+				}
+				// Execute a transaction, replacing any existing fragment
+				// with this one inside the frame.
+				FragmentTransaction ft = getFragmentManager().beginTransaction();
+				ft.replace(R.id.second_pane, mMiroCategories, "miroCategories");
+				ft.addToBackStack(null);
+				ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+				ft.commit();
+			} else {
+				final Intent intent = new Intent(mPonyExpressApp, MiroFragsActivity.class);
+				startActivityForResult(intent, ADD_FEED);
+			}
 			break;
 		case R.id.search_miro:
 			getActivity().onSearchRequested();

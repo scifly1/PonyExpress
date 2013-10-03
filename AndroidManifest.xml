@@ -78,8 +78,7 @@
 		        android:name="android.app.searchable"
 		        android:resource="@xml/searchable" />
 			<!-- enable the search dialog. Searches are sent to this activity
-		     which will then be forwarded on to MiroActivity via 
-		     startActivtyForResult -->
+		     which will then be forwarded on to MiroSearchFragment -->
         	<meta-data android:name="android.app.default_searchable"
                    android:value=".activity.PonyExpressFragsActivity" />		
 
@@ -111,7 +110,7 @@
 		        android:name="android.app.searchable"
 		        android:resource="@xml/searchable" />
 		     <!-- enable the search dialog. Searches are sent to this activity
-		     which will then be forwarded on to MiroActivity via 
+		     which will then be forwarded on to MiroSearchFragment via 
 		     startActivtyForResult -->
         	<meta-data android:name="android.app.default_searchable"
                    android:value=".activity.AddNewPodcastFragActivity" />
@@ -127,7 +126,15 @@
 		     which will then be forwarded on to MiroActivity via 
 		     startActivtyForResult -->
         	<meta-data android:name="android.app.default_searchable"
-                   android:value=".activity.AddNewPodcastFeedActivity" />
+                   android:value=".activity.AddNewPodcastFragActivity" />
+        <activity android:name=".activity.MiroFragsActivity" >
+             <!-- enable the search dialog. Searches are sent to this activity
+		     which will then be forwarded on to MiroSearchActivity via 
+		     startActivtyForResult -->
+        	<meta-data android:name="android.app.default_searchable"
+                   android:value=".activity.AddNewPodcastFragActivity" />
+        </activity>
+        
 		<receiver android:name=".receiver.ScheduledDownloadReceiver" />
 		<receiver android:name=".receiver.RescheduledUpdateReceiver"  
 		    android:enabled="false">
