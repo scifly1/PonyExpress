@@ -220,7 +220,7 @@ public class AddNewPodcastsFragment extends Fragment implements OnClickListener 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
-		case R.id.settings_menu:
+		case R.id.settings_menu_add_new:
 			startActivity(new Intent(
 	        		mPonyExpressApp,PreferencesActivity.class));
 			return true;
