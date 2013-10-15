@@ -20,16 +20,20 @@ package org.sixgun.ponyexpress.fragment;
 
 import org.sixgun.ponyexpress.CategoryAdapter;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideException;
 import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class MiroCategoriesFragment extends MiroFragment {
@@ -51,7 +55,26 @@ public class MiroCategoriesFragment extends MiroFragment {
 		View v = inflater.inflate(R.layout.miro_categories, container, false);
 		mSubTitle = (TextView) v.findViewById(R.id.sixgun_subtitle);
 		mSubTitle.setText(R.string.categories);
+		
+
+		ImageButton goHome = (ImageButton) v.findViewById(R.id.home_button);
+		if (goHome != null){
+			//only present on android <11
+			goHome.setOnClickListener(this);
+		}
 		return v;
+	}
+	
+	@Override
+	public void onClick(View v) {
+		switch (v.getId()) {
+		case R.id.home_button:
+			Intent intent = new Intent(mPonyExpressApp, PonyExpressFragsActivity.class);
+			startActivity(intent);
+			break;
+		default:
+			break;
+		}
 	}
 
 	/* (non-Javadoc)
@@ -138,10 +161,19 @@ public class MiroCategoriesFragment extends MiroFragment {
 
 				@Override
 				public void onClick(View v) {
-					//FIXME
-					//Needs to get channel fragment
-					//listChannels(category);
-
+					MiroChannelFragment frag = MiroChannelFragment.newInstance(category);
+					
+					FragmentTransaction ft = getFragmentManager().beginTransaction();
+					//Find out if replacing in second pane or android.r.id.content
+					View secondFrame = getActivity().findViewById(R.id.second_pane);
+					if (secondFrame != null){
+						ft.replace(R.id.second_pane, frag, "miroChannels");
+					} else {
+						ft.replace(android.R.id.content, frag, "miroChannels");
+					}
+					ft.addToBackStack(null);
+					ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+					ft.commit();
 				}
 			});
 			return convertView;

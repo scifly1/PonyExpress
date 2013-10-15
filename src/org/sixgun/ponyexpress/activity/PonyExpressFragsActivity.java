@@ -113,6 +113,7 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 	@Override
 	protected void onNewIntent(Intent intent) {
 		PonyLogger.d(TAG, "New Intent recieved");
+	
 		//if a search action, get the query and send on to add new podcasts fragment to deal with
 		if (Intent.ACTION_SEARCH.equals(intent.getAction())){
 			String query = intent.getStringExtra(SearchManager.QUERY);
@@ -122,7 +123,7 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 		} else {
 			mNewPodcastName = intent.getExtras().getString(PodcastKeys.NAME);
 			mNewPodcast = true;
-		}
+		} 
 	}
 
 	@Override

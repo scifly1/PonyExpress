@@ -20,6 +20,7 @@ package org.sixgun.ponyexpress.fragment;
 
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
 
@@ -31,10 +32,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 
 //Base class for MiroCategories, MiroChannels, PodcastEpisodes fragments
-public abstract class MiroFragment extends ListFragment {
+public abstract class MiroFragment extends ListFragment implements OnClickListener{
 
 	protected PonyExpressApp mPonyExpressApp;
 	protected MiroGuideService mMiroService;
@@ -71,6 +73,11 @@ public abstract class MiroFragment extends ListFragment {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
+		case R.id.go_home:
+			//FIXME crashes
+//			Intent intent = new Intent(mPonyExpressApp, PonyExpressFragsActivity.class);
+//			startActivity(intent);
+			return true;
 		case R.id.settings_menu:
 			startActivity(new Intent(mPonyExpressApp, PreferencesActivity.class));
 			return true;

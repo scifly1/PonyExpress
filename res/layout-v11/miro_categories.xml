@@ -11,45 +11,22 @@
         android:background="#ff000000"
         android:orientation="vertical" >
 
-        <TextView
-            android:id="@+id/app_name"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:background="#FF000000"
-            android:paddingLeft="10dp"
-            android:paddingTop="10dp"
-            android:text="@string/app_name"
-            android:textSize="28sp"
-            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/sixgun_subtitle"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/app_name"
-            android:layout_toLeftOf="@+id/home_button"
             android:background="#FF000000"
             android:paddingLeft="10dp"
             android:text="@string/categories"
             android:textSize="18sp" />
-        
-         <ImageButton 
-            android:id="@+id/home_button"
-            android:contentDescription="@string/home_button_desc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:background="#ff000000"
-            android:paddingTop="10dp"
-            android:src="@drawable/home_button"
-            />
         
         <ImageButton 
             android:id="@+id/add_feeds_button"
             android:contentDescription="@string/add_feeds_button_desc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toLeftOf="@+id/home_button"
+            android:layout_alignParentRight="true"
             android:background="#ff000000"
             android:onClick="addPodcast"
             android:paddingTop="10dp"

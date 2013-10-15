@@ -84,8 +84,10 @@ public class EndlessChannelListAdapter extends EndlessAdapter {
 	@Override
 	protected void appendCachedData() {
 		ChannelListAdapter a =  (ChannelListAdapter) getWrappedAdapter();
-		for (MiroGuideChannel channel : mChannels){
-			a.add(channel);
+		if (mChannels != null){
+			for (MiroGuideChannel channel : mChannels){
+				a.add(channel);
+			}
 		}
 	}
 
