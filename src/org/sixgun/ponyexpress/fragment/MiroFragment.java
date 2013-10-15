@@ -20,12 +20,15 @@ package org.sixgun.ponyexpress.fragment;
 
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.MiroFragsActivity;
 import org.sixgun.ponyexpress.activity.PonyExpressFragsActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.miroguide.conn.MiroGuideService;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.ListFragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -38,6 +41,7 @@ import android.view.ViewGroup;
 //Base class for MiroCategories, MiroChannels, PodcastEpisodes fragments
 public abstract class MiroFragment extends ListFragment implements OnClickListener{
 
+	private static final String TAG = "MiroFragment";
 	protected PonyExpressApp mPonyExpressApp;
 	protected MiroGuideService mMiroService;
 	protected ProgressDialogFragment mProgDialog;
@@ -74,9 +78,15 @@ public abstract class MiroFragment extends ListFragment implements OnClickListen
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.go_home:
-			//FIXME crashes
-//			Intent intent = new Intent(mPonyExpressApp, PonyExpressFragsActivity.class);
-//			startActivity(intent);
+			//Find out if current activity is PonyExpressFrags activity or MiroFragsActivity
+			if (getActivity() instanceof MiroFragsActivity){
+				Intent intent = new Intent(mPonyExpressApp, PonyExpressFragsActivity.class);
+				startActivity(intent);
+			} else {
+				FragmentManager fm = getFragmentManager();
+				PonyLogger.d(TAG, "Backstack size: " +fm.getBackStackEntryCount());
+				fm.popBackStack(0, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+			}
 			return true;
 		case R.id.settings_menu:
 			startActivity(new Intent(mPonyExpressApp, PreferencesActivity.class));
