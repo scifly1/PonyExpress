@@ -3,15 +3,18 @@
     <item 
         android:id="@+id/go_home"
         android:title="@string/go_home"
-        android:icon="@drawable/home_button"/>
+        android:icon="@drawable/home_button"
+        android:showAsAction="ifRoom"/>
     <item
 		android:title="@string/settings"
 		android:id="@+id/settings_menu" 
-		android:icon="@drawable/ic_menu_preferences"/>
+		android:icon="@drawable/ic_menu_preferences"
+		android:showAsAction="ifRoom"/>
 	<item 
 	   	android:title="@string/search_miro"
 	    android:id="@+id/search"
-	    android:icon="@drawable/ic_menu_search" />
+	    android:icon="@drawable/ic_menu_search"
+	    android:showAsAction="ifRoom" />
     
 
 </menu>

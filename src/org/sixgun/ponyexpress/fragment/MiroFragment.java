@@ -75,6 +75,11 @@ public abstract class MiroFragment extends ListFragment implements OnClickListen
 	}
 	
 	@Override
+	public void onPrepareOptionsMenu(Menu menu) {
+		menu.setGroupVisible(R.id.main_group, false);
+	}
+	
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.go_home:
