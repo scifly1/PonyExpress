@@ -116,7 +116,6 @@
 	<string name="delete_failed">Unable to remove the podcast subscription.</string>
 	<string name="file_error">There is a problem with this episode.	Long press on the episode name to re-download it.</string>
 	<string name="url_error">The url you entered may be incorrect, please try again.</string>
-	<string name="adding_podcast">Subscribing to the feed.</string>
 	<string name="about_title">About Pony Express</string>
 	<string name="draw">Draw!</string>
 	<string name="add_sixgun">Add all Sixgun.org shows</string>
