@@ -142,6 +142,7 @@
 	<string name="clear_playlist">Clear the playlist</string>
 	<string name="playlist_subtitle_pod">Select podcast&#8230;</string>
 	<string name="playlist_subtitle_eps">Select episodes&#8230;</string>
+	<string name="playlist_time">0d:0h:0m:0s</string>
 	<string name="not_downloaded_dialog">This episode is not downloaded. Do you want to download it now?</string>
 	<string name="always_auto_download">Always auto-download?</string>
 	<string name="backup">Export feeds</string>

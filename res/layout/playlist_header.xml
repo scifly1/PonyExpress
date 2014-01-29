@@ -12,22 +12,11 @@
         android:layout_height="wrap_content"
         android:background="#FF000000"
         android:paddingLeft="10dp"
-        android:paddingTop="10dp"
+        android:paddingTop="15dp"
         android:text="@string/Playlist_title"
         android:textSize="24sp"
         android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/playlist_subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/playlist_title"
-        android:background="#FF000000"
-        android:paddingLeft="10dp"
-        android:paddingTop="4dp"
-        android:text="@string/playlist_subtitle_pod"
-        android:textSize="16sp" />
-
+    
     <ImageButton
         android:id="@+id/play_button"
         android:contentDescription="@string/start_playlist_button_desc"
@@ -38,7 +27,27 @@
         android:onClick="startPlaylist"
         android:paddingTop="10dp"
         android:src="@drawable/play_button" />
-
+    
+<TextView
+        android:id="@+id/playlist_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/play_button"
+        android:background="#FF000000"
+        android:paddingLeft="10dp"
+        android:text="@string/playlist_subtitle_pod"
+        android:textSize="16sp" />
+    <TextView
+        android:id="@+id/playlist_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/play_button"
+        android:layout_alignParentRight="true"
+        android:background="#FF000000"
+        android:paddingRight="10dp"
+        android:text="@string/playlist_time"
+        android:textSize="16sp" />
+    
     <ImageButton
         android:id="@+id/download_overview_button"
         android:contentDescription="@string/downloads_button_desc"

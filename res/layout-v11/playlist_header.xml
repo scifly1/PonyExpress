@@ -27,6 +27,18 @@
         android:paddingTop="4dp"
         android:text="@string/playlist_subtitle_pod"
         android:textSize="16sp" />
+    
+    <TextView
+        android:id="@+id/playlist_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/playlist_title"
+        android:layout_alignParentRight="true"
+        android:background="#FF000000"
+        android:paddingRight="10dp"
+        android:paddingTop="4dp"
+        android:text="@string/playlist_time"
+        android:textSize="16sp" />
 
     
    

@@ -1484,4 +1484,12 @@ public class PonyExpressDbAdaptor {
 		return c;
 		
 	}
+
+	public int getPlaylistTime() {
+		// TODO 
+		PonyLogger.d(TAG, "getPlaylistTime called");
+		
+		//TODO Get cursor over playlist table with
+		return 10000;
+	}
 }

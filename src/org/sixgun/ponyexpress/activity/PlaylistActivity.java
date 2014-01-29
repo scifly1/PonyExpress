@@ -30,6 +30,7 @@ import org.sixgun.ponyexpress.fragment.AboutDialogFragment;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.InternetHelper;
 import org.sixgun.ponyexpress.util.PonyLogger;
+import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
 import android.app.AlertDialog;
@@ -88,6 +89,7 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 	private View mPodcastEpisodeLists;
 	private View mDivider;
 	private View mDownloadButton;
+	private TextView mPlaylistTime;
 	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -108,6 +110,7 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 		mPodcastEpisodeLists = findViewById(R.id.podcast_episode_lists);
 		mDivider = findViewById(R.id.divider);
 		mDownloadButton = findViewById(R.id.download_overview_button);
+		mPlaylistTime = (TextView) findViewById(R.id.playlist_time);
 		
 		if (!mAutoPlaylistsOn){
 			//Set the background of the episode list when shown
@@ -186,6 +189,12 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 		if (c.getCount() > 0){
 			mPlaylist.setVisibility(View.VISIBLE);
 			mNoPlaylist.setVisibility(View.GONE);
+			
+			//Show the running time of the playlist.
+			mPlaylistTime.setVisibility(View.VISIBLE);
+			mPlaylistTime.setText(Utils.milliToTime(mPonyExpressApp.getDbHelper().
+					getPlaylistTime()));
+
 			startManagingCursor(c);
 			//Create a cursor adaptor to populate the ListView
 			PlaylistCursorAdapter adapter = new PlaylistCursorAdapter(mPonyExpressApp, c);
@@ -196,6 +205,7 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 		} else {
 			mPlaylist.setVisibility(View.GONE);
 			mNoPlaylist.setVisibility(View.VISIBLE);
+			mPlaylistTime.setVisibility(View.GONE);
 		}
 		if (mAutoPlaylistsOn){
 			mPlaylistSubtitle.setText(c.getCount() + " " +getString(R.string.auto_playlist_subtitle));
