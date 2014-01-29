@@ -27,7 +27,7 @@ import android.os.Environment;
  * Helper class that handles all database interactions for the app.
  */
 public class PonyExpressDbAdaptor {
-	private static final int DATABASE_VERSION = 16;
+	private static final int DATABASE_VERSION = 17;
 	private static final String DATABASE_NAME = "PonyExpress.db";
     private static final String PODCAST_TABLE = "Podcasts";
     private static final String EPISODES_TABLE = "Episodes";
@@ -85,6 +85,7 @@ public class PonyExpressDbAdaptor {
                     " FOREIGN KEY (" + EpisodeKeys.PODCAST_ID + ") " +
                     		"REFERENCES " + PODCAST_TABLE + " (" + 
                     PodcastKeys._ID + "));";
+    	//Upgrade to version 16 adds a duration column to this table 
     
     private static final String TEMP2_PODCAST_TABLE_CREATE = 
         	"CREATE TEMP TABLE " + TEMP_PODCASTS_NAME + " (" + 
@@ -290,12 +291,40 @@ public class PonyExpressDbAdaptor {
 				} finally {
 					db.endTransaction();
 				}
+    			//Fallthrough
+    		case 16:
+    			//Add a column to hold each episodes duration to the episodes table
+    			db.beginTransaction();
+    			String add_duration_column = "ALTER TABLE " + EPISODES_TABLE + " ADD " +
+    			 EpisodeKeys.DURATION + " INTEGER;";
+    			try {
+    				db.execSQL(add_duration_column);
+    				PonyLogger.d(TAG,"Adding duration column");
+    				//Get each episodes duration
+    				getAllDurations();
+    				db.setTransactionSuccessful();
+    				//No need to set mDatabaseUpgraded to true as the 
+					//feeds do not need updating with this db upgrade.
+    			} catch (SQLException e){
+    				PonyLogger.e(TAG, "SQLException on db upgrade to 16", e);
+    			} finally {
+    				db.endTransaction();
+    			}
     			break; //Only the final upgrade case has a break.  
 			default:
 				PonyLogger.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
 				break;
 			}
     	}
+		
+		/**
+		 * Gets the duration of each episode already stored in the episode table.
+		 * Only used during upgrade to version 17.
+		 */
+		private void getAllDurations(){
+			//TODO
+			
+		}
 		
 		/**
 		 * Find empty tables from where Podcasts have been deleted
