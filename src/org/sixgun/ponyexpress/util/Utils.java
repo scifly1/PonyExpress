@@ -50,7 +50,7 @@ public class Utils {
 	 * @param milliseconds
 	 * @return h:mm:ss string
 	 */
-	static public String milliToTime(int milliseconds){
+	static public String milliToTime(int milliseconds, boolean pretty){
 		int seconds = (milliseconds / 1000);
 		int minutes = seconds / 60;
 		int hours = minutes / 60;
@@ -59,8 +59,9 @@ public class Utils {
 		seconds = seconds % 60;
 		minutes = minutes % 60;
 		hours = hours % 60;
-		
-		return String.format(Locale.US,"%d:%02d:%02d", hours,minutes,seconds);
+		if (pretty){
+			return String.format(Locale.US,"%dh %02dm %02ds", hours,minutes,seconds);
+		} else return String.format(Locale.US,"%d:%02d:%02d", hours,minutes,seconds);
 	}
 
 	/**

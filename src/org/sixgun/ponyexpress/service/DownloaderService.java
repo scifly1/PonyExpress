@@ -36,6 +36,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.DownloadOverviewActivity;
+import org.sixgun.ponyexpress.util.PonyExpressDbAdaptor;
 import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 
@@ -45,6 +46,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteException;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
@@ -241,8 +243,16 @@ public class DownloaderService extends Service {
 								else {
 									PonyLogger.i(TAG,"Podcast written to SD card.");
 									episode.setDownloadCompleted(true);
-									mPonyExpressApp.getDbHelper().update(episode.getRowID(), 
-											EpisodeKeys.DOWNLOADED,"true");
+									PonyExpressDbAdaptor dbHelper = mPonyExpressApp.getDbHelper();
+									final long row_id = episode.getRowID();
+									dbHelper.update(row_id, EpisodeKeys.DOWNLOADED,"true");
+									try{
+										dbHelper.update(row_id, EpisodeKeys.DURATION,
+												dbHelper.getDuration(row_id));
+									} catch (SQLiteException e) {
+										PonyLogger.e(TAG, "Error recording duration", e);
+									}
+									
 								}
 								//Decrease mCurrentDownloads which will kill 
 								//the notifications of it getes to <1

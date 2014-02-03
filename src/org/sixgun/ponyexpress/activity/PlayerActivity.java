@@ -233,7 +233,7 @@ public class PlayerActivity extends Activity {
 		restoreSeekBar(state);
 		
 		//Set text of episode duration
-		mEpisodeLength.setText(Utils.milliToTime(mEpisodeDuration));
+		mEpisodeLength.setText(Utils.milliToTime(mEpisodeDuration,false));
 	}
 	
 	private int queryDownloader(){
@@ -325,7 +325,7 @@ public class PlayerActivity extends Activity {
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 				if (fromUser){
 					mCurrentPosition = progress;
-					mElapsed.setText(Utils.milliToTime(progress));
+					mElapsed.setText(Utils.milliToTime(progress,false));
 				}
 				
 			}
@@ -595,7 +595,7 @@ public class PlayerActivity extends Activity {
 		mSeekBar.setMax(mEpisodeDuration);
 		mSeekBar.setProgress(mCurrentPosition);
 		//Set text of elapsed text view
-		mElapsed.setText(Utils.milliToTime(mCurrentPosition));
+		mElapsed.setText(Utils.milliToTime(mCurrentPosition,false));
 		
 		if (savedInstanceState.getBoolean(IS_PLAYING)){
 			mPaused = false;
@@ -681,7 +681,7 @@ public class PlayerActivity extends Activity {
 							@Override
 							public void run() {
 								mSeekBar.setProgress(mCurrentPosition);
-								mElapsed.setText(Utils.milliToTime(mCurrentPosition));
+								mElapsed.setText(Utils.milliToTime(mCurrentPosition,false));
 								//Poll player to see if it has been paused by completing playback
 								//Check for null first as sometimes the player may have been stopped before this thread is.
 								if (mPodcastPlayer == null || !mPodcastPlayer.isPlaying()){

@@ -94,6 +94,7 @@ public class UpdaterService extends IntentService {
 			final boolean update_sixgun = data.getBoolean(PonyExpressFragment.UPDATE_SIXGUN_SHOW_LIST);	
 			final boolean update_all = data.getBoolean(PonyExpressFragment.UPDATE_ALL);
 			final boolean set_alarm_only = data.getBoolean(PonyExpressFragment.SET_ALARM_ONLY);
+			final boolean get_durations = data.getBoolean(PonyExpressFragment.GET_DURATIONS);
 			final String update_single = data.getString(PonyExpressFragment.UPDATE_SINGLE);
 
 			if (checkBackgroundUpdate() && set_alarm_only){
@@ -116,8 +117,13 @@ public class UpdaterService extends IntentService {
 				showStatusNotification(getText(R.string.checking_all));
 				updateAllFeeds();
 			}
+			
+			if (get_durations){
+				showStatusNotification(getText(R.string.setting_up));
+				mPonyExpressApp.getDbHelper().getAllDurations();
+			}
 
-			if (!set_alarm_only && !update_sixgun && !update_all && update_single != null) {
+			if (!set_alarm_only && !update_sixgun && !update_all&& !get_durations && update_single != null) {
 				showStatusNotification(getText(R.string.checking) + " " + update_single);
 				updateFeed(data.getString(PonyExpressFragment.UPDATE_SINGLE));
 			}

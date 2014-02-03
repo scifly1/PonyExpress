@@ -193,7 +193,7 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 			//Show the running time of the playlist.
 			mPlaylistTime.setVisibility(View.VISIBLE);
 			mPlaylistTime.setText(Utils.milliToTime(mPonyExpressApp.getDbHelper().
-					getPlaylistTime()));
+					getPlaylistTime(),true));
 
 			startManagingCursor(c);
 			//Create a cursor adaptor to populate the ListView

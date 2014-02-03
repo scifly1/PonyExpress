@@ -71,7 +71,18 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 		final boolean first = prefs.getBoolean(FIRST, true);
 		if (first){
 			onFirstRun(prefs);
+			//Doesn't matter if upgraded on first run as all feeds will be newly added.
+			mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
 		}else{
+			
+			//Check to see if the db has been upgraded and the feeds need updating.
+			//Do before UpdateFeeds(SET_ALARM_ONLY) as set alarm can occur with another update
+			//but not vice versa.
+			if (mPonyExpressApp.getDbHelper().mDatabaseUpgraded){
+				//Durations need fetching when upgrading to db ver 17.
+				mPonyFragment.updateFeed(PonyExpressFragment.GET_DURATIONS);
+				mPonyExpressApp.getDbHelper().mDatabaseUpgraded = false;
+			}
 			//Make sure the update alarm and scheduled downloads are set properly.
 			mPonyFragment.updateFeed(PonyExpressFragment.SET_ALARM_ONLY);
 
@@ -81,6 +92,7 @@ public class PonyExpressFragsActivity extends FragmentActivity {
 				mPonyExpressApp.startService(intent);
 			}
 		}
+		
 		//Clear the Images on disk if it has not been done for a month
 		maintainImageCache(prefs);
 

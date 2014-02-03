@@ -2,6 +2,7 @@ package org.sixgun.ponyexpress.util;
 
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.media.MediaPlayer;
 import android.os.Environment;
 
 /*
@@ -104,7 +106,7 @@ public class PonyExpressDbAdaptor {
     private static final String TAG = "PonyExpressDbAdaptor";
 	private PonyExpressDbHelper mDbHelper;
     private SQLiteDatabase mDb;
-//    public boolean mDatabaseUpgraded = false;
+    public boolean mDatabaseUpgraded = false;
     
     private final Context mCtx;
 	
@@ -115,7 +117,7 @@ public class PonyExpressDbAdaptor {
     public class PonyExpressDbHelper extends SQLiteOpenHelper {
         
 
-        PonyExpressDbHelper(Context context) {
+		PonyExpressDbHelper(Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
         }
 
@@ -299,32 +301,22 @@ public class PonyExpressDbAdaptor {
     			 EpisodeKeys.DURATION + " INTEGER;";
     			try {
     				db.execSQL(add_duration_column);
-    				PonyLogger.d(TAG,"Adding duration column");
-    				//Get each episodes duration
-    				getAllDurations();
+    				//Set flag for PonyExpressFragActivity to update the feeds
+    				//with durations.
+    				mDatabaseUpgraded = true;
     				db.setTransactionSuccessful();
-    				//No need to set mDatabaseUpgraded to true as the 
-					//feeds do not need updating with this db upgrade.
     			} catch (SQLException e){
     				PonyLogger.e(TAG, "SQLException on db upgrade to 16", e);
+    				mDatabaseUpgraded = false;
     			} finally {
     				db.endTransaction();
     			}
     			break; //Only the final upgrade case has a break.  
 			default:
-				PonyLogger.e(TAG, "Unknow version:" + newVersion + " to upgrade database to.");
+				PonyLogger.e(TAG, "Unknown version:" + newVersion + " to upgrade database to.");
 				break;
 			}
     	}
-		
-		/**
-		 * Gets the duration of each episode already stored in the episode table.
-		 * Only used during upgrade to version 17.
-		 */
-		private void getAllDurations(){
-			//TODO
-			
-		}
 		
 		/**
 		 * Find empty tables from where Podcasts have been deleted
@@ -570,8 +562,7 @@ public class PonyExpressDbAdaptor {
 	}
 	
 	/**
-	 * Updates the database when a podcast has been downloaded.
-	 * @param podcast_name
+	 * Updates an episodes row when it has been downloaded.
 	 * @param rowID 
 	 * @param key
 	 * @param newRecord
@@ -590,8 +581,7 @@ public class PonyExpressDbAdaptor {
 		return mDb.update(EPISODES_TABLE, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
 	/**
-	 * Updates the database when a podcast has been listened to.
-	 * @param podcast_name
+	 * Updates an episodes row when it has been listened or if the duration is being recorded.
 	 * @param rowID 
 	 * @param key
 	 * @param newRecord
@@ -601,6 +591,8 @@ public class PonyExpressDbAdaptor {
 		ContentValues values = new ContentValues();
 		if (key == EpisodeKeys.LISTENED){
 			values.put(EpisodeKeys.LISTENED, newRecord);
+		} else if( key == EpisodeKeys.DURATION){
+			values.put(EpisodeKeys.DURATION, newRecord);
 		}
 		return mDb.update(EPISODES_TABLE, values, EpisodeKeys._ID + "=" + rowID, null) > 0;
 	}
@@ -1513,12 +1505,92 @@ public class PonyExpressDbAdaptor {
 		return c;
 		
 	}
+	
+	/**
+	 * Gets the duration of each episode already stored in the episode table.
+	 * Only used during upgrade to version 17.
+	 * @param db 
+	 */
+	public void getAllDurations(){
+		//Get Cursor of all episodes without a duration
+		final String[] columns = {EpisodeKeys._ID};
+		final String where = EpisodeKeys.DURATION + " ISNULL AND " + EpisodeKeys.DOWNLOADED +"=1";
+		Cursor c = mDb.query(true, EPISODES_TABLE, columns, where, null, null, null, null, null);
+		PonyLogger.d(TAG, "Episodes with no duration: "+ c.getCount());
+		if (c.getCount()>0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				int duration = getDuration(c.getLong(0));
+				update(c.getLong(0), EpisodeKeys.DURATION, duration);
+				c.moveToNext();
+			}
+		}
+		c.close();
+	}
+
+	public int getDuration(long row_id) {
+		MediaPlayer mp = new MediaPlayer();
+		
+		final String podcast_name = getPodcastNameForEpisode(row_id);
+		final String file = getEpisodeFilename(row_id);
+		final String path = PonyExpressApp.PODCAST_PATH + podcast_name + file;
+		
+		try {
+			mp.setDataSource(new File(Environment.getExternalStorageDirectory(),path).
+					getAbsolutePath());
+			mp.prepare();
+		} catch (IllegalArgumentException e) {
+			PonyLogger.e(TAG, "Illegal path supplied to player", e);
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			PonyLogger.e(TAG,"Player cannot access path",e);
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			PonyLogger.e(TAG, "Player is not set up correctly", e);
+			e.printStackTrace();
+		} catch (IOException e) {
+			PonyLogger.e(TAG,"Player cannot access path",e);
+			e.printStackTrace();
+		}
+		int duration = mp.getDuration();
+		mp.reset();
+		mp.release();
+		return duration;
+	}
+
+	
+	private String getPodcastNameForEpisode(long row_id){
+		final String query = "SELECT " + PodcastKeys.NAME + " FROM " + PODCAST_TABLE +
+				" JOIN " + EPISODES_TABLE + " ON " + PODCAST_TABLE + "." + PodcastKeys._ID +
+				"=" + EPISODES_TABLE + "." + EpisodeKeys.PODCAST_ID + " WHERE " + EPISODES_TABLE +
+				"." + EpisodeKeys._ID + "=" + row_id;
+		Cursor c = mDb.rawQuery(query, null);
+		String podcast_name = "";
+		if (c.getCount()> 0){
+			c.moveToFirst();
+			podcast_name = c.getString(0);
+			PonyLogger.d(TAG, "Podcast name is " + podcast_name);
+		}
+		c.close();
+		return podcast_name;
+	}
 
 	public int getPlaylistTime() {
-		// TODO 
-		PonyLogger.d(TAG, "getPlaylistTime called");
-		
-		//TODO Get cursor over playlist table with
-		return 10000;
+		//Get cursor over playlist table with a join to episodes.duration
+		final String query = "SELECT " + EpisodeKeys.DURATION + " FROM " + EPISODES_TABLE +
+				" JOIN " + PLAYLIST_TABLE + " ON " + EPISODES_TABLE + "." + EpisodeKeys._ID +
+				"=" + PLAYLIST_TABLE+ "." + EpisodeKeys.ROW_ID;
+		Cursor c = mDb.rawQuery(query, null);
+		int total_duration = 0;
+		if (c.getCount() > 0){
+			c.moveToFirst();
+			for (int i = 0; i < c.getCount(); i++){
+				total_duration += c.getInt(0);
+				c.moveToNext();
+			}
+		}
+		c.close();
+		return total_duration;
 	}
+
 }

@@ -71,6 +71,8 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	public static final int ADD_FEED = 0;
 
 	public static final String LASTUPDATE = "lastupdate";
+
+	public static final String GET_DURATIONS = "Get_durations";
 	
 	private PonyExpressApp mPonyExpressApp;
 	private boolean mListingPodcasts;
