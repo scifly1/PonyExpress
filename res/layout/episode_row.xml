@@ -1,8 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView
-	android:id="@+id/episode_text"
+<RelativeLayout
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
 	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/episode_row">
+
+<TextView
+	android:id="@+id/episode_duration"
 	android:layout_width="wrap_content"
 	android:layout_height="wrap_content"
+	android:layout_alignParentRight="true"
+	android:padding="12dp"
+	android:textSize="14sp" />
+<TextView
+	android:id="@+id/episode_text"
+	android:layout_width="wrap_content"
+	android:layout_height="wrap_content"
+	android:layout_alignParentLeft="true"
+	android:layout_toLeftOf="@+id/episode_duration"
 	android:padding="10dp"
 	android:textSize="16sp" />
+</RelativeLayout>

@@ -18,6 +18,7 @@
 */
 package org.sixgun.ponyexpress;
 
+import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
 import android.content.Context;
@@ -50,9 +51,12 @@ public class EpisodeCursorAdapter extends CursorAdapter {
 	public void bindView(View view, Context context, Cursor cursor) {
 		final int titleIndex = cursor.getColumnIndex(EpisodeKeys.TITLE);
 		final int listenedIndex = cursor.getColumnIndex(EpisodeKeys.LISTENED);
+		final int durationIndex = cursor.getColumnIndex(EpisodeKeys.DURATION);
 		TextView episodeText = (TextView) view.findViewById(R.id.episode_text);
+		TextView durationTextView = (TextView) view.findViewById(R.id.episode_duration);
 		String title = cursor.getString(titleIndex);
 		int listened = cursor.getInt(listenedIndex);
+		
 		episodeText.setText(title);
 		if (listened == -1){ //not listened == -1
 			episodeText.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
@@ -71,6 +75,15 @@ public class EpisodeCursorAdapter extends CursorAdapter {
             	if (url!= null && !"".equals(url) && !"null".equalsIgnoreCase(url)){
             		PonyExpressApp.sBitmapManager.loadImage(url, thumbnail);
             	}
+			}
+		} else {
+			final int duration = cursor.getInt(durationIndex);
+			if (duration != 0){
+				final String durationText = Utils.milliToTime(duration, true);
+				durationTextView.setText(durationText);
+				durationTextView.setVisibility(View.VISIBLE);
+			} else {
+				durationTextView.setVisibility(View.GONE);
 			}
 		}
 	}

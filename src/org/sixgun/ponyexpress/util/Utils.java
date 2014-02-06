@@ -60,7 +60,12 @@ public class Utils {
 		minutes = minutes % 60;
 		hours = hours % 60;
 		if (pretty){
-			return String.format(Locale.US,"%dh %02dm %02ds", hours,minutes,seconds);
+			if (hours == 0){
+				return String.format(Locale.US,"%02dm %02ds", minutes,seconds);
+			} else if (hours == 0 && minutes == 0){
+				return String.format(Locale.US,"%02ds", seconds);
+			} else 			
+				return String.format(Locale.US,"%dh %02dm %02ds", hours,minutes,seconds);
 		} else return String.format(Locale.US,"%d:%02d:%02d", hours,minutes,seconds);
 	}
 
