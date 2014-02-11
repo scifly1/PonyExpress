@@ -549,6 +549,18 @@ public class PlayerActivity extends Activity {
 		mUpdateSeekBar = false;
 		mIsDownloading = false;
 	}
+	
+	/**
+	 * Save the listened to position when going back to the playlist activity/episodes activity
+	 * when the player is still playing. (Happens anyway when paused). Used to show more accurate
+	 * remaining time in the playlist duration.
+	 */
+	@Override
+	public void onBackPressed() {
+		mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
+		super.onBackPressed();
+	}
+	
 
 	/* (non-Javadoc)
 	 * @see android.app.Activity#onDestroy()

@@ -1577,7 +1577,8 @@ public class PonyExpressDbAdaptor {
 
 	public int getPlaylistTime() {
 		//Get cursor over playlist table with a join to episodes.duration
-		final String query = "SELECT " + EpisodeKeys.DURATION + " FROM " + EPISODES_TABLE +
+		final String query = "SELECT " + EpisodeKeys.DURATION +", " + EpisodeKeys.LISTENED 
+				+ " FROM " + EPISODES_TABLE +
 				" JOIN " + PLAYLIST_TABLE + " ON " + EPISODES_TABLE + "." + EpisodeKeys._ID +
 				"=" + PLAYLIST_TABLE+ "." + EpisodeKeys.ROW_ID;
 		Cursor c = mDb.rawQuery(query, null);
@@ -1585,7 +1586,11 @@ public class PonyExpressDbAdaptor {
 		if (c.getCount() > 0){
 			c.moveToFirst();
 			for (int i = 0; i < c.getCount(); i++){
-				total_duration += c.getInt(0);
+				int elapsed = c.getInt(1);
+				if (elapsed == -1){ //not listened too yet.
+					elapsed = 0; 
+				}
+				total_duration += c.getInt(0) - elapsed;
 				c.moveToNext();
 			}
 		}
