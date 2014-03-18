@@ -134,13 +134,13 @@ public class EpisodeTabs extends GeneralOptionsMenuActivity {
 	    (mRes.getText(R.string.play),mRes.getDrawable(R.drawable.ic_tab_play)).setContent(intent);
 	    mTabHost.addTab(spec);
 	    
-	  //Add Episode Notes Activity
-	    intent = new Intent(this,EpisodeNotesActivity.class);
-	    //Pass on the Extras
-	    intent.putExtras(bundle);
-	    spec = mTabHost.newTabSpec("notes").setIndicator
-	    (mRes.getText(R.string.show_notes),mRes.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
-	    mTabHost.addTab(spec);
+//	  //Add Episode Notes Activity
+//	    intent = new Intent(this,EpisodeNotesActivity.class);
+//	    //Pass on the Extras
+//	    intent.putExtras(bundle);
+//	    spec = mTabHost.newTabSpec("notes").setIndicator
+//	    (mRes.getText(R.string.show_notes),mRes.getDrawable(R.drawable.ic_tab_notes)).setContent(intent);
+//	    mTabHost.addTab(spec);
 	    
 	    mTabHost.setCurrentTab(0);
 	    

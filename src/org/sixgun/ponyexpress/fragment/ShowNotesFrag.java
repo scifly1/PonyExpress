@@ -18,9 +18,55 @@
 */
 package org.sixgun.ponyexpress.fragment;
 
+import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.R;
+
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.webkit.WebView;
+import android.widget.TextView;
 
 
 public class ShowNotesFrag extends Fragment {
 
+	
+	
+
+	private static final String STANDALONE_NOTES = "standalone";
+	private Bundle mData;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		
+		mData = getActivity().getIntent().getExtras();
+		
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		
+		View v= null;
+		if (mData.getBoolean(ShowNotesFrag.STANDALONE_NOTES)){
+			v = inflater.inflate(R.layout.standalone_notes,null);
+			TextView episode_title = (TextView) v.findViewById(R.id.episode_title);
+			String episode_name = mData.getString(EpisodeKeys.TITLE);
+			episode_title.setText(episode_name);
+		} else {
+			v = inflater.inflate(R.layout.notes, null);
+		}
+		
+		WebView description = (WebView) v.findViewById(R.id.Description);
+		String descriptionText = mData.getString(EpisodeKeys.DESCRIPTION);
+		//We use loadDataWithBaseURL here with no URL so that it expects URL encoding.
+		//loadData does not handle the encoding correctly..
+		description.loadDataWithBaseURL(null, descriptionText, "text/html", "UTF-8", null);
+		return v;
+	}
+	
+	
 }
