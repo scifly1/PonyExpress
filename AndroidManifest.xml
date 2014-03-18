@@ -91,7 +91,7 @@
 		
 		<activity android:name=".activity.EpisodesFragActivity" />
 		<activity android:name=".activity.PlayerActivity" />
-		<activity android:name=".activity.EpisodeTabs"
+		<activity android:name=".activity.EpisodeTabsFragActivity"
 			 android:launchMode="singleTop" />
 		<activity android:name=".activity.EpisodeNotesActivity" />
 		<activity android:name=".activity.PreferencesActivity" android:exported="false">

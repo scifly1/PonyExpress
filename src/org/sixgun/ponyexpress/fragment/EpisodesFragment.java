@@ -26,7 +26,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.EpisodeTabs;
+import org.sixgun.ponyexpress.activity.EpisodeTabsFragActivity;
 import org.sixgun.ponyexpress.activity.ShowNotesActivity;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.Utils;
@@ -53,10 +53,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 
 
 public class EpisodesFragment extends ListFragment {
@@ -289,8 +289,7 @@ public class EpisodesFragment extends ListFragment {
 			}
 
 		} else {
-			//TODO use fragments not tabActivity
-			Intent intent = new Intent(getActivity(),EpisodeTabs.class);
+			Intent intent = new Intent(getActivity(),EpisodeTabsFragActivity.class);
 			intent.putExtras(episode);
 			startActivity(intent);
 		}
