@@ -22,9 +22,13 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -37,6 +41,7 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
+import android.widget.Toast;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
@@ -61,6 +66,9 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	private ProgressBar mDownloadProgress;
 	private PonyExpressApp mPonyExpressApp;
 	private boolean mEpisodeDownloaded;
+	private boolean mIsDownloading;
+	public int mIndex;
+	private DownloadStarted mDownloadReciever;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -73,7 +81,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		mEpisodeTitle = mData.getString(EpisodeKeys.TITLE);
 		
 		mPonyExpressApp = (PonyExpressApp)getActivity().getApplication();
-		
+		mDownloadReciever = new DownloadStarted();
 		
 	}
 
@@ -169,7 +177,16 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 
 	@Override
 	public void onClick(View v) {
-		// TODO Auto-generated method stub
+		if (v == mDownloadButton){
+			//Check user wants to download on the current network type
+			if (!mPonyExpressApp.getInternetHelper().isDownloadAllowed()){
+				Toast.makeText(mPonyExpressApp, R.string.wrong_network_type, Toast.LENGTH_SHORT).show();
+			} else {
+				mIsDownloading = true;
+				activateDownloadCancelButton();
+				startDownload();
+			}	
+		} 
 		
 	}
 
@@ -179,5 +196,32 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		return false;
 	}
 
+	/**
+	 * Deactivates the download button and replaces it with the cancel download button.
+	 */
+	private void activateDownloadCancelButton() {
+		mDownloadButton.setVisibility(View.GONE);
+		mCancelButton.setVisibility(View.VISIBLE);
+		mCancelButton.setEnabled(true);
+	}
 	
+	/**
+	 * Starts the downloaderService.
+	 */
+	private void startDownload(){
+		Intent intent = new Intent(getActivity(),DownloaderService.class);
+		intent.putExtras(mData);
+		intent.putExtra("action", DownloaderService.DOWNLOAD);
+		getActivity().startService(intent);
+	}
+	
+	private class DownloadStarted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			mIndex  = intent.getExtras().getInt("index");
+			//TODO startDownloadProgressBar(mIndex);
+		}
+		
+	}
 }
