@@ -500,6 +500,7 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 	}
 	
 	private void viewShowNotes(String podcast_name, long row_id){
+		//TODO USe show notes fragment with STANDALONE boolean set true in the bundle.
 		final Bundle playlist_episode_data = Episode.packageEpisode(mPonyExpressApp, podcast_name, row_id);
 		Intent i = new Intent(this, ShowNotesActivity.class);
 		i.putExtras(playlist_episode_data);
