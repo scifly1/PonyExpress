@@ -656,7 +656,6 @@ public class PonyExpressDbAdaptor {
 		if (cursor != null && cursor.getCount() > 0){
 			cursor.moveToFirst();
 			downloaded = cursor.getInt(1);
-			PonyLogger.d(TAG, "Episode downloaded: " + downloaded);
 		} else {
 			PonyLogger.e(TAG, "Empty cursor at isEpisodeDownloaded()");
 		}
