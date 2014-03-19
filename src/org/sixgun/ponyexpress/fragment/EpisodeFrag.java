@@ -23,7 +23,9 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.service.DownloaderService;
+import org.sixgun.ponyexpress.service.PodcastPlayer;
 import org.sixgun.ponyexpress.util.PonyLogger;
 import org.sixgun.ponyexpress.util.Utils;
 import org.sixgun.ponyexpress.util.Bitmap.RecyclingImageView;
@@ -37,6 +39,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -60,6 +63,9 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 
 	protected static final String TAG = "EpisodeFragment";
 	private static final int NOTIFY_ID = 3;
+	private static final String CURRENT_POSITION = "current_position";
+	private static final String IS_PLAYING = "is_playing";
+	private static final String IS_DOWNLOADING = "is_downloading";
 	private Bundle mData;
 	private int mCurrentPosition;
 	private String mAlbumArtUrl;
@@ -86,6 +92,13 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	protected int mDownloadPercent;
 	protected Handler mHandler;
 	private boolean mCancelDownload;
+	private boolean mPaused;
+	private PodcastPlayer mPodcastPlayer;
+	private int mEpisodeDuration;
+	private Intent mPlayerIntent;
+	protected boolean mUpdateSeekBar;
+	private boolean mPodcastPlayerBound;
+	private Bundle mSavedState;
 	
 
 	@Override
@@ -101,6 +114,12 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		mPonyExpressApp = (PonyExpressApp)getActivity().getApplication();
 		mDownloadReciever = new DownloadStarted();
 		mHandler = new Handler();
+		mPaused = true;
+		
+		//Create an Intent to use to start playback.
+		mPlayerIntent = new Intent(mPonyExpressApp,PodcastPlayer.class);
+		mPlayerIntent.putExtra(RemoteControlReceiver.ACTION, 
+				PodcastPlayer.PLAY_PAUSE);
 		
 	}
 
@@ -129,11 +148,11 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
-				//TODO
+				mPodcastPlayer.SeekTo(mCurrentPosition);
+				mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
+				mUserSeeking = false;
 			}
-//				mPodcastPlayer.SeekTo(mCurrentPosition);
-//				mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
-//				mUserSeeking = false;
+				
 				
 			};
 		
@@ -173,8 +192,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 			mDownloadProgress.setVisibility(View.VISIBLE);
 			mDownloadButton.setVisibility(View.VISIBLE);
 		} else {
-			//TODO
-//			initPlayer();
+			initPlayer();
 		}
 		
 		//Get Album art url and set image.
@@ -201,7 +219,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		if (mEpisodeDownloaded){
 			//we also bind the player now as well as starting it in initPlayer.
 			//This allows us to unbind it when destroying the activity and have it still play.
-			//TODO doBindPodcastPlayer();
+			doBindPodcastPlayer();
 		} else doBindDownloaderService();
 	}
 	
@@ -215,14 +233,25 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	public void onResume() {
 		super.onResume();
 		
+		
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
 		getActivity().registerReceiver(mDownloadReciever,filter);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		//This allows the SeekBar or Download ProgressBar threads 
+		//to die when the activity is no longer visible.
+		mUpdateSeekBar = false;
+		mIsDownloading = false;
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 		doUnbindDownloaderService();
+		doUnbindPodcastPlayer();
 	}
 
 	@Override
@@ -247,6 +276,25 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 			}else {
 			//Episode is downloading
 			mCancelDownload = true;
+			} 
+		}else if (v == mPlayPauseButton){
+			if (!mPaused){
+				mPodcastPlayer.pause();
+				mPaused = true;
+				mCurrentPosition = (mPodcastPlayer.getEpisodePosition());
+				mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
+				SharedPreferences prefs = getActivity().getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+				final SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean(PodcastKeys.PLAYLIST, false);
+				editor.commit();
+			} else {
+				// Play episode
+				getActivity().startService(mPlayerIntent);
+				mPaused = false;
+				mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
+				mSeekBar.setMax(mEpisodeDuration);
+				mSeekBar.setProgress(mCurrentPosition);
+				startSeekBar();
 			}
 		}
 		
@@ -438,10 +486,10 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 			mCancelButton.setVisibility(View.GONE);
 			mSeekBar.setVisibility(View.VISIBLE);
 			mPlayerControls.setVisibility(View.VISIBLE);
-			//TODO initPlayer();
+			initPlayer();
 			//we also bind the player now as well as starting it in initPlayer.
 			//This allows us to unbind it when destroying the activity and have it still play.
-			//TODO doBindPodcastPlayer();
+			doBindPodcastPlayer();
 
 		}
 	};
@@ -484,4 +532,140 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		}
 
 	};
+	
+	
+	/**
+	 * Starts a thread to poll the episodes progress and updates the seek bar
+	 * via a handler. 
+	 */
+	private void startSeekBar() {
+		new Thread(new Runnable(){
+			@Override
+			public void run() {
+				mUpdateSeekBar = true;
+				//When resuming the activity, the PodcastPlayer needs to be 
+				// rebound.  So sleep before trying to access it.
+				while (mPodcastPlayer == null){
+					try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+						PonyLogger.e(TAG, 
+								"SeekBar thread failed to sleep while waiting for podcast player to bind", e);
+					}
+				}
+				mCurrentPosition = mPodcastPlayer.getEpisodePosition();
+				mSeekBar.setMax(mEpisodeDuration);
+				while (mUpdateSeekBar && !mPaused){
+					if (!mUserSeeking){
+						try {
+							Thread.sleep(1000);
+							mCurrentPosition = mPodcastPlayer.getEpisodePosition();
+						} catch (InterruptedException e) {
+							return;
+						} catch (IllegalStateException e){
+							//It is possible that the player may complete 
+							//while the thread is asleep and getEpisodePosition()
+							//will through an exception.
+							return;
+						}
+						
+						mHandler.post(new Runnable(){
+							@Override
+							public void run() {
+								mSeekBar.setProgress(mCurrentPosition);
+								mElapsed.setText(Utils.milliToTime(mCurrentPosition,false));
+								//Poll player to see if it has been paused by completing playback
+								//Check for null first as sometimes the player may have been stopped before this thread is.
+								if (mPodcastPlayer == null || !mPodcastPlayer.isPlaying()){
+									mPaused = true;
+									mPlayPauseButton.setImageResource(R.drawable.media_playback_start);
+								}
+							}
+						});
+					}
+				}	
+			}	
+		}).start();
+		
+	}
+	
+	//This is all responsible for connecting/disconnecting to the PodcastPlayer service.
+	private ServiceConnection mPlayerConnection = new ServiceConnection() {
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			mPodcastPlayer = null;
+
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
+			queryPlayer();
+		}
+	};
+
+	protected void doBindPodcastPlayer() {
+		getActivity().bindService(new Intent(getActivity(), 
+				PodcastPlayer.class), mPlayerConnection, Context.BIND_AUTO_CREATE);
+		mPodcastPlayerBound = true;
+	}
+
+	protected void doUnbindPodcastPlayer() {
+		if (mPodcastPlayerBound) {
+			getActivity().unbindService(mPlayerConnection);
+			mPodcastPlayerBound = false;
+		}
+	}
+
+	private void initPlayer() {
+		Intent intent = new Intent(getActivity(),PodcastPlayer.class);
+		intent.putExtras(mData);
+		intent.putExtra("action", PodcastPlayer.INIT_PLAYER);
+		getActivity().startService(intent);
+	}
+	
+	private void queryPlayer() {
+		Bundle state = new Bundle();
+		mEpisodeDuration = mPodcastPlayer.getEpisodeLength();
+		state.putInt(CURRENT_POSITION, mPodcastPlayer.getEpisodePosition());
+
+		if (mPodcastPlayer.isPlaying()){
+			state.putBoolean(IS_PLAYING, true);
+		} else {
+			state.putBoolean(IS_PLAYING, false);
+		}
+		restoreSeekBar(state);
+		
+		//Set text of episode duration
+		mEpisodeLength.setText(Utils.milliToTime(mEpisodeDuration,false));
+	}
+	
+	
+	private void restoreSeekBar(Bundle savedInstanceState) {
+		//The saved current position will not be accurate as play has continued in the meantime
+		//but it will be a good enough approximation.
+		mCurrentPosition = savedInstanceState.getInt(CURRENT_POSITION);
+		//Must set max before progress if progress is > 100 (default Max)
+		mSeekBar.setMax(mEpisodeDuration);
+		mSeekBar.setProgress(mCurrentPosition);
+		//Set text of elapsed text view
+		mElapsed.setText(Utils.milliToTime(mCurrentPosition,false));
+		
+		if (savedInstanceState.getBoolean(IS_PLAYING)){
+			mPaused = false;
+			mPlayPauseButton.setImageResource(R.drawable.media_playback_pause);
+			startSeekBar();
+		} else if (mPaused && mEpisodeDownloaded){
+			//if playing from a play-list auto start playback.
+			SharedPreferences prefs = getActivity().getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+			if (prefs.getBoolean(PodcastKeys.PLAYLIST, false)){
+				mPlayPauseButton.performClick();
+				final SharedPreferences.Editor editor = prefs.edit();
+				editor.putBoolean(PodcastKeys.PLAYLIST, false);
+				editor.commit();
+			}
+		}
+	}
+
 }
