@@ -276,6 +276,9 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_SHORT).show();
 			}
 		} 
+		if (mPodcastPlayer != null){
+			queryPlayer();
+		}
 		IntentFilter completed = new IntentFilter("org.sixgun.ponyexpress.COMPLETED");
 		getActivity().registerReceiver(mEpisodeCompletedReciever, completed);
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
@@ -288,7 +291,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		doUnbindDownloaderService();
 		doUnbindPodcastPlayer();
 	}
-
+	
 	@Override
 	public void onClick(View v) {
 		if (v == mDownloadButton){
