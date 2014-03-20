@@ -99,6 +99,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	protected boolean mUpdateSeekBar;
 	private boolean mPodcastPlayerBound;
 	private Bundle mSavedState;
+	private EpisodeCompletedAndDeleted mEpisodeCompletedReciever;
 	
 
 	@Override
@@ -113,6 +114,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		
 		mPonyExpressApp = (PonyExpressApp)getActivity().getApplication();
 		mDownloadReciever = new DownloadStarted();
+		mEpisodeCompletedReciever = new EpisodeCompletedAndDeleted();
 		mHandler = new Handler();
 		mPaused = true;
 		
@@ -231,7 +233,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	public void onPause() {
 		super.onPause();
 		getActivity().unregisterReceiver(mDownloadReciever);
-		
+		getActivity().unregisterReceiver(mEpisodeCompletedReciever);
 	}
 
 	@Override
@@ -274,7 +276,8 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_SHORT).show();
 			}
 		} 
-		
+		IntentFilter completed = new IntentFilter("org.sixgun.ponyexpress.COMPLETED");
+		getActivity().registerReceiver(mEpisodeCompletedReciever, completed);
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
 		getActivity().registerReceiver(mDownloadReciever,filter);
 	}
@@ -376,6 +379,14 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		public void onReceive(Context context, Intent intent) {
 			mIndex  = intent.getExtras().getInt("index");
 			startDownloadProgressBar(mIndex);
+		}
+		
+	}
+	private class EpisodeCompletedAndDeleted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			getActivity().finish();			
 		}
 		
 	}
