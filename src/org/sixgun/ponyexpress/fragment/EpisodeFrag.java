@@ -221,23 +221,30 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 			//This allows us to unbind it when destroying the activity and have it still play.
 			doBindPodcastPlayer();
 		} else doBindDownloaderService();
+		
+		if (!mPaused){
+			startSeekBar();
+		}
 	}
 	
 	@Override
 	public void onPause() {
 		super.onPause();
 		getActivity().unregisterReceiver(mDownloadReciever);
+		
 	}
 
 	@Override
-	public void onResume() {
-		super.onResume();
-		
-		
-		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
-		getActivity().registerReceiver(mDownloadReciever,filter);
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		if (mIsDownloading){
+			outState.putBoolean(IS_DOWNLOADING, true);
+		} else {
+			outState.putBoolean(IS_DOWNLOADING, false);
+		}
+		mSavedState = outState;
 	}
-
+	
 	@Override
 	public void onStop() {
 		super.onStop();
@@ -245,6 +252,31 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		//to die when the activity is no longer visible.
 		mUpdateSeekBar = false;
 		mIsDownloading = false;
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+		
+		if (mSavedState != null){
+			mIsDownloading = mSavedState.getBoolean(IS_DOWNLOADING);
+		}
+		if(mIsDownloading){
+			activateDownloadCancelButton();
+			PonyLogger.d(TAG, "Player resuming..");
+			startDownloadProgressBar(mIndex);
+		} else if (!mEpisodeDownloaded){
+			//Check remaining space on SD card and warn if < 100Mbytes.
+			double freeSpace = Utils.checkSdCardSpace();
+			if (freeSpace < 100.0){
+				String text = mPonyExpressApp.getString(R.string.low_space);
+				text = (int)freeSpace + text;
+				Toast.makeText(mPonyExpressApp, text, Toast.LENGTH_SHORT).show();
+			}
+		} 
+		
+		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
+		getActivity().registerReceiver(mDownloadReciever,filter);
 	}
 
 	@Override
@@ -296,13 +328,26 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 				mSeekBar.setProgress(mCurrentPosition);
 				startSeekBar();
 			}
+		} else if (v == mRewindButton){
+			if (!mPaused){
+				mPodcastPlayer.rewind();
+			}
+		} else if (v == mFastForwardButton){
+			if (!mPaused){
+				mPodcastPlayer.fastForward();
+			}
 		}
 		
 	}
-
+//	TODO When playlists work with the new EpisodeFragment.
 	@Override
 	public boolean onLongClick(View v) {
-		// TODO Auto-generated method stub
+//		if (v == mFastForwardButton){
+//			if (mPodcastPlayer.isPlayingPlaylist()){
+//				mPodcastPlayer.skipToNext();
+//				return true;
+//			} 	
+//		}
 		return false;
 	}
 
@@ -395,6 +440,16 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 						PonyLogger.e(TAG, 
 								"DownloadProgressBar thread failed to sleep while " +
 										"waiting for downloaderservice to bind", e);
+					}
+				}
+				//If resuming shortly after download starts, the index may still read queued
+				//when the download isn't really, so wait a second.
+				if (index == DownloaderService.QUEUED){
+					try{
+						Thread.sleep(1000);
+						PonyLogger.d(TAG,"Waiting while index is queued");
+					} catch (InterruptedException e){
+						PonyLogger.e(TAG, "DownloadPrgressBar failed to sleep while queued",e);
 					}
 				}
 				if (index != DownloaderService.QUEUED){  //Episode is not queued
