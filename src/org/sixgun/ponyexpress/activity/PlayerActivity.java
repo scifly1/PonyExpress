@@ -557,7 +557,9 @@ public class PlayerActivity extends Activity {
 	 */
 	@Override
 	public void onBackPressed() {
-		mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
+		if (mPodcastPlayer != null){
+			mPodcastPlayer.savePlaybackPosition(mCurrentPosition);
+		}
 		super.onBackPressed();
 	}
 	
