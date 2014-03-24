@@ -35,15 +35,17 @@ public class ShowNotesFrag extends Fragment {
 	
 	
 
-	private static final String STANDALONE_NOTES = "standalone";
+	public static final String STANDALONE_NOTES = "standalone";
 	private Bundle mData;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
-		mData = getActivity().getIntent().getExtras();
-		
+		mData = getArguments();  
+		if (mData == null ){ //Only has Arguments when started as standalone notes.
+			mData = getActivity().getIntent().getExtras();
+		}
 	}
 
 	@Override

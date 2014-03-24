@@ -27,7 +27,6 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabsFragActivity;
-import org.sixgun.ponyexpress.activity.ShowNotesActivity;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.util.Utils;
 
@@ -42,6 +41,7 @@ import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.ListFragment;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -64,6 +64,7 @@ public class EpisodesFragment extends ListFragment {
 	private static final int MARK_ALL_LISTENED = 0;
 	private static final int MARK_ALL_NOT_LISTENED = MARK_ALL_LISTENED +1;
 	private static final int DOWNLOAD_ALL = MARK_ALL_NOT_LISTENED + 1;
+	
 
 	public static EpisodesFragment newInstance(String podcast_name, String art_url) {
         EpisodesFragment epis = new EpisodesFragment();
@@ -222,11 +223,21 @@ public class EpisodesFragment extends ListFragment {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
 		switch (item.getItemId()){
 		case R.id.shownotes:
-			//TODO Use show notes fragment
+			ShowNotesFrag notes = new ShowNotesFrag();
 			final Bundle data = Episode.packageEpisode(mPonyExpressApp, mPodcastName, info.id);
-			Intent intent = new Intent(getActivity(), ShowNotesActivity.class);
-			intent.putExtras(data);
-			startActivity(intent);
+			data.putBoolean(ShowNotesFrag.STANDALONE_NOTES, true);
+			notes.setArguments(data);
+			
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+			View second_pane = getActivity().findViewById(R.id.second_pane);
+			if (second_pane != null){
+				ft.add(R.id.second_pane,notes);
+			} else {
+				ft.add(android.R.id.content, notes);
+			}
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.addToBackStack(null);
+            ft.commit();
 			return true;
 		case R.id.mark_listened:
 			markListened(info.id);
