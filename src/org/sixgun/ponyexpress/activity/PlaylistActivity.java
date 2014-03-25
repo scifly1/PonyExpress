@@ -720,13 +720,13 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 	@Override
 	public void startPlaylist(View v) {
 		if (!mPonyExpressApp.getDbHelper().playlistEmpty()){
-			//Start EpisodeTabs as happens from EpisodeActivity
+			//Start EpisodeTabsFragActivity as happens from EpisodeFragment
 			// but hand over a flag to indicate to play from the playlist.
 			SharedPreferences prefs = getSharedPreferences(PodcastKeys.PLAYLIST, 0);
 			final SharedPreferences.Editor editor = prefs.edit();
 			editor.putBoolean(PodcastKeys.PLAYLIST, true);
 			editor.commit();
-			Intent intent = new Intent(this,EpisodeTabs.class);
+			Intent intent = new Intent(this,EpisodeTabsFragActivity.class);
 			intent.putExtra(PodcastKeys.PLAYLIST, true);
 			startActivityForResult(intent, START_PLAYBACK);
 		}

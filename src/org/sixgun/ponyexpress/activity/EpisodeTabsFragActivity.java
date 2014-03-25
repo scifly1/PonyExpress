@@ -18,10 +18,14 @@
 */
 package org.sixgun.ponyexpress.activity;
 
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
+import org.sixgun.ponyexpress.PodcastKeys;
+import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.fragment.EpisodeFrag;
 import org.sixgun.ponyexpress.fragment.ShowNotesFrag;
+import org.sixgun.ponyexpress.util.PonyLogger;
 
 import android.content.Intent;
 import android.content.res.Resources;
@@ -42,6 +46,10 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 	private FragmentTabHost mTabHost;
 	private CharSequence mTitleText;
 	private Resources mRes;
+	private boolean mPlayingPlaylist;
+	private String mPodcastName;
+	private PonyExpressApp mPonyExpressApp;
+	private long mEpisodeId;
 	
 
 			@Override
@@ -49,10 +57,22 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 				super.onCreate(arg0);
 				
 				setContentView(R.layout.episode_tabs);
-				
+				mPonyExpressApp = (PonyExpressApp) getApplication();
 				Intent data = getIntent();
 				Bundle bundle = new Bundle();
-				bundle = data.getExtras();
+				if (data.getExtras().getBoolean(PodcastKeys.PLAYLIST)){
+					mPlayingPlaylist = true;
+					//get first episode from playlist
+					mPodcastName = mPonyExpressApp.getDbHelper().getPodcastFromPlaylist();
+					mEpisodeId = mPonyExpressApp.getDbHelper().getEpisodeFromPlaylist();
+					//TODO Check an episode has been returned, if db corrupted it will not be.
+					bundle = Episode.packageEpisode(mPonyExpressApp, mPodcastName, mEpisodeId);
+					bundle.putBoolean(PodcastKeys.PLAYLIST, true);
+					data.replaceExtras(bundle);
+				} else {
+					bundle = data.getExtras();
+					bundle.putBoolean(PodcastKeys.PLAYLIST, false);
+				}
 				mRes = getResources(); // Resource object to get Drawables
 				
 				mTabHost = (FragmentTabHost)findViewById(android.R.id.tabhost);
