@@ -345,15 +345,15 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		}
 		
 	}
-//	TODO When playlists work with the new EpisodeFragment.
+
 	@Override
 	public boolean onLongClick(View v) {
-//		if (v == mFastForwardButton){
-//			if (mPodcastPlayer.isPlayingPlaylist()){
-//				mPodcastPlayer.skipToNext();
-//				return true;
-//			} 	
-//		}
+		if (v == mFastForwardButton){
+			if (mPodcastPlayer.isPlayingPlaylist()){
+				mPodcastPlayer.skipToNext();
+				return true;
+			} 	
+		}
 		return false;
 	}
 
