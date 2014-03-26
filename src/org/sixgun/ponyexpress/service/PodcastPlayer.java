@@ -26,7 +26,6 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
-import org.sixgun.ponyexpress.activity.EpisodeTabs;
 import org.sixgun.ponyexpress.activity.EpisodeTabsFragActivity;
 import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
@@ -594,11 +593,11 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	}
 
 	private void showNotification() {
-		//Episode tabs launchmode is 'singletop' so only one instance can 
+		//EpisodeTabsFragActivity launchmode is 'singletop' so only one instance can 
 		//exist when it is top of the stack. Thus starting it with this intent 
-		//we get the original activity not a new one whenit is top of the stack.
+		//we get the original activity not a new one when it is top of the stack.
 		//For occasions when it is not top we still need to supply the data bundle.
-		Intent notificationIntent = new Intent(this,EpisodeTabs.class);
+		Intent notificationIntent = new Intent(this,EpisodeTabsFragActivity.class);
 		notificationIntent.putExtras(mData);
 		notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
