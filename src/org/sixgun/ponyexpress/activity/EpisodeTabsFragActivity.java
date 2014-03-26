@@ -136,7 +136,19 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 				mLbm.unregisterReceiver(mPlaybackCompletedReceiver);
 				doUnbindPodcastPlayer();
 			}
-
+			
+			/**
+			 * Save the listened to position when going back to the playlist activity
+			 * when the player is still playing a playlist. (Happens anyway when paused). 
+			 * Used to show a more accurate remaining time in the playlist duration.
+			 */
+			@Override
+			public void onBackPressed() {
+				if (mPodcastPlayer != null && mPlayingPlaylist && mPodcastPlayer.isPlaying()){
+					mPodcastPlayer.savePlaybackPosition(mPodcastPlayer.getEpisodePosition());
+				}
+				super.onBackPressed();
+			}
 
 
 			/**
