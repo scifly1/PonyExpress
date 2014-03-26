@@ -27,6 +27,7 @@ import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.EpisodeTabs;
+import org.sixgun.ponyexpress.activity.EpisodeTabsFragActivity;
 import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.util.PonyLogger;
@@ -53,6 +54,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.RemoteViews;
 
 /**
@@ -167,10 +169,10 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					if (bundle != null){
 						initPlayer(bundle);
 						play();
-						//Send a broadcast intent to EpisodeTabs
-						//telling it to refresh with the new episode
-						Intent intent = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
-						getApplicationContext().sendBroadcast(intent);
+						//Refresh the EpisodeTabsFragActivity
+						Intent i = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+						LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getApplicationContext());
+						lbm.sendBroadcast(i);
 					}else{
 						//There is a problem with the playlist db if we are here, so clear it.
 						mPonyExpressApp.getDbHelper().clearPlaylist();

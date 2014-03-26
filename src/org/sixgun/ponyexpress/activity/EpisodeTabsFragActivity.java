@@ -25,13 +25,21 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.fragment.EpisodeFrag;
 import org.sixgun.ponyexpress.fragment.ShowNotesFrag;
-import org.sixgun.ponyexpress.util.PonyLogger;
+import org.sixgun.ponyexpress.service.PodcastPlayer;
 
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTabHost;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -46,10 +54,15 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 	private FragmentTabHost mTabHost;
 	private CharSequence mTitleText;
 	private Resources mRes;
-	private boolean mPlayingPlaylist;
 	private String mPodcastName;
 	private PonyExpressApp mPonyExpressApp;
 	private long mEpisodeId;
+	private TextView mTitleView;
+	private boolean mPlayingPlaylist;
+	private PodcastPlayer mPodcastPlayer;
+	private BroadcastReceiver mPlaybackCompletedReceiver;
+	private boolean mPodcastPlayerBound;
+	private LocalBroadcastManager mLbm;
 	
 
 			@Override
@@ -58,8 +71,22 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 				
 				setContentView(R.layout.episode_tabs);
 				mPonyExpressApp = (PonyExpressApp) getApplication();
+				mLbm = LocalBroadcastManager.getInstance(mPonyExpressApp);
+				mPlaybackCompletedReceiver = new PlaybackCompleted();
+				
+				mRes = getResources(); // Resource object to get Drawables
+				
+				mTabHost = (FragmentTabHost)findViewById(android.R.id.tabhost);
+		        mTabHost.setup(this, getSupportFragmentManager(), R.id.realTabContent);
+		        mTitleView = (TextView) findViewById(R.id.TitleText);
+
+		        populateTabs();
+			}
+
+			private void populateTabs(){
 				Intent data = getIntent();
 				Bundle bundle = new Bundle();
+
 				if (data.getExtras().getBoolean(PodcastKeys.PLAYLIST)){
 					mPlayingPlaylist = true;
 					//get first episode from playlist
@@ -73,26 +100,108 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 					bundle = data.getExtras();
 					bundle.putBoolean(PodcastKeys.PLAYLIST, false);
 				}
-				mRes = getResources(); // Resource object to get Drawables
-				
-				mTabHost = (FragmentTabHost)findViewById(android.R.id.tabhost);
-		        mTabHost.setup(this, getSupportFragmentManager(), R.id.realTabContent);
-		        TextView title = (TextView) findViewById(R.id.TitleText);
+
 				mTitleText = bundle.getString(EpisodeKeys.TITLE);
-				title.setText(mTitleText);
-				
-				TabHost.TabSpec spec;  // Resusable TabSpec for each tab			    
-			   
-			    spec = mTabHost.newTabSpec("episode").setIndicator
-			    (mRes.getText(R.string.play),mRes.getDrawable(R.drawable.ic_tab_play));
-			    mTabHost.addTab(spec,EpisodeFrag.class,null);
-			    
-			  //Add Episode Notes Activity
-			    spec = mTabHost.newTabSpec("notes").setIndicator
-			    (mRes.getText(R.string.show_notes),mRes.getDrawable(R.drawable.ic_tab_notes));
-			    mTabHost.addTab(spec, ShowNotesFrag.class,null);
+				mTitleView.setText(mTitleText);
+
+				TabHost.TabSpec spec;  // Re-usable TabSpec for each tab			    
+
+				spec = mTabHost.newTabSpec("episode").setIndicator
+						(mRes.getText(R.string.play),mRes.getDrawable(R.drawable.ic_tab_play));
+				mTabHost.addTab(spec,EpisodeFrag.class,null);
+
+				//Add Episode Notes Activity
+				spec = mTabHost.newTabSpec("notes").setIndicator
+						(mRes.getText(R.string.show_notes),mRes.getDrawable(R.drawable.ic_tab_notes));
+				mTabHost.addTab(spec, ShowNotesFrag.class,null);
+			}
+			
+			/* (non-Javadoc)
+			 * @see android.app.ActivityGroup#onResume()
+			 */
+			@Override
+			protected void onResume() {
+				super.onResume();
+				IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+				mLbm.registerReceiver(mPlaybackCompletedReceiver, filter);
+				doBindPodcastPlayer();
 			}
 
+			/* (non-Javadoc)
+			 * @see android.app.ActivityGroup#onPause()
+			 */
+			@Override
+			protected void onPause() {
+				super.onPause();
+				mLbm.unregisterReceiver(mPlaybackCompletedReceiver);
+				doUnbindPodcastPlayer();
+			}
+
+
+
+			/**
+			 * This broadcast receiver receives the intent sent by PodcastPlayer
+			 * to signal playback of the playlist episode has completed.	 *
+			 */
+			public class PlaybackCompleted extends BroadcastReceiver{
+
+				@Override
+				public void onReceive(Context context, Intent intent) {
+					EpisodeTabsFragActivity.this.setResult(RESULT_OK);
+					SharedPreferences prefs = getSharedPreferences(PodcastKeys.PLAYLIST, 0);
+					final SharedPreferences.Editor editor = prefs.edit();
+					editor.putBoolean(PodcastKeys.PLAYLIST, true);
+					editor.commit();
+					finish();
+				}
+
+			}
+
+			protected void queryPlayer() {
+				if (mPodcastPlayer != null && mPlayingPlaylist){
+					final String podcast_name = mPodcastPlayer.getPodcastName();
+					final long episode_id = mPodcastPlayer.getEpisodeRow();
+
+					if (podcast_name != null) {
+						if (mPodcastName.equals(podcast_name)
+								&& mEpisodeId == episode_id) {
+							return;
+						} else {
+							//This is not a great way to do this, but it works.
+							//Refresh the EpisodeTabs
+							EpisodeTabsFragActivity.this.setResult(RESULT_OK);
+							finish();
+						}
+					}
+				}
+			}
 			
+			private ServiceConnection mPlayerConnection = new ServiceConnection() {
+				@Override
+				public void onServiceDisconnected(ComponentName name) {
+					mPodcastPlayer = null;
+
+				}
+
+				@Override
+				public void onServiceConnected(ComponentName name, IBinder service) {
+					mPodcastPlayer = ((PodcastPlayer.PodcastPlayerBinder)service).getService();
+					queryPlayer();
+				}
+			};
 			
+			protected void doBindPodcastPlayer() {
+				bindService(new Intent(this, 
+						PodcastPlayer.class), mPlayerConnection, Context.BIND_AUTO_CREATE);
+				mPodcastPlayerBound = true;
+			}
+
+			protected void doUnbindPodcastPlayer() {
+				if (mPodcastPlayerBound) {
+					// Detach our existing connection.
+					unbindService(mPlayerConnection);
+					mPodcastPlayerBound = false;
+				}
+			}
+
 }
