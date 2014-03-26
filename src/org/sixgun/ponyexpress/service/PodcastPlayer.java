@@ -102,6 +102,8 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 
 	private boolean mPlayingPlaylist;
 
+	private LocalBroadcastManager mLbm;
+
 //TODO Possibly change how errors are handled so the user has a better idea of what may have happened.
 
 	/**
@@ -130,6 +132,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 		mFreePlayer = mPlayer2;
 		mPonyExpressApp = (PonyExpressApp)getApplication();
 		mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+		mLbm = LocalBroadcastManager.getInstance(getApplicationContext());
 
 		OnErrorListener onErrorListener = new OnErrorListener(){
 			//Using an OnErrorListener to will stop the playlist from
@@ -170,8 +173,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 						play();
 						//Refresh the EpisodeTabsFragActivity
 						Intent i = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
-						LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(getApplicationContext());
-						lbm.sendBroadcast(i);
+						mLbm.sendBroadcast(i);
 					}else{
 						//There is a problem with the playlist db if we are here, so clear it.
 						mPonyExpressApp.getDbHelper().clearPlaylist();
@@ -183,7 +185,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					//playing playlist
 					if (delete_episode){
 						Intent intent = new Intent("org.sixgun.ponyexpress.COMPLETED");
-						sendBroadcast(intent);
+						mLbm.sendBroadcast(intent);
 					}
 				}
 			}

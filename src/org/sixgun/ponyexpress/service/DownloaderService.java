@@ -53,6 +53,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.widget.Toast;
 
 
@@ -182,7 +183,7 @@ public class DownloaderService extends Service {
 			mDownloaderAwake = true;
 			beginLooperThread();
 		}
-		notifyPlayerActivityOfStart(QUEUED);
+		notifyEpisodeFragOfStart(QUEUED);
 	}
 	
 	/**
@@ -287,15 +288,16 @@ public class DownloaderService extends Service {
 	}
 	
 	/**
-	 * Notify the PlayerActivity that the download has commenced and that it can start 
+	 * Notify the EpisodeFrag that the download has commenced and that it can start 
 	 * displaying the progress.
 	 * @param index the index in the DownloadServices array that holds the 
 	 * particular DownloadingEpisode.
 	 */
-	private void notifyPlayerActivityOfStart(final int index){
+	private void notifyEpisodeFragOfStart(final int index){
 		Intent intent = new Intent(DOWNLOADING);
 		intent.putExtra("index", index);
-		sendBroadcast(intent);
+		LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(mPonyExpressApp);
+		lbm.sendBroadcast(intent);
 	}
 	
 	/**
@@ -397,7 +399,7 @@ public class DownloaderService extends Service {
 						final int index = mEpisodes.indexOf(episode);
 						downloadEpisode(index);
 						PonyLogger.i(TAG, episode.getTitle() + " downloading");
-						notifyPlayerActivityOfStart(index);
+						notifyEpisodeFragOfStart(index);
 					}
 					try {
 						//Sleep here to give mCurrentDownloads a chance to increment

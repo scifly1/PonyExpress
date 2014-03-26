@@ -44,6 +44,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -100,6 +101,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	private boolean mPodcastPlayerBound;
 	private Bundle mSavedState;
 	private EpisodeCompletedAndDeleted mEpisodeCompletedReciever;
+	private LocalBroadcastManager mLbm;
 	
 
 	@Override
@@ -113,6 +115,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		mEpisodeTitle = mData.getString(EpisodeKeys.TITLE);
 		
 		mPonyExpressApp = (PonyExpressApp)getActivity().getApplication();
+		mLbm = LocalBroadcastManager.getInstance(mPonyExpressApp);
 		mDownloadReciever = new DownloadStarted();
 		mEpisodeCompletedReciever = new EpisodeCompletedAndDeleted();
 		mHandler = new Handler();
@@ -232,8 +235,8 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	@Override
 	public void onPause() {
 		super.onPause();
-		getActivity().unregisterReceiver(mDownloadReciever);
-		getActivity().unregisterReceiver(mEpisodeCompletedReciever);
+		mLbm.unregisterReceiver(mDownloadReciever);
+		mLbm.unregisterReceiver(mEpisodeCompletedReciever);
 	}
 
 	@Override
@@ -280,9 +283,9 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 			queryPlayer();
 		}
 		IntentFilter completed = new IntentFilter("org.sixgun.ponyexpress.COMPLETED");
-		getActivity().registerReceiver(mEpisodeCompletedReciever, completed);
+		mLbm.registerReceiver(mEpisodeCompletedReciever, completed);
 		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
-		getActivity().registerReceiver(mDownloadReciever,filter);
+		mLbm.registerReceiver(mDownloadReciever,filter);
 	}
 
 	@Override
