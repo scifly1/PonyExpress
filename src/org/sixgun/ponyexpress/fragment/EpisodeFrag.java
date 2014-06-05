@@ -23,6 +23,7 @@ import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
+import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.receiver.RemoteControlReceiver;
 import org.sixgun.ponyexpress.service.DownloaderService;
 import org.sixgun.ponyexpress.service.PodcastPlayer;
@@ -46,6 +47,9 @@ import android.os.IBinder;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -108,6 +112,8 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+		setHasOptionsMenu(true);
 		
 		mData = getActivity().getIntent().getExtras();
 		mCurrentPosition = mData.getInt(EpisodeKeys.LISTENED);
@@ -364,7 +370,23 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		}
 		return false;
 	}
+	
+	@Override
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+		inflater.inflate(R.menu.general_options_menu, menu);
+	}
 
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+	    case R.id.settings_menu:
+	        startActivity(new Intent(
+	        		mPonyExpressApp,PreferencesActivity.class));
+	        return true;
+	    default:
+	        return super.onOptionsItemSelected(item);
+		}
+	}
 	/**
 	 * Deactivates the download button and replaces it with the cancel download button.
 	 */
