@@ -46,7 +46,6 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 			//So we need to just select one of them.
 			if (KeyEvent.ACTION_DOWN == button.getAction()){
 				switch (button.getKeyCode()){
-				//TODO **BUGWATCH** Different headsets may use different button codes,
 				case KeyEvent.KEYCODE_MEDIA_REWIND:
 					//Fallthrough
 				case KeyEvent.KEYCODE_MEDIA_PREVIOUS:
@@ -58,15 +57,17 @@ public class RemoteControlReceiver extends BroadcastReceiver {
 					//Fallthrough
 				case KeyEvent.KEYCODE_HEADSETHOOK:
 					PonyLogger.d(TAG, "Play/Pause received");
-					serviceIntent.putExtra(ACTION, PodcastPlayer.PLAY_PAUSE);
+					serviceIntent.putExtra(ACTION, PodcastPlayer.HEADSET_PLAY_PAUSE);
 					context.startService(serviceIntent);
 					break;
 				case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
-					//Fallthrough
-					//TODO Should use skip to next properly, can't test, no headset.
-				case KeyEvent.KEYCODE_MEDIA_NEXT:
 					PonyLogger.d(TAG, "Fast forward received");
 					serviceIntent.putExtra(ACTION, PodcastPlayer.FASTFORWARD);
+					context.startService(serviceIntent);
+					break;
+				case KeyEvent.KEYCODE_MEDIA_NEXT:
+					PonyLogger.d(TAG, "Next received");
+					serviceIntent.putExtra(ACTION, PodcastPlayer.NEXT);
 					context.startService(serviceIntent);
 					break;
 				default:

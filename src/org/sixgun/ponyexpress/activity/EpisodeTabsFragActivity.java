@@ -122,7 +122,7 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 			@Override
 			protected void onResume() {
 				super.onResume();
-				IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+				IntentFilter filter = new IntentFilter(PodcastPlayer.COMPLETED);
 				mLbm.registerReceiver(mPlaybackCompletedReceiver, filter);
 				doBindPodcastPlayer();
 			}

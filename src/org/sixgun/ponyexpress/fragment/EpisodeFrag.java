@@ -102,6 +102,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	private Bundle mSavedState;
 	private EpisodeCompletedAndDeleted mEpisodeCompletedReciever;
 	private LocalBroadcastManager mLbm;
+	private PlayBackStarted mPlaybackReceiver;
 	
 
 	@Override
@@ -118,6 +119,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		mLbm = LocalBroadcastManager.getInstance(mPonyExpressApp);
 		mDownloadReciever = new DownloadStarted();
 		mEpisodeCompletedReciever = new EpisodeCompletedAndDeleted();
+		mPlaybackReceiver = new PlayBackStarted();
 		mHandler = new Handler();
 		mPaused = true;
 		
@@ -237,6 +239,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		super.onPause();
 		mLbm.unregisterReceiver(mDownloadReciever);
 		mLbm.unregisterReceiver(mEpisodeCompletedReciever);
+		mLbm.unregisterReceiver(mPlaybackReceiver);
 	}
 
 	@Override
@@ -282,10 +285,12 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		if (mPodcastPlayer != null){
 			queryPlayer();
 		}
-		IntentFilter completed = new IntentFilter("org.sixgun.ponyexpress.COMPLETED");
+		IntentFilter completed = new IntentFilter(PodcastPlayer.COMPLETED_DELETED);
 		mLbm.registerReceiver(mEpisodeCompletedReciever, completed);
-		IntentFilter filter = new IntentFilter("org.sixgun.ponyexpress.DOWNLOADING");
+		IntentFilter filter = new IntentFilter(DownloaderService.DOWNLOADING);
 		mLbm.registerReceiver(mDownloadReciever,filter);
+		IntentFilter playback_started = new IntentFilter(PodcastPlayer.PLAYING);
+		mLbm.registerReceiver(mPlaybackReceiver, playback_started);
 	}
 
 	@Override
@@ -396,6 +401,16 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		}
 		
 	}
+	private class PlayBackStarted extends BroadcastReceiver{
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			onClick(mPlayPauseButton);
+			
+		}
+		
+	}
+	
 	//This is all responsible for connecting/disconnecting to the Downloader service.
 	private ServiceConnection mDownloaderConnection = new ServiceConnection() {
 
@@ -637,7 +652,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 						} catch (IllegalStateException e){
 							//It is possible that the player may complete 
 							//while the thread is asleep and getEpisodePosition()
-							//will through an exception.
+							//will throw an exception.
 							return;
 						}
 						

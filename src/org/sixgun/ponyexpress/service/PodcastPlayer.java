@@ -68,10 +68,19 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	//Some constants that define the requested Player action.
 	public static final int REWIND = -1;
 	public static final int PLAY_PAUSE = 0;
-	public static final int FASTFORWARD = 1;
-	public static final int INIT_PLAYER = 2;
+	public static final int HEADSET_PLAY_PAUSE = 1;
+	public static final int FASTFORWARD = 2;
+	public static final int INIT_PLAYER = 3;
+	public static final int NEXT = 4;
 
 	private static final int NOTIFY_ID = 2;
+	//Intent sent when playback started with media buttons to get Player UI to show playing.
+	public static final String PLAYING = "org.sixgun.ponyexpress.PLAYING";
+	//Intent sent when single episode completed and deleted to send used back to episodes list.
+	public static final String COMPLETED_DELETED = "org.sixgun.ponyexpress.COMPLETED_DELETED";
+
+	//Intent sent when play-list episode is completed to refresh UI.
+	public static final String COMPLETED = "org.sixgun.ponyexpress.COMPLETED";
 	
 	private AudioManager mAudioManager;
 	private ComponentName mRemoteControlReceiver;
@@ -172,7 +181,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 						initPlayer(bundle);
 						play();
 						//Refresh the EpisodeTabsFragActivity
-						Intent i = new Intent("org.sixgun.ponyexpress.PLAYBACK_COMPLETED");
+						Intent i = new Intent(COMPLETED);
 						mLbm.sendBroadcast(i);
 					}else{
 						//There is a problem with the playlist db if we are here, so clear it.
@@ -184,7 +193,7 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 					//Go back to episodes activity if episode was deleted and not 
 					//playing playlist
 					if (delete_episode){
-						Intent intent = new Intent("org.sixgun.ponyexpress.COMPLETED");
+						Intent intent = new Intent("COMPLETED_DELETED");
 						mLbm.sendBroadcast(intent);
 					}
 				}
@@ -213,6 +222,9 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				rewind();
 			}
 			break;
+		case HEADSET_PLAY_PAUSE:
+			notifyEpisodeFragOfPlay();
+			break;
 		case PLAY_PAUSE:
 			if (isPlaying()){
 				pause();
@@ -237,7 +249,11 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 				fastForward();
 			}
 			break;
-			//TODO Should recieve a skip from the reciever too, but can't test at present.
+		case NEXT:
+			if (isPlayingPlaylist() && isPlaying()){
+				skipToNext();
+			}
+			break;
 		case -2:
 			PonyLogger.e(TAG, "no action received from RemoteControlReceiver!");
 			break;
@@ -733,5 +749,14 @@ public class PodcastPlayer extends Service implements AudioManager.OnAudioFocusC
 	public void skipToNext() {
 		mPlayer.seekTo(getEpisodeLength());
 		
+	}
+	/**
+	 * Notify the EpisodeFrag that the play has commenced when started from the media buttons
+	 * and that it can start displaying the progress.
+	 */
+	private void notifyEpisodeFragOfPlay(){
+		Intent intent = new Intent(PLAYING);
+		LocalBroadcastManager lbm = LocalBroadcastManager.getInstance(mPonyExpressApp);
+		lbm.sendBroadcast(intent);
 	}
 }
