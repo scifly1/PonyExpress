@@ -25,7 +25,7 @@ import org.sixgun.ponyexpress.PonyExpressApp;
 import org.sixgun.ponyexpress.R;
 import org.sixgun.ponyexpress.activity.AddNewPodcastFragActivity;
 import org.sixgun.ponyexpress.activity.EpisodesFragActivity;
-import org.sixgun.ponyexpress.activity.PlaylistActivity;
+import org.sixgun.ponyexpress.activity.PlaylistFragActivity;
 import org.sixgun.ponyexpress.activity.PreferencesActivity;
 import org.sixgun.ponyexpress.service.UpdaterService;
 import org.sixgun.ponyexpress.util.PonyLogger;
@@ -405,8 +405,7 @@ public class PonyExpressFragment extends ListFragment implements OnClickListener
 	 * Show the playlist
 	 */
 	public void showPlaylist(View v) {
-		//FIXME doesn't start fragment yet
-		startActivity(new Intent(mPonyExpressApp, PlaylistActivity.class));
+		startActivity(new Intent(mPonyExpressApp, PlaylistFragActivity.class));
 	}
 	
 	/**

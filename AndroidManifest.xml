@@ -115,7 +115,7 @@
         	<meta-data android:name="android.app.default_searchable"
                    android:value=".activity.AddNewPodcastFragActivity" />
 		    </activity>
-		<activity android:name=".activity.PlaylistActivity" />	
+		<activity android:name=".activity.PlaylistFragActivity" />	
 		<activity android:name=".activity.DownloadOverviewActivity" />
 		<activity android:name=".activity.ShowNotesActivity" />
 		<activity android:name="group.pals.android.lib.ui.filechooser.FileChooserActivity" 

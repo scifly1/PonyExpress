@@ -107,8 +107,8 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 		
 		mPodcastsAndEpisodesList = (ListView) findViewById(R.id.podcasts_episodes_list);
 		mPlaylistSubtitle = (TextView) findViewById(R.id.playlist_subtitle);
-		mPodcastEpisodeLists = findViewById(R.id.podcast_episode_lists);
-		mDivider = findViewById(R.id.divider);
+//		mPodcastEpisodeLists = findViewById(R.id.podcast_episode_lists);
+//		mDivider = findViewById(R.id.divider);
 		mDownloadButton = findViewById(R.id.download_overview_button);
 		mPlaylistTime = (TextView) findViewById(R.id.playlist_time);
 		

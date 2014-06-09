@@ -7,28 +7,19 @@
 
     <include layout="@layout/playlist_header" />
 
-    <LinearLayout
+    <fragment
+        class="org.sixgun.ponyexpress.fragment.PlaylistFragment"
+        android:id="@+id/playlist_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3" />
+
+        
+   <FrameLayout
+        android:id="@+id/podcast_episodes_pane"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_weight="3" >
+        android:layout_height="0dp"
+        android:layout_weight="2" />
 
-        <include layout="@layout/playlist_list" />
-    </LinearLayout>
-
-    <TextView
-        	android:id="@+id/divider"
-			android:background="@drawable/divider"
-			android:layout_height="wrap_content"
-			android:layout_width="fill_parent" />
-    
-    <LinearLayout
-        android:id="@+id/podcast_episode_lists"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_weight="2" >
-
-        <include layout="@layout/podcast_and_episode_lists" />
-    </LinearLayout>
-
-
+     
 </LinearLayout>
