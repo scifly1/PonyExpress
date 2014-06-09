@@ -19,6 +19,7 @@
 package org.sixgun.ponyexpress.fragment;
 
 import org.sixgun.ponyexpress.DownloadingEpisode;
+import org.sixgun.ponyexpress.Episode;
 import org.sixgun.ponyexpress.EpisodeKeys;
 import org.sixgun.ponyexpress.PodcastKeys;
 import org.sixgun.ponyexpress.PonyExpressApp;
@@ -41,10 +42,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -107,6 +110,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 	private EpisodeCompletedAndDeleted mEpisodeCompletedReciever;
 	private LocalBroadcastManager mLbm;
 	private PlayBackStarted mPlaybackReceiver;
+	private String mPodcastName;
 	
 
 	@Override
@@ -120,6 +124,7 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		mAlbumArtUrl = mData.getString(PodcastKeys.ALBUM_ART_URL);
 		mRow_ID = mData.getLong(EpisodeKeys._ID);
 		mEpisodeTitle = mData.getString(EpisodeKeys.TITLE);
+		mPodcastName =mData.getString(PodcastKeys.NAME);
 		
 		mPonyExpressApp = (PonyExpressApp)getActivity().getApplication();
 		mLbm = LocalBroadcastManager.getInstance(mPonyExpressApp);
@@ -211,9 +216,10 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		//Get Album art url and set image.
 		//Get the orientation
 		final int orientation = getResources().getConfiguration().orientation;
-		//Skip if orientation is landscape
-		//FIXME If landscape and large screen don't skip
-		if (orientation != 2) {
+		//Skip if orientation is landscape and not a large screen
+		if (orientation == Configuration.ORIENTATION_PORTRAIT || 
+				(getResources().getConfiguration().screenLayout & Configuration.SCREENLAYOUT_SIZE_MASK) 
+				== Configuration.SCREENLAYOUT_SIZE_LARGE) {
 			//Set the image
 			RecyclingImageView album_art = (RecyclingImageView)v.findViewById(R.id.album_art);
 			mAlbumArtUrl = getActivity().getIntent().getExtras().getString(PodcastKeys.ALBUM_ART_URL);
@@ -225,6 +231,33 @@ public class EpisodeFrag extends Fragment implements OnClickListener, OnLongClic
 		return v;
 	}
 	
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		
+		// Check to see if we have a frame in which to embed the ShownotesFragment
+        // directly in the containing UI rather than in a tab.
+        View secondFrame = getActivity().findViewById(R.id.second_pane);
+        
+        if (secondFrame != null){
+        	ShowNotesFrag showNotes = (ShowNotesFrag)
+                    getFragmentManager().findFragmentByTag("showNotes");
+            if (showNotes == null) {
+                // Make new fragment to show this selection.
+                showNotes = new ShowNotesFrag();
+                final Bundle data = Episode.packageEpisode(mPonyExpressApp, mPodcastName, mRow_ID);
+    			data.putBoolean(ShowNotesFrag.STANDALONE_NOTES, true);
+    			showNotes.setArguments(data);
+
+                // Execute a transaction, replacing any existing fragment
+                // with this one inside the frame.
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                ft.replace(R.id.second_pane, showNotes);
+                ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                ft.commit();
+            }
+        }
+	}
 
 	@Override
 	public void onStart() {

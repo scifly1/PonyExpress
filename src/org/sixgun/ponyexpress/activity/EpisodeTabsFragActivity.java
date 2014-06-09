@@ -77,10 +77,12 @@ public class EpisodeTabsFragActivity extends FragmentActivity {
 				mRes = getResources(); // Resource object to get Drawables
 				
 				mTabHost = (FragmentTabHost)findViewById(android.R.id.tabhost);
-		        mTabHost.setup(this, getSupportFragmentManager(), R.id.realTabContent);
-		        mTitleView = (TextView) findViewById(R.id.TitleText);
+				if (mTabHost != null){ //will be null with single pane display
+					mTabHost.setup(this, getSupportFragmentManager(), R.id.realTabContent);
+					mTitleView = (TextView) findViewById(R.id.TitleText);
 
-		        populateTabs();
+					populateTabs();
+				}
 			}
 
 			private void populateTabs(){
