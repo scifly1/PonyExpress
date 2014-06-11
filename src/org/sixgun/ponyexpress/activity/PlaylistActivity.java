@@ -166,7 +166,7 @@ public class PlaylistActivity extends FragmentActivity implements PlaylistInterf
 	/*
 	 * @see org.sixgun.ponyexpress.PlaylistInterface#goBack(android.view.View)
 	 */
-	@Override
+	
 	public void goBack(View v) {
 		if (mListingEpisodes){
 			mListingEpisodes = false;

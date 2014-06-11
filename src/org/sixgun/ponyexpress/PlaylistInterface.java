@@ -22,11 +22,6 @@ import android.view.View;
 
 
 public interface PlaylistInterface {
-	/**
-	 * Return to the standard view from the Playlist view
-	 * @param v
-	 */
-	public void goBack(View v);
 
 	/**
 	 * Starts EpisdodeTabs with the Player etc.. with a playlist

@@ -31,6 +31,7 @@ import android.database.Cursor;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -50,6 +51,7 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface{
 	private TextView mNoPlaylist;
 	private boolean mAutoPlaylistsOn;
 	private TextView mPlaylistTime;
+	private PlaylistPodcastListFragment mPodsFrag;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -80,12 +82,20 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface{
 		
 		mPlaylistTime = (TextView) getActivity().findViewById(R.id.playlist_time);
 		listPlaylist();
-	}
-
-	@Override
-	public void goBack(View v) {
-		// TODO Auto-generated method stub
 		
+		//Attach the Podcast list fragment to the layout.
+		mPodsFrag = (PlaylistPodcastListFragment)
+                getFragmentManager().findFragmentByTag("pods_list");
+        if (mPodsFrag == null) {
+            // Make new fragment to show this selection.
+            mPodsFrag = new PlaylistPodcastListFragment();
+            // Execute a transaction, replacing any existing fragment
+            // with this one inside the frame.
+            FragmentTransaction ft = getFragmentManager().beginTransaction();
+            ft.replace(R.id.podcast_episodes_pane, mPodsFrag);
+            ft.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            ft.commit();
+        }
 	}
 
 	@Override
@@ -123,11 +133,6 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface{
 
 	@Override
 	public void openDownloadOverview(View v) {
-		// TODO Auto-generated method stub
-		
-	}
-	
-	private void openContextMenu(View v) {
 		// TODO Auto-generated method stub
 		
 	}
@@ -192,7 +197,7 @@ public class PlaylistFragment extends Fragment implements PlaylistInterface{
 				
 				@Override
 				public boolean onLongClick(View v) {
-					openContextMenu(v);
+					getActivity().openContextMenu(v);
 					return true;
 				}
 			});
